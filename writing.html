@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Writing</title>
+    <script>
+      (function () {
+        const saved = localStorage.getItem("theme");
+        const prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
+
+        if (saved === "dark" || (!saved && prefersDark)) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      .menu-toggle {
+        display: none;
+        background: none;
+        border: 1px solid var(--faint);
+        border-radius: 4px;
+        color: var(--ink);
+        font-size: 18px;
+        line-height: 1;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition:
+          border-color 0.2s,
+          color 0.2s;
+      }
+      .menu-toggle:hover {
+        border-color: var(--muted);
+      }
+
+      @media (max-width: 640px) {
+        .menu-toggle {
+          display: flex;
+        }
+        .nav-inner {
+          padding: 0 20px;
+          gap: 12px;
+        }
+        .nav-links {
+          display: none;
+          flex-direction: column;
+          gap: 0;
+          position: absolute;
+          top: 56px;
+          left: 0;
+          right: 0;
+          background: var(--nav-bg);
+          backdrop-filter: blur(10px);
+          border-bottom: 1px solid var(--faint);
+          padding: 8px 0 16px;
+          list-style: none;
+        }
+        .nav-links.open {
+          display: flex;
+        }
+        .nav-links li a {
+          display: block;
+          padding: 12px 20px;
+          font-size: 15px;
+          border-bottom: 1px solid var(--faint);
+        }
+        .nav-links li:last-child a {
+          border-bottom: none;
+        }
+        .nav-right {
+          gap: 10px;
+        }
+        .page {
+          padding: 96px 16px 64px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="nav-inner">
+        <a href="index.html" class="nav-logo" id="nav-name">Abhishek Saikia</a>
+        <div class="nav-right">
+          <ul class="nav-links" id="nav-links">
+            <li><a href="writing.html">Writing</a></li>
+            <li><a href="projects.html">Projects</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+          <button
+            class="menu-toggle"
+            id="menu-toggle"
+            aria-label="Open menu"
+            aria-expanded="false"
+          >
+            ☰
+          </button>
+          <button
+            class="theme-toggle"
+            id="theme-toggle"
+            aria-label="Toggle theme"
+          >
+            <span class="theme-toggle-thumb"></span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="page">
+      <p class="section-label fade-in d1">Essays & Notes</p>
+      <h1 class="section-title fade-in d2">Writing</h1>
+
+      <div class="post-list fade-in d3" id="post-list">
+        <p class="loading">Loading…</p>
+      </div>
+    </div>
+
+    <footer>
+      <p id="footer-name">© 2025 Your Name · Made with care</p>
+    </footer>
+
+    <script>
+      // Add slugs here whenever you create a new blog post
+      const BLOGS = ["on-slowness-as-a-creative-practice"];
+
+      function formatDate(iso) {
+        const d = new Date(iso);
+        return {
+          mon: d.toLocaleString("en", { month: "short" }),
+          year: d.getFullYear(),
+        };
+      }
+
+      async function init() {
+        const cv = await fetch("cv.json").then((r) => r.json());
+        document.getElementById("nav-name").textContent = cv.name;
+        document.getElementById("footer-name").textContent =
+          `© ${new Date().getFullYear()} ${cv.name} · Made with care`;
+
+        const posts = await Promise.all(
+          BLOGS.map((slug) =>
+            fetch(`blogs/${slug}.json`).then((r) => r.json()),
+          ),
+        );
+
+        const list = document.getElementById("post-list");
+        list.innerHTML = posts
+          .map((p) => {
+            const { mon, year } = formatDate(p.date);
+            return `
+          <a href="post.html?slug=${p.slug}" class="post-item">
+            <div class="post-date"><span>${mon}</span><span>${year}</span></div>
+            <div>
+              <p class="post-tag">${p.tag}</p>
+              <h3 class="post-title">${p.title}</h3>
+              <p class="post-excerpt">${p.excerpt}</p>
+            </div>
+          </a>`;
+          })
+          .join("");
+      }
+
+      init();
+    </script>
+    <script src="nav.js"></script>
+  </body>
+</html>

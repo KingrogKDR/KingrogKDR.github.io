@@ -1,0 +1,34 @@
+{
+  "name": "Abhishek Saikia",
+  "tagline": "Writer · Programmer · Thinker",
+  "bio_short": "I write about technology, system internals and design, and the ideas shaping how we live. I also build things — tools, experiments, and the occasional essay that won't let me sleep.",
+  "bio_long": [
+    "I'm Abhishek Saikia, a programmer and thinker based in India. I think carefully about technology, language, and how people make sense of the world.",
+    "My writing tends to sit at the intersection of culture and craft — how ideas travel, how tools shape thought, and how to do good work with limited time and attention.",
+    "I write here irregularly but with intention.",
+    "If something I've written resonated with you, I'd genuinely love to hear about it."
+  ],
+  "photo": "images/dp.jpg",
+  "contact": {
+    "email": "abhisheksaikia766@gmail.com",
+    "twitter": "@king_rog234",
+    "linkedin": "abhishek-saikia-268832279",
+    "github": "KingrogKDR"
+  },
+  "projects": [
+    {
+      "name": "Craw",
+      "icon": "/images/craw.png",
+      "description": "A Distributed Web Crawler from Scratch for developers ",
+      "url": "https://github.com/KingrogKDR/Craw",
+      "tags": ["Go", "Redis", "Minio (S3)"]
+    },
+    {
+      "name": "StoreDoc",
+      "icon": "images/storeDoc.png",
+      "description": "A web application designed to facilitate the upload and storage of files on the web and local storage solutions.",
+      "url": "https://store-doc-one.vercel.app",
+      "tags": ["NextJs", "TailwindCSS", "Appwrite"]
+    }
+  ]
+}
