@@ -1,22 +1,22 @@
 {
   "title": "Attention is infrastructure",
   "slug": "attention-is-infrastructure",
-  "date": "2026-01-20",
-  "tag": "Essay",
+  "date": "2026-03-30",
+  "tag": ["Essay", "Thoughts"],
   "excerpt": "A case for treating your focus like a shared resource — finite, essential, and worth protecting with the same seriousness we give to roads and water.",
   "content": [
     { "heading": "What infrastructure means" },
     "Infrastructure is the stuff that everything else depends on. Roads. Water. Electrical grids. We invest in it collectively because we understand, intuitively, that without it, nothing else works. Individual effort cannot substitute for it.",
-    "I want to make the case that attention — individual and collective — is infrastructure. And that we are currently allowing it to be strip-mined without anything like the seriousness we would bring to the degradation of a watershed.",
+    "I want to make the case that attention, whether individual or collective, is infrastructure. And that we are currently allowing it to be strip-mined, wasting it on tasks that do not matter. We have become cattle, consuming whatever the corporations are feeding us.",
     {
-      "image": "images/attention-infrastructure.jpg",
-      "caption": "A quiet place to think. Not a metaphor — literally just somewhere without a notification."
+      "image": "https://plus.unsplash.com/premium_vector-1729157947545-0dc797e710c2?q=80&w=861&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "caption": "A quiet place to think. Somewhere without a notification."
     },
     { "heading": "Why deep thought is downstream of attention" },
-    "The argument is simple: most valuable things that humans make require sustained, uninterrupted thought. Good writing, good software, good research, good decisions — all of these are downstream of the ability to hold a problem in mind long enough to actually understand it.",
-    "When attention is fragmented — by notifications, by feeds, by the low-grade anxiety of always being reachable — that capacity degrades. Not dramatically, not all at once, but steadily. Like a road that isn't maintained.",
+    "The argument is simple: most valuable things that humans make require sustained, uninterrupted thought. Good writing, good software, good research, good decisions - all of these are downstream of the ability to hold a problem in mind long enough to actually understand it.",
+    "When attention is fragmented - by notifications, by feeds, by the low-grade anxiety of always being reachable - that capacity degrades. Not dramatically, not all at once, but steadily. Like a road that isn't maintained.",
     { "heading": "The collective consequence" },
-    "The difference between infrastructure and private resources is that infrastructure has collective consequences. Your inattention is your problem. But a culture of inattention — a set of tools and norms that systematically fragments focus — is everyone's problem.",
+    "The difference between infrastructure and private resources is that infrastructure has collective consequences. Your inattention is your problem. But a culture of inattention - a set of tools and norms that systematically fragments focus - is everyone's problem.",
     { "heading": "A reframe, not a policy" },
     "I don't have a policy proposal. I have, instead, a reframe: think of your attention as something worth protecting not just for your own productivity, but because the quality of what gets built and thought and decided in the world depends on whether enough people can still think deeply."
   ]

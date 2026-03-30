@@ -108,13 +108,11 @@
         margin: 32px 0 0;
         flex-wrap: wrap;
       }
-
       .search-wrap {
         position: relative;
         flex: 1 1 260px;
         max-width: 420px;
       }
-
       .search-icon {
         position: absolute;
         left: 14px;
@@ -125,7 +123,6 @@
         pointer-events: none;
         line-height: 1;
       }
-
       .search-input {
         width: 100%;
         box-sizing: border-box;
@@ -149,7 +146,6 @@
       .search-input::placeholder {
         color: var(--muted);
       }
-
       .search-clear {
         position: absolute;
         right: 10px;
@@ -179,7 +175,6 @@
         gap: 8px;
         flex-wrap: wrap;
       }
-
       .sort-select {
         height: 38px;
         padding: 0 28px 0 11px;
@@ -204,21 +199,18 @@
       .sort-select:hover {
         border-color: var(--muted);
       }
-
       .filter-sep {
         width: 1px;
         height: 22px;
         background: var(--faint);
         flex-shrink: 0;
       }
-
       .tag-filter-list {
         display: flex;
         gap: 6px;
         flex-wrap: wrap;
         align-items: center;
       }
-
       .tag-pill {
         display: inline-flex;
         align-items: center;
@@ -234,11 +226,11 @@
         letter-spacing: 0.05em;
         cursor: pointer;
         font-family: inherit;
+        white-space: nowrap;
         transition:
           border-color 0.18s,
           color 0.18s,
           background 0.18s;
-        white-space: nowrap;
       }
       .tag-pill:hover {
         border-color: var(--muted);
@@ -249,15 +241,13 @@
         color: var(--accent);
         background: color-mix(in srgb, var(--accent) 10%, transparent);
       }
-
-      /* Pinned pill override */
       .tag-pill[data-tag="pinned"].active {
         border-color: var(--ink);
         color: var(--ink);
         background: color-mix(in srgb, var(--ink) 8%, transparent);
       }
 
-      /* ── HINT ── */
+      /* ── HINT / STATUS ── */
       .search-hint {
         margin: 10px 0 0;
         font-size: 11.5px;
@@ -272,22 +262,19 @@
         border-radius: 3px;
         color: var(--accent);
       }
-
-      /* ── STATUS ── */
       .search-status {
         font-size: 13px;
         color: var(--muted);
         margin: 24px 0 0;
         min-height: 20px;
       }
-
       .search-highlight {
         background: color-mix(in srgb, var(--accent) 18%, transparent);
         border-radius: 2px;
         padding: 0 1px;
       }
 
-      /* Multi-tag chips inside post list */
+      /* ── POST CHIP / BADGE ── */
       .post-tags {
         display: flex;
         flex-wrap: wrap;
@@ -304,8 +291,6 @@
         padding: 2px 8px;
         border-radius: 99px;
       }
-
-      /* Pin badge next to post title */
       .pin-badge {
         display: inline-flex;
         align-items: center;
@@ -325,6 +310,151 @@
         width: 9px;
         height: 9px;
         flex-shrink: 0;
+      }
+
+      /* ── SERIES CARD ── */
+      .series-section {
+        margin: 40px 0 0;
+      }
+      .series-section-label {
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 14px;
+      }
+      .series-card {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        border: 1px solid var(--faint);
+        border-radius: 10px;
+        padding: 20px 22px;
+        margin-bottom: 12px;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+        position: relative;
+        overflow: hidden;
+      }
+      .series-card::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: var(--accent);
+        opacity: 0.5;
+        transition: opacity 0.2s;
+      }
+      .series-card:hover {
+        border-color: var(--accent);
+        box-shadow: 0 2px 16px color-mix(in srgb, var(--accent) 8%, transparent);
+      }
+      .series-card:hover::before {
+        opacity: 1;
+      }
+
+      .series-card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+      }
+      .series-card-eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+      }
+      .series-label-chip {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 10%, transparent);
+        padding: 3px 8px;
+        border-radius: 99px;
+      }
+      .series-part-count {
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 400;
+      }
+      .series-card-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--ink);
+        letter-spacing: -0.01em;
+        line-height: 1.3;
+        margin: 0 0 6px;
+      }
+      .series-card-description {
+        font-size: 13.5px;
+        color: var(--muted);
+        line-height: 1.65;
+        margin: 0 0 14px;
+      }
+      .series-card-posts-preview {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+      .series-preview-post {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+      .series-preview-num {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        opacity: 0.5;
+        flex-shrink: 0;
+        width: 20px;
+        text-align: right;
+      }
+      .series-preview-title {
+        color: var(--ink);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      .series-card-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12.5px;
+        font-weight: 500;
+        color: var(--accent);
+        letter-spacing: 0.01em;
+      }
+      .series-card-cta svg {
+        width: 12px;
+        height: 12px;
+        transition: transform 0.2s;
+      }
+      .series-card:hover .series-card-cta svg {
+        transform: translateX(3px);
+      }
+
+      /* Section divider between series and standalone posts */
+      .posts-section-label {
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        opacity: 0.6;
+        margin: 36px 0 2px;
       }
     </style>
   </head>
@@ -383,7 +513,6 @@
               ✕
             </button>
           </div>
-
           <div class="filter-controls">
             <select
               class="sort-select"
@@ -395,13 +524,10 @@
               <option value="az">A → Z</option>
               <option value="za">Z → A</option>
             </select>
-
             <div class="filter-sep"></div>
-
             <div class="tag-filter-list" id="tag-filter-list"></div>
           </div>
         </div>
-
         <p class="search-hint">
           Type to search titles &nbsp;·&nbsp;
           <code>tag:&lt;topic&gt;</code> filter by tag &nbsp;·&nbsp;
@@ -414,41 +540,34 @@
 
       <p class="search-status" id="search-status"></p>
 
+      <!-- Series cards render here when not searching -->
+      <div id="series-section" class="fade-in d3"></div>
+
       <div class="post-list fade-in d3" id="post-list">
         <p class="loading">Loading…</p>
       </div>
     </div>
 
     <footer>
-      <p id="footer-name">© 2025 Your Name · Made with care</p>
+      <p id="footer-name">© 2026 Abhishek Saikia · Made with care</p>
     </footer>
 
     <script>
       const BLOGS = [
         "on-slowness-as-a-creative-practice",
-        // "attention-is-infrastructure",
+        "attention-is-infrastructure",
       ];
 
       let ALL_POSTS = [];
+      let ALL_SERIES = [];
       let activeTagFilter = null;
 
       const PIN_SVG = `<svg viewBox="0 0 10 10" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 1L9 3.5 6 6.5 5 9 4 6.5 1 3.5 3.5 1z"/></svg>`;
+      const ARROW_SVG = `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6 2l4 4-4 4"/></svg>`;
 
       function normaliseTags(raw) {
         if (!raw) return [];
         return Array.isArray(raw) ? raw : [raw];
-      }
-
-      // Returns the effective tag list for a post, injecting "pinned" if flagged
-      function effectiveTags(post) {
-        const tags = normaliseTags(post.tag);
-        if (
-          post.pinned &&
-          !tags.map((t) => t.toLowerCase()).includes("pinned")
-        ) {
-          return [...tags, "__pinned__"]; // sentinel kept separate from display tags
-        }
-        return tags;
       }
 
       function formatDate(iso) {
@@ -473,25 +592,21 @@
         const q = raw.trim();
         const result = { tag: null, slug: null, phrase: null, text: "" };
         let remaining = q;
-
         const tagMatch = remaining.match(/\btag:(\S+)/i);
         if (tagMatch) {
           result.tag = tagMatch[1].toLowerCase();
           remaining = remaining.replace(tagMatch[0], "").trim();
         }
-
         const inMatch = remaining.match(/\bin:(\S+)/i);
         if (inMatch) {
           result.slug = inMatch[1].toLowerCase();
           remaining = remaining.replace(inMatch[0], "").trim();
         }
-
         const phraseMatch = remaining.match(/"([^"]+)"/);
         if (phraseMatch) {
           result.phrase = phraseMatch[1].toLowerCase();
           remaining = remaining.replace(phraseMatch[0], "").trim();
         }
-
         result.text = remaining.toLowerCase();
         return result;
       }
@@ -501,8 +616,6 @@
         const title = post.title.toLowerCase();
         const slug = (post.slug || "").toLowerCase();
         const isPinned = !!post.pinned;
-
-        // Pill tag filter — "pinned" pill matches pinned: true
         if (pillTag) {
           if (pillTag === "pinned") {
             if (!isPinned) return false;
@@ -510,8 +623,6 @@
             if (!tags.includes(pillTag)) return false;
           }
         }
-
-        // Search query tag filter — tag:pinned matches pinned: true
         if (filters.tag) {
           if (filters.tag === "pinned") {
             if (!isPinned) return false;
@@ -519,7 +630,6 @@
             if (!tags.some((t) => t.includes(filters.tag))) return false;
           }
         }
-
         if (filters.slug && !slug.includes(filters.slug)) return false;
         if (filters.phrase && !title.includes(filters.phrase)) return false;
         if (filters.text && !title.includes(filters.text)) return false;
@@ -528,9 +638,7 @@
 
       function sortPosts(posts, order) {
         return [...posts].sort((a, b) => {
-          // Pinned posts always float to top when no explicit sort is fighting them
           if (order === "newest") {
-            // pinned first, then by date desc
             if (a.pinned && !b.pinned) return -1;
             if (!a.pinned && b.pinned) return 1;
             return new Date(b.date) - new Date(a.date);
@@ -542,11 +650,90 @@
         });
       }
 
-      function renderPosts(posts, filters, rawQ) {
+      function renderSeriesCards(isSearching) {
+        const container = document.getElementById("series-section");
+        if (isSearching || ALL_SERIES.length === 0) {
+          container.innerHTML = "";
+          return;
+        }
+
+        const cardsHTML = ALL_SERIES.map((series) => {
+          const seriesPosts = series.posts
+            .map((slug) => ALL_POSTS.find((p) => p.slug === slug))
+            .filter(Boolean);
+
+          if (seriesPosts.length === 0) return "";
+
+          const totalDefined = series.posts.length;
+          const publishedCount = seriesPosts.length;
+
+          const previewItems = seriesPosts
+            .slice(0, 3)
+            .map(
+              (p, i) =>
+                `<div class="series-preview-post">
+              <span class="series-preview-num">${i + 1}.</span>
+              <span class="series-preview-title">${p.title}</span>
+            </div>`,
+            )
+            .join("");
+
+          const moreCount = seriesPosts.length - 3;
+          const moreNote =
+            moreCount > 0
+              ? `<div class="series-preview-post"><span class="series-preview-num"></span><span style="font-size:12px;color:var(--muted);opacity:0.6">+${moreCount} more</span></div>`
+              : "";
+
+          const countLabel =
+            totalDefined > publishedCount
+              ? `${publishedCount} of ${totalDefined} published`
+              : `${publishedCount} ${publishedCount === 1 ? "part" : "parts"}`;
+
+          return `
+            <a href="series.html?id=${encodeURIComponent(series.id)}" class="series-card">
+              <div class="series-card-eyebrow">
+                <span class="series-label-chip">Series</span>
+                <span class="series-part-count">${countLabel}</span>
+              </div>
+              <h3 class="series-card-title">${series.title}</h3>
+              <p class="series-card-description">${series.description}</p>
+              <div class="series-card-posts-preview">
+                ${previewItems}
+                ${moreNote}
+              </div>
+              <span class="series-card-cta">View series ${ARROW_SVG}</span>
+            </a>`;
+        }).join("");
+
+        if (!cardsHTML.trim()) {
+          container.innerHTML = "";
+          return;
+        }
+
+        // Get series slugs so we can exclude them from standalone posts list
+        container.innerHTML = `
+          <div class="series-section-label">Series</div>
+          ${cardsHTML}
+        `;
+      }
+
+      // Slugs belonging to any series — used to exclude from standalone list
+      function getSeriesSlugs() {
+        return new Set(ALL_SERIES.flatMap((s) => s.posts));
+      }
+
+      function renderPosts(posts, filters, rawQ, isSearching) {
         const list = document.getElementById("post-list");
         const status = document.getElementById("search-status");
 
-        if (posts.length === 0) {
+        // When not searching: hide posts that belong to a series (they appear in series cards)
+        let displayPosts = posts;
+        if (!isSearching && !activeTagFilter) {
+          const seriesSlugs = getSeriesSlugs();
+          displayPosts = posts.filter((p) => !seriesSlugs.has(p.slug));
+        }
+
+        if (displayPosts.length === 0 && posts.length === 0) {
           list.innerHTML = `<p style="color:var(--muted);font-size:14px;margin-top:24px;">No posts match your search.</p>`;
           status.textContent = "";
           return;
@@ -554,28 +741,38 @@
 
         const hlTerm = filters ? filters.phrase || filters.text || "" : "";
 
-        list.innerHTML = posts
-          .map((p) => {
-            const { mon, year } = formatDate(p.date);
-            const titleHl = highlight(p.title, hlTerm);
-            const tags = normaliseTags(p.tag);
-            const tagChips = tags
-              .map((t) => `<span class="post-tag-chip">${t}</span>`)
-              .join("");
-            const pinBadge = p.pinned
-              ? `<span class="pin-badge" aria-label="Pinned">${PIN_SVG} pinned</span>`
-              : "";
-            return `
-            <a href="post.html?slug=${p.slug}" class="post-item">
-              <div class="post-date"><span>${mon}</span><span>${year}</span></div>
-              <div>
-                <div class="post-tags">${tagChips}</div>
-                <h3 class="post-title">${titleHl}${pinBadge}</h3>
-                <p class="post-excerpt">${p.excerpt}</p>
-              </div>
-            </a>`;
-          })
-          .join("");
+        const showSectionLabel =
+          !isSearching &&
+          !activeTagFilter &&
+          ALL_SERIES.length > 0 &&
+          displayPosts.length > 0;
+
+        list.innerHTML =
+          (showSectionLabel
+            ? `<div class="posts-section-label">Standalone</div>`
+            : "") +
+          displayPosts
+            .map((p) => {
+              const { mon, year } = formatDate(p.date);
+              const titleHl = highlight(p.title, hlTerm);
+              const tags = normaliseTags(p.tag);
+              const tagChips = tags
+                .map((t) => `<span class="post-tag-chip">${t}</span>`)
+                .join("");
+              const pinBadge = p.pinned
+                ? `<span class="pin-badge" aria-label="Pinned">${PIN_SVG} pinned</span>`
+                : "";
+              return `
+              <a href="post.html?slug=${p.slug}" class="post-item">
+                <div class="post-date"><span>${mon}</span><span>${year}</span></div>
+                <div>
+                  <div class="post-tags">${tagChips}</div>
+                  <h3 class="post-title">${titleHl}${pinBadge}</h3>
+                  <p class="post-excerpt">${p.excerpt}</p>
+                </div>
+              </a>`;
+            })
+            .join("");
 
         if (rawQ && rawQ.trim()) {
           const noun = posts.length === 1 ? "post" : "posts";
@@ -596,29 +793,27 @@
         const q = document.getElementById("search-input").value;
         const order = document.getElementById("sort-select").value;
         const clearBtn = document.getElementById("search-clear");
-
         clearBtn.classList.toggle("visible", q.length > 0);
 
+        const isSearching = !!(q.trim() || activeTagFilter);
         const filters = q.trim() ? parseQuery(q) : {};
         let results = ALL_POSTS.filter((p) =>
           matchPost(p, filters, activeTagFilter),
         );
         results = sortPosts(results, order);
-        renderPosts(results, filters, q);
+
+        renderSeriesCards(isSearching);
+        renderPosts(results, filters, q, isSearching);
       }
 
       function buildTagPills() {
         const seen = new Set();
         let hasPinned = false;
-
         ALL_POSTS.forEach((p) => {
           normaliseTags(p.tag).forEach((t) => seen.add(t));
           if (p.pinned) hasPinned = true;
         });
-
         const container = document.getElementById("tag-filter-list");
-
-        // Regular tag pills (sorted), then Pinned pill last if any posts are pinned
         const tagPills = [...seen]
           .sort()
           .map(
@@ -626,13 +821,10 @@
               `<button class="tag-pill" data-tag="${t.toLowerCase()}">${t}</button>`,
           )
           .join("");
-
         const pinnedPill = hasPinned
           ? `<button class="tag-pill" data-tag="pinned">${PIN_SVG} Pinned</button>`
           : "";
-
         container.innerHTML = tagPills + pinnedPill;
-
         container.querySelectorAll(".tag-pill").forEach((btn) => {
           btn.addEventListener("click", () => {
             const tag = btn.dataset.tag;
@@ -663,6 +855,15 @@
           ),
         );
 
+        // Load series (graceful fallback if series.json doesn't exist yet)
+        try {
+          ALL_SERIES = await fetch("blogs/series.json").then((r) =>
+            r.ok ? r.json() : [],
+          );
+        } catch {
+          ALL_SERIES = [];
+        }
+
         buildTagPills();
         run();
 
@@ -672,14 +873,12 @@
 
         inp.addEventListener("input", run);
         sortSel.addEventListener("change", run);
-
         clearBtn.addEventListener("click", () => {
           inp.value = "";
           run();
           inp.focus();
         });
 
-        // Deeplink: ?tag=pinned or ?tag=essay from post.html chip clicks
         const urlTag = new URLSearchParams(window.location.search).get("tag");
         if (urlTag) {
           activeTagFilter = urlTag.toLowerCase();

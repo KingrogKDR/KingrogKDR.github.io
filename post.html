@@ -98,7 +98,7 @@
         }
       }
 
-      /* ── TOC ── */
+      /* ── TOC (original fixed left sidebar) ── */
       .toc {
         position: fixed;
         top: 50%;
@@ -129,7 +129,6 @@
         margin: 0;
         border-left: 1px solid var(--faint);
       }
-
       .toc-list a {
         display: block;
         padding: 5px 0 5px 14px;
@@ -152,7 +151,6 @@
         border-left-color: var(--accent);
         font-weight: 500;
       }
-
       .toc-empty-msg {
         font-size: 12px;
         color: var(--muted);
@@ -160,6 +158,12 @@
         line-height: 1.5;
         padding-left: 14px;
         border-left: 1px solid var(--faint);
+      }
+
+      @media (max-width: 1000px) {
+        .toc {
+          display: none;
+        }
       }
 
       /* ── CENTERED CONTENT ── */
@@ -182,14 +186,13 @@
         line-height: 1.3;
       }
 
-      /* ── SPACIOUS TAG CHIPS ── */
+      /* ── TAG CHIPS ── */
       .post-header-tags {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
         margin-bottom: 20px;
       }
-
       .post-header-tag-chip {
         display: inline-flex;
         align-items: center;
@@ -213,15 +216,159 @@
         color: var(--accent);
       }
 
-      @media (max-width: 1000px) {
-        .toc {
-          display: none;
-        }
+      /* ── SERIES BANNER ── */
+      .series-banner {
+        border: 1px solid var(--faint);
+        border-radius: 10px;
+        padding: 16px 18px;
+        margin-bottom: 16px;
+        background: color-mix(in srgb, var(--accent) 3%, transparent);
+      }
+      .series-banner-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+      }
+      .series-banner-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .series-chip {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 10%, transparent);
+        padding: 3px 8px;
+        border-radius: 99px;
+      }
+      .series-banner-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--ink);
+        text-decoration: none;
+        transition: color 0.15s;
+        letter-spacing: -0.01em;
+      }
+      .series-banner-name:hover {
+        color: var(--accent);
+      }
+      .series-banner-part {
+        font-size: 11.5px;
+        color: var(--muted);
+      }
+      .series-banner-parts {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .series-banner-part-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: var(--muted);
+        text-decoration: none;
+        padding: 4px 10px;
+        border: 1px solid var(--faint);
+        border-radius: 6px;
+        transition:
+          border-color 0.15s,
+          color 0.15s;
+        white-space: nowrap;
+      }
+      .series-banner-part-link:hover {
+        border-color: var(--accent);
+        color: var(--ink);
+      }
+      .series-banner-part-link.current {
+        border-color: var(--accent);
+        color: var(--ink);
+        background: color-mix(in srgb, var(--accent) 8%, transparent);
+        font-weight: 500;
+        pointer-events: none;
+      }
+      .series-banner-part-link.unavailable {
+        opacity: 0.35;
+        pointer-events: none;
+        font-style: italic;
+      }
+      .part-num-label {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        opacity: 0.6;
+        margin-right: 1px;
+      }
+      .series-banner-part-link.current .part-num-label {
+        opacity: 1;
+        color: var(--accent);
+      }
+
+      /* ── SERIES PREV/NEXT — compact strip between banner and post header ── */
+      .series-nav-strip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 32px;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--faint);
+      }
+      .series-nav-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: var(--muted);
+        text-decoration: none;
+        padding: 2px 0;
+        transition: color 0.15s;
+        max-width: 42%;
+      }
+      .series-nav-link:hover {
+        color: var(--ink);
+      }
+      .series-nav-link.faded {
+        opacity: 0.3;
+        pointer-events: none;
+      }
+      .series-nav-link svg {
+        width: 12px;
+        height: 12px;
+        flex-shrink: 0;
+      }
+      .series-nav-link-label {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.3;
+      }
+      .series-nav-center {
+        font-size: 11px;
+        color: var(--muted);
+        opacity: 0.45;
+        white-space: nowrap;
+        letter-spacing: 0.05em;
+        flex-shrink: 0;
       }
 
       @media (max-width: 540px) {
         .post-page {
           padding: 84px 18px 64px;
+        }
+        .series-nav-center {
+          display: none;
+        }
+        .series-nav-link {
+          max-width: 48%;
         }
       }
     </style>
@@ -273,6 +420,9 @@
     </footer>
 
     <script>
+      const ARROW_LEFT = `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6H4M6 4L4 6l2 2"/></svg>`;
+      const ARROW_RIGHT = `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h4M6 4l2 2-2 2"/></svg>`;
+
       function formatDate(iso) {
         return new Date(iso).toLocaleDateString("en", {
           year: "numeric",
@@ -280,12 +430,10 @@
           day: "numeric",
         });
       }
-
       function resolveImageSrc(src) {
         if (/^https?:\/\//i.test(src) || src.startsWith("//")) return src;
         return src;
       }
-
       function slugify(text) {
         return text
           .toLowerCase()
@@ -293,13 +441,10 @@
           .trim()
           .replace(/\s+/g, "-");
       }
-
-      // Normalise tag field — accepts string or array
       function normaliseTags(raw) {
         if (!raw) return [];
         return Array.isArray(raw) ? raw : [raw];
       }
-
       function renderTags(raw) {
         const tags = normaliseTags(raw);
         if (!tags.length) return "";
@@ -311,7 +456,6 @@
           .join("");
         return `<div class="post-header-tags">${chips}</div>`;
       }
-
       function renderContent(items) {
         return items
           .map((item) => {
@@ -379,6 +523,76 @@
         headings.forEach((h) => observer.observe(h));
       }
 
+      function buildSeriesBanner(series, seriesPosts, currentSlug) {
+        const totalDefined = series.posts.length;
+        const currentIdx = series.posts.indexOf(currentSlug);
+        const partNum = currentIdx + 1;
+
+        const partsHTML = series.posts
+          .map((slug, i) => {
+            const post = seriesPosts[i];
+            const isCurrent = slug === currentSlug;
+            const isAvailable = !!post;
+            const partLabel = `<span class="part-num-label">${i + 1}.</span> ${post ? post.title : "Coming soon"}`;
+            if (isCurrent)
+              return `<span class="series-banner-part-link current">${partLabel}</span>`;
+            if (!isAvailable)
+              return `<span class="series-banner-part-link unavailable">${partLabel}</span>`;
+            return `<a href="post.html?slug=${slug}" class="series-banner-part-link">${partLabel}</a>`;
+          })
+          .join("");
+
+        return `
+          <div class="series-banner fade-in d1">
+            <div class="series-banner-top">
+              <div class="series-banner-left">
+                <span class="series-chip">Series</span>
+                <a href="series.html?id=${encodeURIComponent(series.id)}" class="series-banner-name">${series.title}</a>
+              </div>
+              <span class="series-banner-part">Part ${partNum} of ${totalDefined}</span>
+            </div>
+            <div class="series-banner-parts">${partsHTML}</div>
+          </div>`;
+      }
+
+      function buildSeriesNavStrip(series, seriesPosts, currentSlug) {
+        const currentIdx = series.posts.indexOf(currentSlug);
+        const totalDefined = series.posts.length;
+
+        const prevSlug = currentIdx > 0 ? series.posts[currentIdx - 1] : null;
+        const nextSlug =
+          currentIdx < totalDefined - 1 ? series.posts[currentIdx + 1] : null;
+        const prevPost = prevSlug
+          ? seriesPosts[series.posts.indexOf(prevSlug)]
+          : null;
+        const nextPost = nextSlug
+          ? seriesPosts[series.posts.indexOf(nextSlug)]
+          : null;
+
+        const prevLink = prevPost
+          ? `<a href="post.html?slug=${prevSlug}" class="series-nav-link" title="${prevPost.title}">
+              ${ARROW_LEFT}<span class="series-nav-link-label">${prevPost.title}</span>
+            </a>`
+          : `<span class="series-nav-link faded">${ARROW_LEFT}<span class="series-nav-link-label">First part</span></span>`;
+
+        const nextLink = nextPost
+          ? `<a href="post.html?slug=${nextSlug}" class="series-nav-link" style="justify-content:flex-end;text-align:right" title="${nextPost.title}">
+              <span class="series-nav-link-label">${nextPost.title}</span>${ARROW_RIGHT}
+            </a>`
+          : nextSlug
+            ? `<span class="series-nav-link faded" style="justify-content:flex-end"><span class="series-nav-link-label">Coming soon</span>${ARROW_RIGHT}</span>`
+            : `<a href="series.html?id=${encodeURIComponent(series.id)}" class="series-nav-link" style="justify-content:flex-end;text-align:right">
+                <span class="series-nav-link-label">View series</span>${ARROW_RIGHT}
+              </a>`;
+
+        return `
+          <div class="series-nav-strip">
+            ${prevLink}
+            <span class="series-nav-center">${currentIdx + 1} / ${totalDefined}</span>
+            ${nextLink}
+          </div>`;
+      }
+
       async function init() {
         const cv = await fetch("cv.json").then((r) => r.json());
         document.getElementById("nav-name").textContent = cv.name;
@@ -395,14 +609,46 @@
         const post = await fetch(`blogs/${slug}.json`).then((r) => r.json());
         document.title = `${post.title} — ${cv.name}`;
 
+        // Load series data if post belongs to one
+        let series = null;
+        let seriesPosts = [];
+        if (post.series) {
+          try {
+            const allSeries = await fetch("blogs/series.json").then((r) =>
+              r.json(),
+            );
+            series = allSeries.find((s) => s.id === post.series) || null;
+            if (series) {
+              seriesPosts = await Promise.all(
+                series.posts.map((s) =>
+                  fetch(`blogs/${s}.json`)
+                    .then((r) => (r.ok ? r.json() : null))
+                    .catch(() => null),
+                ),
+              );
+            }
+          } catch {
+            series = null;
+          }
+        }
+
+        const seriesBannerHTML = series
+          ? buildSeriesBanner(series, seriesPosts, slug)
+          : "";
+        const seriesNavStripHTML = series
+          ? buildSeriesNavStrip(series, seriesPosts, slug)
+          : "";
+
         document.getElementById("post-content").innerHTML = `
-          <div class="post-header fade-in d1">
+          ${seriesBannerHTML}
+          ${seriesNavStripHTML}
+          <div class="post-header fade-in d2">
             ${renderTags(post.tag)}
             <h1 class="post-header-title">${post.title}</h1>
             <p class="post-header-meta">${formatDate(post.date)}</p>
           </div>
           <hr class="post-header-divider">
-          <div class="post-body fade-in d2">
+          <div class="post-body fade-in d3">
             ${renderContent(post.content)}
           </div>
         `;
@@ -412,7 +658,6 @@
 
       init();
     </script>
-
     <script src="nav.js"></script>
   </body>
 </html>
