@@ -40,7 +40,7 @@ Add every new blog post slug here manually. Template:
 
 ```xml
 <url>
-  <loc>https://abhisheksaikia.com/post.html?slug=YOUR-SLUG</loc>
+  <loc>https://DOMAIN_NAME/post.html?slug=YOUR-SLUG</loc>
   <lastmod>YYYY-MM-DD</lastmod>
   <changefreq>yearly</changefreq>
   <priority>0.8</priority>

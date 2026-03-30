@@ -39,6 +39,7 @@
     </script>
     <link rel="stylesheet" href="style.css" />
     <style>
+      /* ── Nav mobile ── */
       .menu-toggle {
         display: none;
         background: none;
@@ -101,6 +102,8 @@
           padding: 96px 16px 64px;
         }
       }
+
+      /* ── Series header ── */
       .series-header {
         margin-bottom: 48px;
       }
@@ -141,8 +144,85 @@
         color: var(--muted);
         line-height: 1.75;
         max-width: 580px;
-        margin: 0;
+        margin: 0 0 18px;
       }
+
+      /* ── Share button (series page) ── */
+      .share-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        background: transparent;
+        border: 1px solid var(--faint);
+        border-radius: 99px;
+        padding: 5px 13px;
+        cursor: pointer;
+        transition:
+          border-color 0.2s,
+          color 0.2s,
+          background 0.2s;
+      }
+      .share-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 6%, transparent);
+      }
+      .share-btn svg {
+        width: 13px;
+        height: 13px;
+        flex-shrink: 0;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      /* ── Share toast ── */
+      .share-toast {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%) translateY(12px);
+        background: var(--ink);
+        color: var(--bg);
+        font-size: 13px;
+        font-weight: 450;
+        letter-spacing: 0.01em;
+        padding: 10px 18px;
+        border-radius: 99px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+        opacity: 0;
+        pointer-events: none;
+        transition:
+          opacity 0.22s ease,
+          transform 0.22s ease;
+        white-space: nowrap;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .share-toast.visible {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      .share-toast svg {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      /* ── Series post list ── */
       .series-divider {
         border: none;
         border-top: 1px solid var(--faint);
@@ -296,6 +376,12 @@
       </div>
     </nav>
 
+    <!-- Share toast notification -->
+    <div class="share-toast" id="share-toast" role="status" aria-live="polite">
+      <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4" /></svg>
+      Link copied
+    </div>
+
     <main>
       <div class="page">
         <a href="writing.html" class="back-link fade-in d1">← All writing</a>
@@ -311,6 +397,8 @@
 
     <script src="seo.js"></script>
     <script>
+      const SHARE_ICON = `<svg viewBox="0 0 14 14"><circle cx="11" cy="2.5" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><line x1="4.4" y1="7.7" x2="9.7" y2="10.9"/><line x1="9.7" y1="3.1" x2="4.4" y2="6.3"/></svg>`;
+
       function escHTML(str) {
         return String(str)
           .replace(/&/g, "&amp;")
@@ -324,6 +412,39 @@
           month: "long",
           day: "numeric",
         });
+      }
+
+      /* ── Share ── */
+      let toastTimer = null;
+      function showToast(msg) {
+        const toast = document.getElementById("share-toast");
+        toast.childNodes[2].textContent = " " + msg;
+        toast.classList.add("visible");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("visible"), 2400);
+      }
+
+      async function shareItem(url, title, text) {
+        if (navigator.share) {
+          try {
+            await navigator.share({ title, text, url });
+            return;
+          } catch (e) {
+            if (e.name === "AbortError") return;
+          }
+        }
+        try {
+          await navigator.clipboard.writeText(url);
+          showToast("Link copied");
+        } catch {
+          const inp = document.createElement("input");
+          inp.value = url;
+          document.body.appendChild(inp);
+          inp.select();
+          document.execCommand("copy");
+          document.body.removeChild(inp);
+          showToast("Link copied");
+        }
       }
 
       async function init() {
@@ -350,11 +471,20 @@
         }
 
         const canonicalUrl = `${window.SEO.BASE_URL}/series.html?id=${encodeURIComponent(id)}`;
+
+        // "og-image" on the series object is the share-card image for the series page.
+        const ogImage = series["og-image"]
+          ? series["og-image"].startsWith("http")
+            ? series["og-image"]
+            : `${window.SEO.BASE_URL}/${series["og-image"]}`
+          : window.SEO.DEFAULT_IMAGE;
+
         window.SEO.setPage({
           title: `${series.title} — Series`,
           description: series.description,
           url: canonicalUrl,
           type: "website",
+          image: ogImage, // ← OG share-card image for the series
           breadcrumbs: [
             { name: "Home", url: window.SEO.BASE_URL + "/" },
             { name: "Writing", url: window.SEO.BASE_URL + "/writing.html" },
@@ -404,6 +534,11 @@
             </div>
             <h1 class="series-title-h1" itemprop="name">${escHTML(series.title)}</h1>
             <p class="series-description" itemprop="description">${escHTML(series.description)}</p>
+            <button
+              class="share-btn"
+              aria-label="Share this series"
+              onclick="shareItem(${JSON.stringify(canonicalUrl)}, ${JSON.stringify(series.title)}, ${JSON.stringify(series.description || "")})"
+            >${SHARE_ICON} Share series</button>
           </div>
           <hr class="series-divider fade-in d3">
           <div class="series-posts fade-in d3" role="list">${postsHTML}</div>

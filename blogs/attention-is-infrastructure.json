@@ -4,6 +4,7 @@
   "date": "2026-03-30",
   "tag": ["Essay", "Thoughts"],
   "excerpt": "A case for treating your focus like a shared resource — finite, essential, and worth protecting with the same seriousness we give to roads and water.",
+  "og-image": "images/og/attention-is-infrastructure.jpg",
   "content": [
     { "heading": "What infrastructure means" },
     "Infrastructure is the stuff that everything else depends on. Roads. Water. Electrical grids. We invest in it collectively because we understand, intuitively, that without it, nothing else works. Individual effort cannot substitute for it.",

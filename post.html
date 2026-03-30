@@ -40,6 +40,7 @@
     </script>
     <link rel="stylesheet" href="style.css" />
     <style>
+      /* ── Nav mobile ── */
       .menu-toggle {
         display: none;
         background: none;
@@ -99,6 +100,8 @@
           gap: 10px;
         }
       }
+
+      /* ── TOC ── */
       .toc {
         position: fixed;
         top: 50%;
@@ -162,6 +165,8 @@
           display: none;
         }
       }
+
+      /* ── Post page ── */
       .post-page {
         max-width: 720px;
         margin: 0 auto;
@@ -206,6 +211,99 @@
         border-color: var(--accent);
         color: var(--accent);
       }
+
+      /* ── Post meta row with share button ── */
+      .post-header-meta-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .post-header-meta {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0;
+      }
+
+      /* ── Share button ── */
+      .share-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        background: transparent;
+        border: 1px solid var(--faint);
+        border-radius: 99px;
+        padding: 5px 13px;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition:
+          border-color 0.2s,
+          color 0.2s,
+          background 0.2s;
+        text-decoration: none;
+      }
+      .share-btn:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 6%, transparent);
+      }
+      .share-btn svg {
+        width: 13px;
+        height: 13px;
+        flex-shrink: 0;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      /* ── Share toast ── */
+      .share-toast {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%) translateY(12px);
+        background: var(--ink);
+        color: var(--bg);
+        font-size: 13px;
+        font-weight: 450;
+        letter-spacing: 0.01em;
+        padding: 10px 18px;
+        border-radius: 99px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+        opacity: 0;
+        pointer-events: none;
+        transition:
+          opacity 0.22s ease,
+          transform 0.22s ease;
+        white-space: nowrap;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .share-toast.visible {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      .share-toast svg {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      /* ── Series ── */
       .series-banner {
         border: 1px solid var(--faint);
         border-radius: 10px;
@@ -346,6 +444,7 @@
         letter-spacing: 0.05em;
         flex-shrink: 0;
       }
+
       @media (max-width: 540px) {
         .post-page {
           padding: 84px 18px 64px;
@@ -394,6 +493,12 @@
       <ul class="toc-list" id="toc-list"></ul>
     </aside>
 
+    <!-- Share toast notification -->
+    <div class="share-toast" id="share-toast" role="status" aria-live="polite">
+      <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4" /></svg>
+      Link copied
+    </div>
+
     <main>
       <div class="post-page">
         <a href="writing.html" class="back-link">← All writing</a>
@@ -415,6 +520,7 @@
     <script>
       const ARROW_LEFT = `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6H4M6 4L4 6l2 2"/></svg>`;
       const ARROW_RIGHT = `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h4M6 4l2 2-2 2"/></svg>`;
+      const SHARE_ICON = `<svg viewBox="0 0 14 14"><circle cx="11" cy="2.5" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><line x1="4.4" y1="7.7" x2="9.7" y2="10.9"/><line x1="9.7" y1="3.1" x2="4.4" y2="6.3"/></svg>`;
 
       function escHTML(str) {
         return String(str)
@@ -430,9 +536,6 @@
           day: "numeric",
         });
       }
-      function resolveImageSrc(src) {
-        return src;
-      }
       function slugify(text) {
         return text
           .toLowerCase()
@@ -442,6 +545,41 @@
       }
       function normaliseTags(raw) {
         return !raw ? [] : Array.isArray(raw) ? raw : [raw];
+      }
+
+      /* ── Share ── */
+      let toastTimer = null;
+      function showToast(msg) {
+        const toast = document.getElementById("share-toast");
+        toast.childNodes[2].textContent = " " + msg; // update text node after icon
+        toast.classList.add("visible");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("visible"), 2400);
+      }
+
+      async function sharePost(url, title, text) {
+        if (navigator.share) {
+          try {
+            await navigator.share({ title, text, url });
+            return;
+          } catch (e) {
+            if (e.name === "AbortError") return; // user cancelled — do nothing
+          }
+        }
+        // Fallback: copy to clipboard
+        try {
+          await navigator.clipboard.writeText(url);
+          showToast("Link copied");
+        } catch {
+          // Final fallback: select a temp input
+          const inp = document.createElement("input");
+          inp.value = url;
+          document.body.appendChild(inp);
+          inp.select();
+          document.execCommand("copy");
+          document.body.removeChild(inp);
+          showToast("Link copied");
+        }
       }
 
       function renderTags(raw) {
@@ -466,12 +604,12 @@
               const id = slugify(item.heading);
               return `<h2 id="${id}" class="post-section-heading">${escHTML(item.heading)}</h2>`;
             }
+            // "image" here is an INLINE content image — distinct from "og-image" (share card)
             if (item.image) {
-              const src = resolveImageSrc(item.image);
               const caption = item.caption
                 ? `<figcaption class="post-image-caption">${escHTML(item.caption)}</figcaption>`
                 : "";
-              return `<figure class="post-image"><img src="${escHTML(src)}" alt="${escHTML(item.caption || "")}" loading="lazy" onerror="this.closest('figure').classList.add('img-error')">${caption}</figure>`;
+              return `<figure class="post-image"><img src="${escHTML(item.image)}" alt="${escHTML(item.caption || "")}" loading="lazy" onerror="this.closest('figure').classList.add('img-error')">${caption}</figure>`;
             }
             return "";
           })
@@ -599,14 +737,23 @@
           return;
         }
 
-        // ── SEO ──
         const canonicalUrl = `${window.SEO.BASE_URL}/post.html?slug=${encodeURIComponent(slug)}`;
         const tags = normaliseTags(post.tag);
+
+        // "og-image" is the share-card image; "image" fields inside post.content are inline images.
+        // If the post JSON has an "og-image" key, use it; otherwise fall back to the site default.
+        const ogImage = post["og-image"]
+          ? post["og-image"].startsWith("http")
+            ? post["og-image"]
+            : `${window.SEO.BASE_URL}/${post["og-image"]}`
+          : window.SEO.DEFAULT_IMAGE;
+
         window.SEO.setPage({
           title: post.title,
           description: post.description || post.excerpt,
           url: canonicalUrl,
           type: "article",
+          image: ogImage, // ← OG share-card image
           article: {
             publishedTime: post.date,
             modifiedTime: post.updated || post.date,
@@ -657,9 +804,16 @@
           <div class="post-header fade-in d2">
             ${renderTags(post.tag)}
             <h1 class="post-header-title" itemprop="headline">${escHTML(post.title)}</h1>
-            <p class="post-header-meta">
-              <time itemprop="datePublished" datetime="${post.date}">${formatDate(post.date)}</time>
-            </p>
+            <div class="post-header-meta-row">
+              <p class="post-header-meta">
+                <time itemprop="datePublished" datetime="${post.date}">${formatDate(post.date)}</time>
+              </p>
+              <button
+                class="share-btn"
+                aria-label="Share this post"
+                onclick="sharePost(${JSON.stringify(canonicalUrl)}, ${JSON.stringify(post.title)}, ${JSON.stringify(post.excerpt || "")})"
+              >${SHARE_ICON} Share</button>
+            </div>
           </div>
           <hr class="post-header-divider">
           <div class="post-body fade-in d3" itemprop="articleBody">

@@ -5,6 +5,9 @@
  *   Call window.SEO.setPage({ title, description, url, type, image, article })
  *   from each page's init() after you have the relevant data.
  *
+ * The `image` parameter here is the OG share card image (og:image).
+ * It is SEPARATE from any inline "image" entries inside a post's content array.
+ *
  * This module injects / updates:
  *   - <title>
  *   - meta description
@@ -19,7 +22,7 @@
 
     const SITE_NAME = "Abhishek Saikia";
     const BASE_URL = "https://kingrogkdr.github.io"; // ← change to your domain
-    const DEFAULT_IMAGE = `${BASE_URL}/images/og-default.png`; // create a 1200×630 OG image
+    const DEFAULT_IMAGE = `${BASE_URL}/images/og-default.png`; // 1200×630 fallback OG image
     const TWITTER_HANDLE = "@king_rog234"; // ← update or set to "" to omit
 
     /** Create or update a <meta> tag by property or name attribute */
@@ -65,7 +68,8 @@
      * @param {string} opts.description  - Meta description (≤160 chars recommended)
      * @param {string} [opts.url]        - Canonical URL (defaults to current href)
      * @param {string} [opts.type]       - og:type, e.g. "article" | "website" (default "website")
-     * @param {string} [opts.image]      - Absolute URL for OG image
+     * @param {string} [opts.image]      - Absolute URL for OG share-card image (NOT inline post images).
+     *                                     Falls back to DEFAULT_IMAGE if omitted.
      * @param {object} [opts.article]    - Article-specific data
      * @param {string} [opts.article.publishedTime]  - ISO date
      * @param {string} [opts.article.modifiedTime]   - ISO date
@@ -80,7 +84,7 @@
             description,
             url = window.location.href,
             type = "website",
-            image = DEFAULT_IMAGE,
+            image = DEFAULT_IMAGE,   // OG share-card image — separate from post content images
             article,
             breadcrumbs,
         } = opts;
@@ -116,7 +120,6 @@
             if (article.author)
                 setMeta("property", "article:author", article.author);
             if (article.tags) {
-                // Remove existing article:tag metas first
                 document
                     .querySelectorAll('meta[property="article:tag"]')
                     .forEach((el) => el.remove());
@@ -139,7 +142,6 @@
         // ── JSON-LD Structured Data ──
         const graphs = [];
 
-        // Always: WebSite
         graphs.push({
             "@type": "WebSite",
             "@id": `${BASE_URL}/#website`,
@@ -156,7 +158,6 @@
             },
         });
 
-        // Always: Person (author)
         graphs.push({
             "@type": "Person",
             "@id": `${BASE_URL}/#person`,
@@ -165,7 +166,6 @@
             sameAs: [],
         });
 
-        // Article pages
         if (type === "article" && article) {
             const articleGraph = {
                 "@type": "BlogPosting",
@@ -174,12 +174,8 @@
                 description: description,
                 url: url,
                 image: image,
-                author: {
-                    "@id": `${BASE_URL}/#person`,
-                },
-                publisher: {
-                    "@id": `${BASE_URL}/#website`,
-                },
+                author: { "@id": `${BASE_URL}/#person` },
+                publisher: { "@id": `${BASE_URL}/#website` },
             };
             if (article.publishedTime) articleGraph.datePublished = article.publishedTime;
             if (article.modifiedTime) articleGraph.dateModified = article.modifiedTime;
@@ -193,7 +189,6 @@
             graphs.push(articleGraph);
         }
 
-        // Breadcrumbs
         if (breadcrumbs && breadcrumbs.length > 0) {
             graphs.push({
                 "@type": "BreadcrumbList",
@@ -212,5 +207,5 @@
         });
     }
 
-    window.SEO = { setPage, BASE_URL, SITE_NAME };
+    window.SEO = { setPage, BASE_URL, SITE_NAME, DEFAULT_IMAGE };
 })();
