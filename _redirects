@@ -1,0 +1,7 @@
+# Block any non-GET attempts to JSON data files (Netlify/Cloudflare Pages only serve GET anyway,
+# but this makes intent explicit and stops accidental PUT/POST if you ever add a function layer)
+/blogs/*  /404.html  405!
+/cv.json  /404.html  405!
+
+# Friendly 404
+/*  /404.html  404

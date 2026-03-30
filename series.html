@@ -3,7 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Series</title>
+    <title>Series — Abhishek Saikia</title>
+    <meta name="description" content="" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
     <link
       rel="apple-touch-icon"
       sizes="180x180"
@@ -57,7 +60,6 @@
       .menu-toggle:hover {
         border-color: var(--muted);
       }
-
       @media (max-width: 640px) {
         .menu-toggle {
           display: flex;
@@ -99,8 +101,6 @@
           padding: 96px 16px 64px;
         }
       }
-
-      /* ── SERIES HEADER ── */
       .series-header {
         margin-bottom: 48px;
       }
@@ -143,23 +143,17 @@
         max-width: 580px;
         margin: 0;
       }
-
-      /* ── DIVIDER ── */
       .series-divider {
         border: none;
         border-top: 1px solid var(--faint);
         margin: 0 0 36px;
       }
-
-      /* ── POSTS LIST ── */
       .series-posts {
         display: flex;
         flex-direction: column;
         gap: 0;
         position: relative;
       }
-
-      /* vertical timeline line */
       .series-posts::before {
         content: "";
         position: absolute;
@@ -169,7 +163,6 @@
         width: 1px;
         background: var(--faint);
       }
-
       .series-post-item {
         display: flex;
         align-items: flex-start;
@@ -186,7 +179,6 @@
       .series-post-item + .series-post-item {
         border-top: 1px solid var(--faint);
       }
-
       .series-part-marker {
         flex-shrink: 0;
         width: 36px;
@@ -213,7 +205,6 @@
         color: var(--accent);
         background: color-mix(in srgb, var(--accent) 8%, var(--bg));
       }
-
       .series-post-body {
         flex: 1;
         padding-top: 5px;
@@ -245,8 +236,6 @@
         color: var(--muted);
         opacity: 0.7;
       }
-
-      /* coming soon state */
       .series-post-item.coming-soon {
         pointer-events: none;
         opacity: 0.4;
@@ -264,7 +253,6 @@
         margin-left: 8px;
         vertical-align: middle;
       }
-
       .series-back {
         display: inline-block;
         margin-top: 48px;
@@ -308,19 +296,28 @@
       </div>
     </nav>
 
-    <div class="page">
-      <a href="writing.html" class="back-link fade-in d1">← All writing</a>
-
-      <div id="series-container">
-        <p class="loading">Loading…</p>
+    <main>
+      <div class="page">
+        <a href="writing.html" class="back-link fade-in d1">← All writing</a>
+        <div id="series-container">
+          <p class="loading">Loading…</p>
+        </div>
       </div>
-    </div>
+    </main>
 
     <footer>
       <p id="footer-name">© 2026 Abhishek Saikia · Made with care</p>
     </footer>
 
+    <script src="seo.js"></script>
     <script>
+      function escHTML(str) {
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
       function formatDate(iso) {
         return new Date(iso).toLocaleDateString("en", {
           year: "numeric",
@@ -352,17 +349,26 @@
           return;
         }
 
-        document.title = `${series.title} — Series — ${cv.name}`;
+        const canonicalUrl = `${window.SEO.BASE_URL}/series.html?id=${encodeURIComponent(id)}`;
+        window.SEO.setPage({
+          title: `${series.title} — Series`,
+          description: series.description,
+          url: canonicalUrl,
+          type: "website",
+          breadcrumbs: [
+            { name: "Home", url: window.SEO.BASE_URL + "/" },
+            { name: "Writing", url: window.SEO.BASE_URL + "/writing.html" },
+            { name: series.title, url: canonicalUrl },
+          ],
+        });
 
-        // Fetch all posts in the series (gracefully handle missing ones)
         const posts = await Promise.all(
           series.posts.map((slug) =>
-            fetch(`blogs/${slug}.json`)
+            fetch(`blogs/${encodeURIComponent(slug)}.json`)
               .then((r) => (r.ok ? r.json() : null))
               .catch(() => null),
           ),
         );
-
         const totalParts = series.posts.length;
         const loadedCount = posts.filter(Boolean).length;
 
@@ -370,43 +376,38 @@
           .map((post, i) => {
             const partNum = i + 1;
             if (!post) {
-              return `
-              <div class="series-post-item coming-soon">
-                <div class="series-part-marker">${partNum}</div>
-                <div class="series-post-body">
-                  <p class="series-post-part-label">Part ${partNum} of ${totalParts}</p>
-                  <h3 class="series-post-title">Coming soon <span class="coming-soon-chip">Soon</span></h3>
-                </div>
-              </div>`;
-            }
-            return `
-            <a href="post.html?slug=${post.slug}" class="series-post-item">
+              return `<div class="series-post-item coming-soon">
               <div class="series-part-marker">${partNum}</div>
               <div class="series-post-body">
                 <p class="series-post-part-label">Part ${partNum} of ${totalParts}</p>
-                <h3 class="series-post-title">${post.title}</h3>
-                <p class="series-post-excerpt">${post.excerpt}</p>
-                <span class="series-post-date">${formatDate(post.date)}</span>
+                <h2 class="series-post-title">Coming soon <span class="coming-soon-chip">Soon</span></h2>
               </div>
-            </a>`;
+            </div>`;
+            }
+            return `<a href="post.html?slug=${encodeURIComponent(post.slug)}" class="series-post-item">
+            <div class="series-part-marker">${partNum}</div>
+            <div class="series-post-body">
+              <p class="series-post-part-label">Part ${partNum} of ${totalParts}</p>
+              <h2 class="series-post-title">${escHTML(post.title)}</h2>
+              <p class="series-post-excerpt">${escHTML(post.excerpt)}</p>
+              <time class="series-post-date" datetime="${post.date}">${formatDate(post.date)}</time>
+            </div>
+          </a>`;
           })
           .join("");
 
         document.getElementById("series-container").innerHTML = `
-          <div class="series-header fade-in d2">
+          <div class="series-header fade-in d2" itemscope itemtype="https://schema.org/CreativeWorkSeries">
             <div class="series-meta-row">
               <span class="series-eyebrow">Series</span>
               <span class="series-count-badge">${loadedCount} of ${totalParts} published</span>
             </div>
-            <h1 class="series-title-h1">${series.title}</h1>
-            <p class="series-description">${series.description}</p>
+            <h1 class="series-title-h1" itemprop="name">${escHTML(series.title)}</h1>
+            <p class="series-description" itemprop="description">${escHTML(series.description)}</p>
           </div>
           <hr class="series-divider fade-in d3">
-          <div class="series-posts fade-in d3">
-            ${postsHTML}
-          </div>
-          <a href="writing.html" class="series-back fade-in d4">← Back to all writing</a>
-        `;
+          <div class="series-posts fade-in d3" role="list">${postsHTML}</div>
+          <a href="writing.html" class="series-back fade-in d4">← Back to all writing</a>`;
       }
 
       init();
