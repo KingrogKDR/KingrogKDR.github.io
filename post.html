@@ -833,8 +833,7 @@
 
         if (shareBtn) {
           shareBtn.addEventListener("click", () => {
-            const shareUrl = `${window.SEO.BASE_URL}/share/${slug}.html`;
-            sharePost(shareUrl, post.title, post.excerpt || "");
+            sharePost(canonicalUrl, post.title, post.excerpt || "");
           });
         }
 
