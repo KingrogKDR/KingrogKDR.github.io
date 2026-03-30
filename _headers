@@ -22,6 +22,8 @@
 
 /images/*
   Cache-Control: public, max-age=31536000, immutable
+/blogs/
+  X-Robots-Tag: noindex
 
 # JSON data files — short cache so updates propagate quickly
 /blogs/*.json
