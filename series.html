@@ -183,6 +183,15 @@
       }
 
       /* ── Share toast ── */
+      [data-theme="dark"] .share-toast {
+        background: #ffffff;
+        color: #000000;
+      }
+
+      [data-theme="light"] .share-toast {
+        background: #000000;
+        color: #ffffff;
+      }
       .share-toast {
         position: fixed;
         bottom: 28px;
@@ -537,12 +546,19 @@
             <button
               class="share-btn"
               aria-label="Share this series"
-              onclick="shareItem(${JSON.stringify(canonicalUrl)}, ${JSON.stringify(series.title)}, ${JSON.stringify(series.description || "")})"
             >${SHARE_ICON} Share series</button>
           </div>
           <hr class="series-divider fade-in d3">
           <div class="series-posts fade-in d3" role="list">${postsHTML}</div>
           <a href="writing.html" class="series-back fade-in d4">← Back to all writing</a>`;
+
+        const shareBtn = document.querySelector(".share-btn");
+
+        if (shareBtn) {
+          shareBtn.addEventListener("click", () => {
+            shareItem(canonicalUrl, series.title, series.description || "");
+          });
+        }
       }
 
       init();

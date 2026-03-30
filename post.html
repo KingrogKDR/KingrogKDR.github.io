@@ -264,6 +264,17 @@
       }
 
       /* ── Share toast ── */
+
+      [data-theme="dark"] .share-toast {
+        background: #ffffff;
+        color: #000000;
+      }
+
+      [data-theme="light"] .share-toast {
+        background: #000000;
+        color: #ffffff;
+      }
+
       .share-toast {
         position: fixed;
         bottom: 28px;
@@ -811,7 +822,6 @@
               <button
                 class="share-btn"
                 aria-label="Share this post"
-                onclick="sharePost(${JSON.stringify(canonicalUrl)}, ${JSON.stringify(post.title)}, ${JSON.stringify(post.excerpt || "")})"
               >${SHARE_ICON} Share</button>
             </div>
           </div>
@@ -819,6 +829,13 @@
           <div class="post-body fade-in d3" itemprop="articleBody">
             ${renderContent(post.content)}
           </div>`;
+        const shareBtn = document.querySelector(".share-btn");
+
+        if (shareBtn) {
+          shareBtn.addEventListener("click", () => {
+            sharePost(canonicalUrl, post.title, post.excerpt || "");
+          });
+        }
 
         buildTOC();
       }
