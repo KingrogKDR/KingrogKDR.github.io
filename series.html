@@ -556,7 +556,8 @@
 
         if (shareBtn) {
           shareBtn.addEventListener("click", () => {
-            shareItem(canonicalUrl, series.title, series.description || "");
+            const shareUrl = `${window.SEO.BASE_URL}/share/series-${series.id}.html`;
+            shareItem(shareUrl, series.title, series.description || "");
           });
         }
       }
