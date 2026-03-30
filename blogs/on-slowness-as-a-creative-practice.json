@@ -1,8 +1,9 @@
 {
   "title": "On slowness as a creative practice",
   "slug": "on-slowness-as-a-creative-practice",
+  "pinned": true,
   "date": "2026-03-30",
-  "tag": "Essay",
+  "tag": ["Essay", "Thoughts", "Creativity"],
   "excerpt": "What happens when you deliberately resist the pressure to ship, publish, and post — and what you find waiting in the silence.",
   "content": [
     { "heading": "The anxiety of constant output" },

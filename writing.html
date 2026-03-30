@@ -4,13 +4,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Writing</title>
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="images/favicon/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="images/favicon/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="images/favicon/favicon-16x16.png"
+    />
+    <link rel="manifest" href="images/favicon/site.webmanifest" />
+    <link rel="icon" href="images/favicon/favicon.ico" />
     <script>
       (function () {
         const saved = localStorage.getItem("theme");
         const prefersDark = window.matchMedia(
           "(prefers-color-scheme: dark)",
         ).matches;
-
         if (saved === "dark" || (!saved && prefersDark)) {
           document.documentElement.setAttribute("data-theme", "dark");
         }
@@ -81,6 +99,233 @@
           padding: 96px 16px 64px;
         }
       }
+
+      /* ── SEARCH ROW ── */
+      .search-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin: 32px 0 0;
+        flex-wrap: wrap;
+      }
+
+      .search-wrap {
+        position: relative;
+        flex: 1 1 260px;
+        max-width: 420px;
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        font-size: 14px;
+        pointer-events: none;
+        line-height: 1;
+      }
+
+      .search-input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 9px 36px 9px 38px;
+        border: 1px solid var(--faint);
+        border-radius: 6px;
+        background: transparent;
+        color: var(--ink);
+        font-size: 13.5px;
+        font-family: inherit;
+        outline: none;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+        height: 38px;
+      }
+      .search-input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+      }
+      .search-input::placeholder {
+        color: var(--muted);
+      }
+
+      .search-clear {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--muted);
+        font-size: 15px;
+        cursor: pointer;
+        padding: 4px;
+        line-height: 1;
+        display: none;
+        transition: color 0.15s;
+      }
+      .search-clear:hover {
+        color: var(--ink);
+      }
+      .search-clear.visible {
+        display: block;
+      }
+
+      /* ── FILTER CONTROLS ── */
+      .filter-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .sort-select {
+        height: 38px;
+        padding: 0 28px 0 11px;
+        border: 1px solid var(--faint);
+        border-radius: 6px;
+        background: transparent;
+        color: var(--ink);
+        font-size: 13px;
+        font-family: inherit;
+        cursor: pointer;
+        outline: none;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        transition: border-color 0.2s;
+      }
+      .sort-select:focus {
+        border-color: var(--accent);
+      }
+      .sort-select:hover {
+        border-color: var(--muted);
+      }
+
+      .filter-sep {
+        width: 1px;
+        height: 22px;
+        background: var(--faint);
+        flex-shrink: 0;
+      }
+
+      .tag-filter-list {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .tag-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        height: 30px;
+        padding: 0 12px;
+        border-radius: 99px;
+        border: 1px solid var(--faint);
+        background: transparent;
+        color: var(--muted);
+        font-size: 11.5px;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        cursor: pointer;
+        font-family: inherit;
+        transition:
+          border-color 0.18s,
+          color 0.18s,
+          background 0.18s;
+        white-space: nowrap;
+      }
+      .tag-pill:hover {
+        border-color: var(--muted);
+        color: var(--ink);
+      }
+      .tag-pill.active {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 10%, transparent);
+      }
+
+      /* Pinned pill override */
+      .tag-pill[data-tag="pinned"].active {
+        border-color: var(--ink);
+        color: var(--ink);
+        background: color-mix(in srgb, var(--ink) 8%, transparent);
+      }
+
+      /* ── HINT ── */
+      .search-hint {
+        margin: 10px 0 0;
+        font-size: 11.5px;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+      .search-hint code {
+        font-family: "SF Mono", "Fira Code", ui-monospace, monospace;
+        font-size: 10.5px;
+        background: color-mix(in srgb, var(--ink) 7%, transparent);
+        padding: 1px 5px;
+        border-radius: 3px;
+        color: var(--accent);
+      }
+
+      /* ── STATUS ── */
+      .search-status {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 24px 0 0;
+        min-height: 20px;
+      }
+
+      .search-highlight {
+        background: color-mix(in srgb, var(--accent) 18%, transparent);
+        border-radius: 2px;
+        padding: 0 1px;
+      }
+
+      /* Multi-tag chips inside post list */
+      .post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-bottom: 4px;
+      }
+      .post-tag-chip {
+        font-size: 10.5px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 10%, transparent);
+        padding: 2px 8px;
+        border-radius: 99px;
+      }
+
+      /* Pin badge next to post title */
+      .pin-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--muted);
+        opacity: 0.5;
+        margin-left: 8px;
+        vertical-align: middle;
+        line-height: 1;
+        pointer-events: none;
+      }
+      .pin-badge svg {
+        width: 9px;
+        height: 9px;
+        flex-shrink: 0;
+      }
     </style>
   </head>
   <body>
@@ -117,6 +362,58 @@
       <p class="section-label fade-in d1">Essays & Notes</p>
       <h1 class="section-title fade-in d2">Writing</h1>
 
+      <div class="fade-in d3">
+        <div class="search-row">
+          <div class="search-wrap">
+            <span class="search-icon">⌕</span>
+            <input
+              type="search"
+              id="search-input"
+              class="search-input"
+              placeholder="Search posts…"
+              autocomplete="off"
+              spellcheck="false"
+              aria-label="Search posts"
+            />
+            <button
+              class="search-clear"
+              id="search-clear"
+              aria-label="Clear search"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div class="filter-controls">
+            <select
+              class="sort-select"
+              id="sort-select"
+              aria-label="Sort order"
+            >
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="az">A → Z</option>
+              <option value="za">Z → A</option>
+            </select>
+
+            <div class="filter-sep"></div>
+
+            <div class="tag-filter-list" id="tag-filter-list"></div>
+          </div>
+        </div>
+
+        <p class="search-hint">
+          Type to search titles &nbsp;·&nbsp;
+          <code>tag:&lt;topic&gt;</code> filter by tag &nbsp;·&nbsp;
+          <code>tag:pinned</code> show pinned &nbsp;·&nbsp;
+          <code>in:&lt;word&gt;</code> search slug &nbsp;·&nbsp;
+          <code>"exact phrase"</code> phrase match &nbsp;·&nbsp; press
+          <code>/</code> to focus
+        </p>
+      </div>
+
+      <p class="search-status" id="search-status"></p>
+
       <div class="post-list fade-in d3" id="post-list">
         <p class="loading">Loading…</p>
       </div>
@@ -127,8 +424,32 @@
     </footer>
 
     <script>
-      // Add slugs here whenever you create a new blog post
-      const BLOGS = ["on-slowness-as-a-creative-practice"];
+      const BLOGS = [
+        "on-slowness-as-a-creative-practice",
+        // "attention-is-infrastructure",
+      ];
+
+      let ALL_POSTS = [];
+      let activeTagFilter = null;
+
+      const PIN_SVG = `<svg viewBox="0 0 10 10" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 1L9 3.5 6 6.5 5 9 4 6.5 1 3.5 3.5 1z"/></svg>`;
+
+      function normaliseTags(raw) {
+        if (!raw) return [];
+        return Array.isArray(raw) ? raw : [raw];
+      }
+
+      // Returns the effective tag list for a post, injecting "pinned" if flagged
+      function effectiveTags(post) {
+        const tags = normaliseTags(post.tag);
+        if (
+          post.pinned &&
+          !tags.map((t) => t.toLowerCase()).includes("pinned")
+        ) {
+          return [...tags, "__pinned__"]; // sentinel kept separate from display tags
+        }
+        return tags;
+      }
 
       function formatDate(iso) {
         const d = new Date(iso);
@@ -138,33 +459,244 @@
         };
       }
 
+      function escapeRe(s) {
+        return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      }
+
+      function highlight(text, term) {
+        if (!term) return text;
+        const re = new RegExp(`(${escapeRe(term)})`, "gi");
+        return text.replace(re, '<mark class="search-highlight">$1</mark>');
+      }
+
+      function parseQuery(raw) {
+        const q = raw.trim();
+        const result = { tag: null, slug: null, phrase: null, text: "" };
+        let remaining = q;
+
+        const tagMatch = remaining.match(/\btag:(\S+)/i);
+        if (tagMatch) {
+          result.tag = tagMatch[1].toLowerCase();
+          remaining = remaining.replace(tagMatch[0], "").trim();
+        }
+
+        const inMatch = remaining.match(/\bin:(\S+)/i);
+        if (inMatch) {
+          result.slug = inMatch[1].toLowerCase();
+          remaining = remaining.replace(inMatch[0], "").trim();
+        }
+
+        const phraseMatch = remaining.match(/"([^"]+)"/);
+        if (phraseMatch) {
+          result.phrase = phraseMatch[1].toLowerCase();
+          remaining = remaining.replace(phraseMatch[0], "").trim();
+        }
+
+        result.text = remaining.toLowerCase();
+        return result;
+      }
+
+      function matchPost(post, filters, pillTag) {
+        const tags = normaliseTags(post.tag).map((t) => t.toLowerCase());
+        const title = post.title.toLowerCase();
+        const slug = (post.slug || "").toLowerCase();
+        const isPinned = !!post.pinned;
+
+        // Pill tag filter — "pinned" pill matches pinned: true
+        if (pillTag) {
+          if (pillTag === "pinned") {
+            if (!isPinned) return false;
+          } else {
+            if (!tags.includes(pillTag)) return false;
+          }
+        }
+
+        // Search query tag filter — tag:pinned matches pinned: true
+        if (filters.tag) {
+          if (filters.tag === "pinned") {
+            if (!isPinned) return false;
+          } else {
+            if (!tags.some((t) => t.includes(filters.tag))) return false;
+          }
+        }
+
+        if (filters.slug && !slug.includes(filters.slug)) return false;
+        if (filters.phrase && !title.includes(filters.phrase)) return false;
+        if (filters.text && !title.includes(filters.text)) return false;
+        return true;
+      }
+
+      function sortPosts(posts, order) {
+        return [...posts].sort((a, b) => {
+          // Pinned posts always float to top when no explicit sort is fighting them
+          if (order === "newest") {
+            // pinned first, then by date desc
+            if (a.pinned && !b.pinned) return -1;
+            if (!a.pinned && b.pinned) return 1;
+            return new Date(b.date) - new Date(a.date);
+          }
+          if (order === "oldest") return new Date(a.date) - new Date(b.date);
+          if (order === "az") return a.title.localeCompare(b.title);
+          if (order === "za") return b.title.localeCompare(a.title);
+          return 0;
+        });
+      }
+
+      function renderPosts(posts, filters, rawQ) {
+        const list = document.getElementById("post-list");
+        const status = document.getElementById("search-status");
+
+        if (posts.length === 0) {
+          list.innerHTML = `<p style="color:var(--muted);font-size:14px;margin-top:24px;">No posts match your search.</p>`;
+          status.textContent = "";
+          return;
+        }
+
+        const hlTerm = filters ? filters.phrase || filters.text || "" : "";
+
+        list.innerHTML = posts
+          .map((p) => {
+            const { mon, year } = formatDate(p.date);
+            const titleHl = highlight(p.title, hlTerm);
+            const tags = normaliseTags(p.tag);
+            const tagChips = tags
+              .map((t) => `<span class="post-tag-chip">${t}</span>`)
+              .join("");
+            const pinBadge = p.pinned
+              ? `<span class="pin-badge" aria-label="Pinned">${PIN_SVG} pinned</span>`
+              : "";
+            return `
+            <a href="post.html?slug=${p.slug}" class="post-item">
+              <div class="post-date"><span>${mon}</span><span>${year}</span></div>
+              <div>
+                <div class="post-tags">${tagChips}</div>
+                <h3 class="post-title">${titleHl}${pinBadge}</h3>
+                <p class="post-excerpt">${p.excerpt}</p>
+              </div>
+            </a>`;
+          })
+          .join("");
+
+        if (rawQ && rawQ.trim()) {
+          const noun = posts.length === 1 ? "post" : "posts";
+          status.textContent = `${posts.length} ${noun} found`;
+        } else if (activeTagFilter) {
+          const noun = posts.length === 1 ? "post" : "posts";
+          const label =
+            activeTagFilter === "pinned"
+              ? "pinned"
+              : `tagged "${activeTagFilter}"`;
+          status.textContent = `${posts.length} ${noun} ${label}`;
+        } else {
+          status.textContent = "";
+        }
+      }
+
+      function run() {
+        const q = document.getElementById("search-input").value;
+        const order = document.getElementById("sort-select").value;
+        const clearBtn = document.getElementById("search-clear");
+
+        clearBtn.classList.toggle("visible", q.length > 0);
+
+        const filters = q.trim() ? parseQuery(q) : {};
+        let results = ALL_POSTS.filter((p) =>
+          matchPost(p, filters, activeTagFilter),
+        );
+        results = sortPosts(results, order);
+        renderPosts(results, filters, q);
+      }
+
+      function buildTagPills() {
+        const seen = new Set();
+        let hasPinned = false;
+
+        ALL_POSTS.forEach((p) => {
+          normaliseTags(p.tag).forEach((t) => seen.add(t));
+          if (p.pinned) hasPinned = true;
+        });
+
+        const container = document.getElementById("tag-filter-list");
+
+        // Regular tag pills (sorted), then Pinned pill last if any posts are pinned
+        const tagPills = [...seen]
+          .sort()
+          .map(
+            (t) =>
+              `<button class="tag-pill" data-tag="${t.toLowerCase()}">${t}</button>`,
+          )
+          .join("");
+
+        const pinnedPill = hasPinned
+          ? `<button class="tag-pill" data-tag="pinned">${PIN_SVG} Pinned</button>`
+          : "";
+
+        container.innerHTML = tagPills + pinnedPill;
+
+        container.querySelectorAll(".tag-pill").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const tag = btn.dataset.tag;
+            if (activeTagFilter === tag) {
+              activeTagFilter = null;
+              btn.classList.remove("active");
+            } else {
+              activeTagFilter = tag;
+              container
+                .querySelectorAll(".tag-pill")
+                .forEach((b) => b.classList.remove("active"));
+              btn.classList.add("active");
+            }
+            run();
+          });
+        });
+      }
+
       async function init() {
         const cv = await fetch("cv.json").then((r) => r.json());
         document.getElementById("nav-name").textContent = cv.name;
         document.getElementById("footer-name").textContent =
           `© ${new Date().getFullYear()} ${cv.name} · Made with care`;
 
-        const posts = await Promise.all(
+        ALL_POSTS = await Promise.all(
           BLOGS.map((slug) =>
             fetch(`blogs/${slug}.json`).then((r) => r.json()),
           ),
         );
 
-        const list = document.getElementById("post-list");
-        list.innerHTML = posts
-          .map((p) => {
-            const { mon, year } = formatDate(p.date);
-            return `
-          <a href="post.html?slug=${p.slug}" class="post-item">
-            <div class="post-date"><span>${mon}</span><span>${year}</span></div>
-            <div>
-              <p class="post-tag">${p.tag}</p>
-              <h3 class="post-title">${p.title}</h3>
-              <p class="post-excerpt">${p.excerpt}</p>
-            </div>
-          </a>`;
-          })
-          .join("");
+        buildTagPills();
+        run();
+
+        const inp = document.getElementById("search-input");
+        const clearBtn = document.getElementById("search-clear");
+        const sortSel = document.getElementById("sort-select");
+
+        inp.addEventListener("input", run);
+        sortSel.addEventListener("change", run);
+
+        clearBtn.addEventListener("click", () => {
+          inp.value = "";
+          run();
+          inp.focus();
+        });
+
+        // Deeplink: ?tag=pinned or ?tag=essay from post.html chip clicks
+        const urlTag = new URLSearchParams(window.location.search).get("tag");
+        if (urlTag) {
+          activeTagFilter = urlTag.toLowerCase();
+          const pill = document
+            .getElementById("tag-filter-list")
+            .querySelector(`[data-tag="${activeTagFilter}"]`);
+          if (pill) pill.classList.add("active");
+          run();
+        }
+
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "/" && document.activeElement !== inp) {
+            e.preventDefault();
+            inp.focus();
+            inp.select();
+          }
+        });
       }
 
       init();

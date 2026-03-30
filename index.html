@@ -4,6 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Abhishek Saikia</title>
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="images/favicon/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="images/favicon/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="images/favicon/favicon-16x16.png"
+    />
+    <link rel="manifest" href="images/favicon/site.webmanifest" />
+    <link rel="icon" href="images/favicon/favicon.ico" />
     <script>
       (function () {
         const saved = localStorage.getItem("theme");
@@ -163,6 +182,50 @@
       .see-all:hover {
         color: var(--ink);
       }
+
+      /* Pin icon badge */
+      .pinned-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-left: 10px;
+        vertical-align: middle;
+        opacity: 0.6;
+      }
+      .pinned-badge svg {
+        width: 9px;
+        height: 9px;
+        flex-shrink: 0;
+      }
+
+      /* Multi-tag chips in post list */
+      .post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-bottom: 4px;
+      }
+      .post-tag-chip {
+        font-size: 10.5px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 10%, transparent);
+        padding: 2px 8px;
+        border-radius: 99px;
+      }
+
+      .no-pinned {
+        font-size: 14px;
+        color: var(--muted);
+        padding: 12px 0;
+      }
     </style>
   </head>
   <body>
@@ -210,10 +273,10 @@
 
       <div class="home-section">
         <div class="home-section-header">
-          <h2>Recent writing</h2>
+          <h2>Pinned writing</h2>
           <a href="writing.html" class="see-all">All essays →</a>
         </div>
-        <div class="post-list" id="recent-posts">
+        <div class="post-list" id="pinned-posts">
           <p class="loading">Loading…</p>
         </div>
       </div>
@@ -224,7 +287,16 @@
     </footer>
 
     <script>
-      const BLOGS = ["on-slowness-as-a-creative-practice"];
+      // Add every blog slug here — pinning is controlled by "pinned: true" in the JSON
+      const BLOGS = [
+        "on-slowness-as-a-creative-practice",
+        // "attention-is-infrastructure",
+      ];
+
+      function normaliseTags(raw) {
+        if (!raw) return [];
+        return Array.isArray(raw) ? raw : [raw];
+      }
 
       function formatDate(iso) {
         const d = new Date(iso);
@@ -246,21 +318,42 @@
           `© ${new Date().getFullYear()} ${cv.name} · Made with care`;
 
         const posts = await Promise.all(
-          BLOGS.slice(0, 3).map((slug) =>
+          BLOGS.map((slug) =>
             fetch(`blogs/${slug}.json`).then((r) => r.json()),
           ),
         );
 
-        const list = document.getElementById("recent-posts");
-        list.innerHTML = posts
+        // Only show posts with pinned: true
+        const pinned = posts.filter((p) => p.pinned === true);
+
+        const list = document.getElementById("pinned-posts");
+
+        if (pinned.length === 0) {
+          list.innerHTML = `<p class="no-pinned">No pinned posts yet. Add <code>"pinned": true</code> to a blog's JSON to feature it here.</p>`;
+          return;
+        }
+
+        list.innerHTML = pinned
           .map((p) => {
             const { mon, year } = formatDate(p.date);
+            const tags = normaliseTags(p.tag);
+            const tagChips = tags
+              .map((t) => `<span class="post-tag-chip">${t}</span>`)
+              .join("");
             return `
               <a href="post.html?slug=${p.slug}" class="post-item">
                 <div class="post-date"><span>${mon}</span><span>${year}</span></div>
                 <div>
-                  <p class="post-tag">${p.tag}</p>
-                  <h3 class="post-title">${p.title}</h3>
+                  <div class="post-tags">${tagChips}</div>
+                  <h3 class="post-title">
+                    ${p.title}
+                    <span class="pinned-badge" aria-label="Pinned">
+                      <svg viewBox="0 0 10 10" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6.5 1L9 3.5 6 6.5 5 9 4 6.5 1 3.5 3.5 1z"/>
+                      </svg>
+                      pinned
+                    </span>
+                  </h3>
                   <p class="post-excerpt">${p.excerpt}</p>
                 </div>
               </a>`;

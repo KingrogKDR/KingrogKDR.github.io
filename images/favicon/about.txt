@@ -1,0 +1,6 @@
+This favicon was generated using the following font:
+
+- Font Title: Bellota
+- Font Author: Abhishek
+- Font Source: https://fonts.gstatic.com/s/bellota/v16/MwQ2bhXl3_qEpiwAGJJRtGs-lbA.ttf
+- Font License: MIT)
