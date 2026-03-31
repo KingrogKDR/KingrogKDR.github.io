@@ -1,8 +1,9 @@
 [
   {
-    "id": "on-creative-practice",
-    "title": "On Creative Practice",
+    "id": "a-custom-kubernetes-scheduler",
+    "title": "A Custom Kubernetes Scheduler",
     "description": "A series of essays exploring what it means to make things slowly, intentionally, and on your own terms.",
-    "posts": []
+    "og-image": "images/og/kubernetes-scheduler.jpg",
+    "posts": ["why-a-custom-kube-scheduler"]
   }
 ]

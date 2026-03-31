@@ -4,30 +4,31 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Attention is infrastructure — Abhishek Saikia</title>
-  <meta name="description" content="A case for treating your focus like a shared resource — finite, essential, and worth protecting with the same seriousness we give to roads and water." />
-  <link rel="canonical" href="https://kingrogkdr.github.io/post/attention-is-infrastructure.html" />
+  <title>The Need for a Custom Kubernetes Scheduler — Abhishek Saikia</title>
+  <meta name="description" content="A simple explanation of how Kubernetes decides where your Pods run, and why you might want to build your own scheduler." />
+  <link rel="canonical" href="https://kingrogkdr.github.io/post/why-a-custom-kube-scheduler.html" />
 
   <!-- Open Graph — baked in at build time so crawlers read them without JS -->
   <meta property="og:site_name"    content="Abhishek Saikia" />
   <meta property="og:type"         content="article" />
-  <meta property="og:title"        content="Attention is infrastructure — Abhishek Saikia" />
-  <meta property="og:description"  content="A case for treating your focus like a shared resource — finite, essential, and worth protecting with the same seriousness we give to roads and water." />
-  <meta property="og:url"          content="https://kingrogkdr.github.io/post/attention-is-infrastructure.html" />
-  <meta property="og:image"        content="https://kingrogkdr.github.io/images/og/attention-is-infrastructure.jpg" />
+  <meta property="og:title"        content="The Need for a Custom Kubernetes Scheduler — Abhishek Saikia" />
+  <meta property="og:description"  content="A simple explanation of how Kubernetes decides where your Pods run, and why you might want to build your own scheduler." />
+  <meta property="og:url"          content="https://kingrogkdr.github.io/post/why-a-custom-kube-scheduler.html" />
+  <meta property="og:image"        content="https://kingrogkdr.github.io/images/og/kubernetes-scheduler.jpg" />
   <meta property="og:image:width"  content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="article:published_time" content="2026-03-30" />
-  <meta property="article:modified_time"  content="2026-03-30" />
+  <meta property="article:published_time" content="2026-03-31" />
+  <meta property="article:modified_time"  content="2026-03-31" />
   <meta property="article:author"         content="Abhishek Saikia" />
-  <meta property="article:tag" content="Essay" />
-  <meta property="article:tag" content="Thoughts" />
+  <meta property="article:tag" content="Kubernetes" />
+  <meta property="article:tag" content="Systems" />
+  <meta property="article:tag" content="Distributed Systems" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary_large_image" />
-  <meta name="twitter:title"       content="Attention is infrastructure — Abhishek Saikia" />
-  <meta name="twitter:description" content="A case for treating your focus like a shared resource — finite, essential, and worth protecting with the same seriousness we give to roads and water." />
-  <meta name="twitter:image"       content="https://kingrogkdr.github.io/images/og/attention-is-infrastructure.jpg" />
+  <meta name="twitter:title"       content="The Need for a Custom Kubernetes Scheduler — Abhishek Saikia" />
+  <meta name="twitter:description" content="A simple explanation of how Kubernetes decides where your Pods run, and why you might want to build your own scheduler." />
+  <meta name="twitter:image"       content="https://kingrogkdr.github.io/images/og/kubernetes-scheduler.jpg" />
   <meta name="twitter:site"        content="@king_rog234" />
 
   <!-- Favicons -->
@@ -147,11 +148,11 @@
       <a href="../writing.html" class="back-link">← All writing</a>
       <article itemscope itemtype="https://schema.org/BlogPosting">
         <div class="post-header fade-in d2">
-          <div class="post-header-tags"><a href="../writing.html?tag=essay" class="post-header-tag-chip" rel="tag">Essay</a><a href="../writing.html?tag=thoughts" class="post-header-tag-chip" rel="tag">Thoughts</a></div>
-          <h1 class="post-header-title" itemprop="headline">Attention is infrastructure</h1>
+          <div class="post-header-tags"><a href="../writing.html?tag=kubernetes" class="post-header-tag-chip" rel="tag">Kubernetes</a><a href="../writing.html?tag=systems" class="post-header-tag-chip" rel="tag">Systems</a><a href="../writing.html?tag=distributed%20systems" class="post-header-tag-chip" rel="tag">Distributed Systems</a></div>
+          <h1 class="post-header-title" itemprop="headline">The Need for a Custom Kubernetes Scheduler</h1>
           <div class="post-header-meta-row">
             <p class="post-header-meta">
-              <time itemprop="datePublished" datetime="2026-03-30">March 30, 2026</time>
+              <time itemprop="datePublished" datetime="2026-03-31">March 31, 2026</time>
             </p>
             <button class="share-btn" id="share-btn" aria-label="Share this post">
               <svg viewBox="0 0 14 14"><circle cx="11" cy="2.5" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><line x1="4.4" y1="7.7" x2="9.7" y2="10.9"/><line x1="9.7" y1="3.1" x2="4.4" y2="6.3"/></svg>
@@ -161,19 +162,39 @@
         </div>
         <hr class="post-header-divider">
         <div class="post-body fade-in d3" itemprop="articleBody">
-          <h2 id="what-infrastructure-means" class="post-section-heading">What infrastructure means</h2>
-<p>Infrastructure is the stuff that everything else depends on. Roads. Water. Electrical grids. We invest in it collectively because we understand, intuitively, that without it, nothing else works. Individual effort cannot substitute for it.</p>
-<p>I want to make the case that attention, whether individual or collective, is infrastructure. And that we are currently allowing it to be strip-mined, wasting it on tasks that do not matter. We have become cattle, consuming whatever the corporations are feeding us.</p>
+          <h2 id="what-a-kubernetes-scheduler-does" class="post-section-heading">What a Kubernetes Scheduler does</h2>
+<p>A Kubernetes Scheduler is a component that decides which machine (node) should run a new Pod.</p>
+<p>When a Pod is created, it starts in a waiting state. The scheduler looks at all available nodes and picks the best one where the Pod can run properly.</p>
+<h2 id="how-the-scheduler-makes-decisions" class="post-section-heading">How the scheduler makes decisions</h2>
+<p>To decide where a Pod should run, the scheduler uses two types of rules.</p>
+<p>Hard rules called Predicates (must follow): these cannot be broken. For example, the node must have enough CPU and memory.</p>
+<p>Soft rules called Priorities (good to have): these are preferences. For example, prefer nodes with GPUs or nodes that are less busy.</p>
+<h2 id="the-scheduling-process" class="post-section-heading">The scheduling process</h2>
+<p>The scheduler works in two simple steps.</p>
+<p>Filter: remove nodes that do not satisfy the hard rules.</p>
+<p>Sort: from the filtered nodes, pick the best one based on preferences or the soft rules.</p>
 <figure class="post-image">
-        <img src="https://plus.unsplash.com/premium_vector-1729157947545-0dc797e710c2?q=80&amp;w=861&amp;auto=format&amp;fit=crop&amp;ixlib=rb-4.1.0&amp;ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="A quiet place to think. Somewhere without a notification." loading="lazy">
-        <figcaption class="post-image-caption">A quiet place to think. Somewhere without a notification.</figcaption>
+        <img src="images/kubeScheduler/kubeScheduler.svg" alt="How a Kubernetes Scheduler works." loading="lazy">
+        <figcaption class="post-image-caption">How a Kubernetes Scheduler works.</figcaption>
       </figure>
-<h2 id="why-deep-thought-is-downstream-of-attention" class="post-section-heading">Why deep thought is downstream of attention</h2>
-<p>The argument is simple: most valuable things that humans make require sustained, uninterrupted thought. Good writing, good software, good research, good decisions - all of these are downstream of the ability to hold a problem in mind long enough to actually understand it.</p>
-<p>When attention is fragmented - by notifications, by feeds, by the low-grade anxiety of always being reachable - that capacity degrades. Not dramatically, not all at once, but steadily. Like a road that isn't maintained.</p>
-<h2 id="the-collective-consequence" class="post-section-heading">The collective consequence</h2>
-<p>The difference between infrastructure and private resources is that infrastructure has collective consequences. Your inattention is your problem. But a culture of inattention - a set of tools and norms that systematically fragments focus - is everyone's problem.</p>
-<p>I don't have know a solution for this. I have, instead, a reframe: think of your attention as something worth protecting not just for your own productivity, but because the quality of what gets built and thought and decided in the world depends on whether enough people can still think deeply.</p>
+<h2 id="simple-mental-model" class="post-section-heading">Simple mental model</h2>
+<p>All nodes</p>
+<p>↓ remove bad options</p>
+<p>Valid nodes</p>
+<p>↓ pick the best one</p>
+<p>Final node</p>
+<h2 id="why-we-might-need-a-custom-scheduler" class="post-section-heading">Why we might need a custom scheduler</h2>
+<p>The default scheduler in Kubernetes works well for most cases.</p>
+<p>But sometimes we need more control over how Pods are placed.</p>
+<p>For example, we may want machine learning jobs to run on GPU machines first.</p>
+<p>Or we may want our applications to run in specific regions.</p>
+<p>Or we may have special rules that are not supported by the default scheduler.</p>
+<p>In these cases, we can build our own scheduler.</p>
+<h2 id="how-a-custom-scheduler-fits-into-kubernetes" class="post-section-heading">How a custom scheduler fits into Kubernetes</h2>
+<p>A custom scheduler can run alongside the default scheduler.</p>
+<p>We can have multiple schedulers running at the same time.</p>
+<p>When creating a Pod, we can choose which scheduler to use by setting schedulerName.</p>
+<p>The scheduler itself runs like a normal Pod inside the cluster.</p>
         </div>
       </article>
     </div>
@@ -184,9 +205,9 @@
   </footer>
 
   <script>
-    const CANON_URL    = "https://kingrogkdr.github.io/post/attention-is-infrastructure.html";
-    const POST_TITLE   = "Attention is infrastructure";
-    const POST_EXCERPT = "A case for treating your focus like a shared resource — finite, essential, and worth protecting with the same seriousness we give to roads and water.";
+    const CANON_URL    = "https://kingrogkdr.github.io/post/why-a-custom-kube-scheduler.html";
+    const POST_TITLE   = "The Need for a Custom Kubernetes Scheduler";
+    const POST_EXCERPT = "A simple explanation of how Kubernetes decides where your Pods run, and why you might want to build your own scheduler.";
     let toastTimer = null;
     function showToast(msg) {
       const toast = document.getElementById("share-toast");
