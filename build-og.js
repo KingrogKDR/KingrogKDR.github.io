@@ -53,12 +53,31 @@ function normaliseTags(raw) {
 }
 
 // ── Render post content + collect headings for TOC ───────────────────────────
+function renderInline(text) {
+  return text
+    .replace(/\{color:([a-zA-Z#0-9,%. ]+)\|(.+?)\}/g, '<span style="color:$1">$2</span>')
+    .replace(/==(.+?)==/g, '<mark>$1</mark>')
+    .replace(/\+\+(.+?)\+\+/g, '<u>$1</u>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+}
+
 function renderContent(items) {
   if (!Array.isArray(items)) return { html: "", headings: [] };
   const headings = [];
   const html = items.map(item => {
     if (typeof item === "string") {
-      return `<p>${item.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")}</p>`;
+      if (item.startsWith("- ")) {
+        const bullets = item
+          .split("\n")
+          .filter(l => l.startsWith("- "))
+          .map(l => `<li>${renderInline(l.slice(2))}</li>`)
+          .join("");
+        return `<ul class="post-list">${bullets}</ul>`;
+      }
+      return `<p>${renderInline(item)}</p>`;
     }
     if (item.heading) {
       const id = slugify(item.heading);
@@ -72,7 +91,6 @@ function renderContent(items) {
       const caption = item.caption
         ? `<figcaption class="post-image-caption">${esc(item.caption)}</figcaption>`
         : "";
-
       return `<figure class="post-image">
         <img src="${esc(imgSrc)}" alt="${esc(item.caption || "")}" loading="lazy">
         ${caption}
@@ -313,6 +331,24 @@ ${articleTagMeta}
       gap: 12px; flex-wrap: wrap;
     }
     .post-header-meta { font-size: 13px; color: var(--muted); margin: 0; }
+
+    .post-body mark {
+        background: color-mix(in srgb, var(--accent) 22%, transparent);
+        color: inherit;
+        border-radius: 2px;
+        padding: 0 2px;
+    }
+    .post-body code {
+      font-family: "Fira Code", "Cascadia Code", monospace;
+      font-size: 0.85em;
+      background: color-mix(in srgb, var(--ink) 8%, transparent);
+      border-radius: 4px;
+      padding: 2px 6px;
+    }
+    .post-body u { text-decoration-color: var(--accent); }
+    .post-body a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+    .post-list { padding-left: 1.4em; margin: 16px 0; display: flex; flex-direction: column; gap: 6px; }
+    .post-list li { font-size: 15px; line-height: 1.7; color: var(--ink); }
 
     /* ── Share button ── */
     .share-btn {

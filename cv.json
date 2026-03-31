@@ -3,10 +3,10 @@
   "tagline": "Writer · Programmer · Thinker",
   "bio_short": "I write about technology, system internals and design, and the ideas shaping how we live. I also build tools, learn through experiments, and share my occasional thoughts.",
   "bio_long": [
-    "I'm Abhishek Saikia, a programmer and thinker based in India. I am a fresh graduate for the year 2026. I think carefully about technology, language, and how people make sense of the world.",
-    "I delve in backend and systems engineering, ranging from distributed systems and cloud to the internals of a computer. Currently comfortable in Go, Typescript, Python and a bit of Rust and C. I wish to dive deeper into their internals and learn more about them.",
+    "I'm <strong>Abhishek Saikia</strong>, a programmer and thinker based in <strong><u>India</u></strong>. I am a fresh graduate for the year 2026.",
+    "I work in <strong>backend and systems engineering</strong> — distributed systems, cloud, and computer internals. Comfortable in <strong>Go</strong>, <strong>TypeScript</strong>, <strong>Python</strong>, and a bit of <strong>Rust</strong> and <strong>C</strong>.",
     "I write here irregularly but with intention.",
-    "If something I've written resonated with you, I'd genuinely love to hear about it."
+    "If something I've written resonated with you, I'd genuinely love to hear about it. <a href='contact.html' style='text-decoration: none; border-bottom: 1px solid var(--ink);'><span style='color: var(--ink)'>Connect with me!</span></a>."
   ],
   "photo": "images/dp.jpg",
   "contact": {
