@@ -19,7 +19,7 @@
     {
       "name": "Craw",
       "icon": "/images/craw.png",
-      "description": "A Distributed Web Crawler from Scratch for developers ",
+      "description": "A Developer-focused Web Crawler from Scratch",
       "url": "https://github.com/KingrogKDR/Craw",
       "tags": ["Go", "Redis", "Minio (S3)"]
     },
