@@ -479,7 +479,7 @@
           return;
         }
 
-        const canonicalUrl = `${window.SEO.BASE_URL}/series.html?id=${encodeURIComponent(id)}`;
+        const canonicalUrl = `${window.SEO.BASE_URL}/series/${encodeURIComponent(id)}.html`;
 
         // "og-image" on the series object is the share-card image for the series page.
         const ogImage = series["og-image"]

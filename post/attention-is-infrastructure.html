@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Attention is infrastructure — Abhishek Saikia</title>
+  <meta name="description" content="A case for treating your focus like a shared resource — finite, essential, and worth protecting with the same seriousness we give to roads and water." />
+  <link rel="canonical" href="https://kingrogkdr.github.io/post/attention-is-infrastructure.html" />
+
+  <!-- Open Graph — baked in at build time so crawlers read them without JS -->
+  <meta property="og:site_name"    content="Abhishek Saikia" />
+  <meta property="og:type"         content="article" />
+  <meta property="og:title"        content="Attention is infrastructure — Abhishek Saikia" />
+  <meta property="og:description"  content="A case for treating your focus like a shared resource — finite, essential, and worth protecting with the same seriousness we give to roads and water." />
+  <meta property="og:url"          content="https://kingrogkdr.github.io/post/attention-is-infrastructure.html" />
+  <meta property="og:image"        content="https://kingrogkdr.github.io/images/og/attention-is-infrastructure.jpg" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="article:published_time" content="2026-03-30" />
+  <meta property="article:modified_time"  content="2026-03-30" />
+  <meta property="article:author"         content="Abhishek Saikia" />
+  <meta property="article:tag" content="Essay" />
+  <meta property="article:tag" content="Thoughts" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Attention is infrastructure — Abhishek Saikia" />
+  <meta name="twitter:description" content="A case for treating your focus like a shared resource — finite, essential, and worth protecting with the same seriousness we give to roads and water." />
+  <meta name="twitter:image"       content="https://kingrogkdr.github.io/images/og/attention-is-infrastructure.jpg" />
+  <meta name="twitter:site"        content="@king_rog234" />
+
+  <!-- Favicons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png" />
+  <link rel="manifest" href="../images/favicon/site.webmanifest" />
+  <link rel="icon" href="../images/favicon/favicon.ico" />
+
+  <!-- Theme flash prevention -->
+  <script>
+    (function () {
+      const saved = localStorage.getItem("theme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (saved === "dark" || (!saved && prefersDark)) {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    })();
+  </script>
+
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    .menu-toggle {
+      display: none; background: none; border: 1px solid var(--faint);
+      border-radius: 4px; color: var(--ink); font-size: 18px; line-height: 1;
+      width: 36px; height: 36px; cursor: pointer; align-items: center;
+      justify-content: center; flex-shrink: 0;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    @media (max-width: 640px) {
+      .menu-toggle { display: flex; }
+      .nav-inner { padding: 0 20px; gap: 12px; }
+      .nav-links {
+        display: none; flex-direction: column; gap: 0; position: absolute;
+        top: 56px; left: 0; right: 0; background: var(--nav-bg);
+        backdrop-filter: blur(10px); border-bottom: 1px solid var(--faint);
+        padding: 8px 0 16px; list-style: none;
+      }
+      .nav-links.open { display: flex; }
+      .nav-links li a { display: block; padding: 12px 20px; font-size: 15px; border-bottom: 1px solid var(--faint); }
+      .nav-links li:last-child a { border-bottom: none; }
+    }
+    .post-page { max-width: 720px; margin: 0 auto; padding: 100px 32px 100px; }
+    .post-section-heading {
+      font-family: "Lora", serif; font-size: 16px; font-weight: 400;
+      letter-spacing: -0.01em; color: var(--ink); opacity: 0.8;
+      margin: 52px 0 20px; scroll-margin-top: 80px; line-height: 1.3;
+    }
+    .post-header-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .post-header-tag-chip {
+      display: inline-flex; align-items: center; font-size: 11px; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 12px;
+      border-radius: 99px; border: 1px solid var(--faint); color: var(--muted);
+      background: transparent; line-height: 1;
+      transition: border-color 0.2s, color 0.2s; text-decoration: none;
+    }
+    .post-header-tag-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .post-header-meta-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap;
+    }
+    .post-header-meta { font-size: 13px; color: var(--muted); margin: 0; }
+    .share-btn {
+      display: inline-flex; align-items: center; gap: 6px; font-size: 12px;
+      font-weight: 500; letter-spacing: 0.04em; color: var(--muted);
+      background: transparent; border: 1px solid var(--faint);
+      border-radius: 99px; padding: 5px 13px; cursor: pointer; flex-shrink: 0;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+    .share-btn:hover {
+      border-color: var(--accent); color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 6%, transparent);
+    }
+    .share-btn svg { width: 13px; height: 13px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+    [data-theme="dark"] .share-toast { background: #ffffff; color: #000000; }
+    [data-theme="light"] .share-toast { background: #000000; color: #ffffff; }
+    .share-toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      font-size: 13px; font-weight: 450; letter-spacing: 0.01em;
+      padding: 10px 18px; border-radius: 99px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.18); opacity: 0;
+      pointer-events: none; transition: opacity 0.22s ease, transform 0.22s ease;
+      white-space: nowrap; z-index: 9999; display: flex; align-items: center; gap: 7px;
+    }
+    .share-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .share-toast svg { width: 14px; height: 14px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    @media (max-width: 540px) { .post-page { padding: 84px 18px 64px; } }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">Abhishek Saikia</a>
+      <div class="nav-right">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="../writing.html">Writing</a></li>
+          <li><a href="../projects.html">Projects</a></li>
+          <li><a href="../about.html">About</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+        </ul>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+          <span class="theme-toggle-thumb"></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="share-toast" id="share-toast" role="status" aria-live="polite">
+    <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4" /></svg>
+    Link copied
+  </div>
+
+  <main>
+    <div class="post-page">
+      <a href="../writing.html" class="back-link">← All writing</a>
+      <article itemscope itemtype="https://schema.org/BlogPosting">
+        <div class="post-header fade-in d2">
+          <div class="post-header-tags"><a href="../writing.html?tag=essay" class="post-header-tag-chip" rel="tag">Essay</a><a href="../writing.html?tag=thoughts" class="post-header-tag-chip" rel="tag">Thoughts</a></div>
+          <h1 class="post-header-title" itemprop="headline">Attention is infrastructure</h1>
+          <div class="post-header-meta-row">
+            <p class="post-header-meta">
+              <time itemprop="datePublished" datetime="2026-03-30">March 30, 2026</time>
+            </p>
+            <button class="share-btn" id="share-btn" aria-label="Share this post">
+              <svg viewBox="0 0 14 14"><circle cx="11" cy="2.5" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><line x1="4.4" y1="7.7" x2="9.7" y2="10.9"/><line x1="9.7" y1="3.1" x2="4.4" y2="6.3"/></svg>
+              Share
+            </button>
+          </div>
+        </div>
+        <hr class="post-header-divider">
+        <div class="post-body fade-in d3" itemprop="articleBody">
+          <h2 id="what-infrastructure-means" class="post-section-heading">What infrastructure means</h2>
+<p>Infrastructure is the stuff that everything else depends on. Roads. Water. Electrical grids. We invest in it collectively because we understand, intuitively, that without it, nothing else works. Individual effort cannot substitute for it.</p>
+<p>I want to make the case that attention, whether individual or collective, is infrastructure. And that we are currently allowing it to be strip-mined, wasting it on tasks that do not matter. We have become cattle, consuming whatever the corporations are feeding us.</p>
+<figure class="post-image">
+        <img src="https://plus.unsplash.com/premium_vector-1729157947545-0dc797e710c2?q=80&amp;w=861&amp;auto=format&amp;fit=crop&amp;ixlib=rb-4.1.0&amp;ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="A quiet place to think. Somewhere without a notification." loading="lazy">
+        <figcaption class="post-image-caption">A quiet place to think. Somewhere without a notification.</figcaption>
+      </figure>
+<h2 id="why-deep-thought-is-downstream-of-attention" class="post-section-heading">Why deep thought is downstream of attention</h2>
+<p>The argument is simple: most valuable things that humans make require sustained, uninterrupted thought. Good writing, good software, good research, good decisions - all of these are downstream of the ability to hold a problem in mind long enough to actually understand it.</p>
+<p>When attention is fragmented - by notifications, by feeds, by the low-grade anxiety of always being reachable - that capacity degrades. Not dramatically, not all at once, but steadily. Like a road that isn't maintained.</p>
+<h2 id="the-collective-consequence" class="post-section-heading">The collective consequence</h2>
+<p>The difference between infrastructure and private resources is that infrastructure has collective consequences. Your inattention is your problem. But a culture of inattention - a set of tools and norms that systematically fragments focus - is everyone's problem.</p>
+<h2 id="a-reframe-not-a-policy" class="post-section-heading">A reframe, not a policy</h2>
+<p>I don't have a policy proposal. I have, instead, a reframe: think of your attention as something worth protecting not just for your own productivity, but because the quality of what gets built and thought and decided in the world depends on whether enough people can still think deeply.</p>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 Abhishek Saikia · Made with care</p>
+  </footer>
+
+  <script>
+    const CANON_URL    = "https://kingrogkdr.github.io/post/attention-is-infrastructure.html";
+    const POST_TITLE   = "Attention is infrastructure";
+    const POST_EXCERPT = "A case for treating your focus like a shared resource — finite, essential, and worth protecting with the same seriousness we give to roads and water.";
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById("share-toast");
+      toast.childNodes[2].textContent = " " + msg;
+      toast.classList.add("visible");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("visible"), 2400);
+    }
+    document.getElementById("share-btn").addEventListener("click", async () => {
+      if (navigator.share) {
+        try { await navigator.share({ title: POST_TITLE, text: POST_EXCERPT, url: CANON_URL }); return; }
+        catch (e) { if (e.name === "AbortError") return; }
+      }
+      try {
+        await navigator.clipboard.writeText(CANON_URL);
+        showToast("Link copied");
+      } catch {
+        const inp = document.createElement("input");
+        inp.value = CANON_URL; document.body.appendChild(inp);
+        inp.select(); document.execCommand("copy");
+        document.body.removeChild(inp); showToast("Link copied");
+      }
+    });
+  </script>
+  <script src="../nav.js"></script>
+</body>
+</html>

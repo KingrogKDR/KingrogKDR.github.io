@@ -748,7 +748,7 @@
           return;
         }
 
-        const canonicalUrl = `${window.SEO.BASE_URL}/post.html?slug=${encodeURIComponent(slug)}`;
+        const canonicalUrl = `${window.SEO.BASE_URL}/post/${encodeURIComponent(slug)}.html`;
         const tags = normaliseTags(post.tag);
 
         // "og-image" is the share-card image; "image" fields inside post.content are inline images.
