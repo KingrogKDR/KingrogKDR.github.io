@@ -2,40 +2,20 @@
 /**
  * build-og.js — Generate static shareable HTML files for GitHub Pages
  *
- * THE PROBLEM:
- *   post.html?slug=... is a JS-rendered SPA. Social crawlers (Twitter, WhatsApp,
- *   Facebook, Slack) do NOT run JavaScript. They see an empty <head> and show
- *   no share card. GitHub Pages has no server-side rewrites, so we can't fix
- *   this with redirects.
+ * Generates:
+ *   post/{slug}.html    — full post with OG tags, TOC, series banner + prev/next
+ *   series/{id}.html    — series index with OG tags
  *
- * THE SOLUTION:
- *   Generate a real static HTML file for every post at a clean path:
- *     post/attention-is-infrastructure.html
- *   This file has ALL OG tags hardcoded in <head> so crawlers read them
- *   immediately, AND it contains the full post content so it works even
- *   without JavaScript. Human visitors get the same visual experience
- *   as post.html since it reuses your existing style.css.
- *
- * WHAT TO SHARE:
- *   Instead of: https://kingrogkdr.github.io/post.html?slug=attention-is-infrastructure
- *   Share this: https://kingrogkdr.github.io/post/attention-is-infrastructure.html
- *
- * USAGE:
- *   node build-og.js
- *
- * OUTPUT:
- *   post/{slug}.html      <- one file per blog post
- *   series/{id}.html      <- one file per series
- *
- * Commit the generated post/ and series/ folders to your repo.
- * Re-run whenever you add or edit a post/series.
+ * Run:  node build-og.js
+ * Then commit the generated post/ and series/ folders.
+ * Share URLs like: https://kingrogkdr.github.io/post/{slug}.html
  */
 
 const fs = require("fs");
 const path = require("path");
 
 // ── Config ────────────────────────────────────────────────────────────────────
-const BASE_URL = "https://kingrogkdr.github.io";  // <- your GitHub Pages domain
+const BASE_URL = "https://kingrogkdr.github.io";
 const SITE_NAME = "Abhishek Saikia";
 const TWITTER = "@king_rog234";
 const DEFAULT_OG = `${BASE_URL}/images/og-default.png`;
@@ -67,22 +47,32 @@ function slugify(text) {
   return text.toLowerCase().replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-");
 }
 
+function normaliseTags(raw) {
+  if (!raw) return [];
+  return Array.isArray(raw) ? raw : [raw];
+}
+
+// ── Render post content + collect headings for TOC ───────────────────────────
 function renderContent(items) {
-  if (!Array.isArray(items)) return "";
-  return items.map(item => {
+  if (!Array.isArray(items)) return { html: "", headings: [] };
+  const headings = [];
+  const html = items.map(item => {
     if (typeof item === "string") {
-      const withBold = item.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-      return `<p>${withBold}</p>`;
+      return `<p>${item.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")}</p>`;
     }
     if (item.heading) {
       const id = slugify(item.heading);
+      headings.push({ id, text: item.heading });
       return `<h2 id="${id}" class="post-section-heading">${esc(item.heading)}</h2>`;
     }
     if (item.image) {
+      const imgSrc = item.image.startsWith("http")
+        ? item.image
+        : `../${item.image.replace(/^\//, "")}`;
       const caption = item.caption
         ? `<figcaption class="post-image-caption">${esc(item.caption)}</figcaption>`
         : "";
-      const imgSrc = item.image.startsWith("http") ? item.image : `../${item.image.replace(/^\//, "")}`;
+
       return `<figure class="post-image">
         <img src="${esc(imgSrc)}" alt="${esc(item.caption || "")}" loading="lazy">
         ${caption}
@@ -90,22 +80,108 @@ function renderContent(items) {
     }
     return "";
   }).join("\n");
+  return { html, headings };
 }
 
-function normaliseTags(raw) {
-  if (!raw) return [];
-  return Array.isArray(raw) ? raw : [raw];
+// ── TOC sidebar ──────────────────────────────────────────────────────────────
+function buildTOC(headings) {
+  if (headings.length < 2) {
+    return `<aside class="toc" id="toc" aria-label="Table of contents">
+  <p class="toc-label">Contents</p>
+  <p class="toc-empty-msg">No sections in this post.</p>
+</aside>`;
+  }
+  const items = headings.map(h =>
+    `<li><a href="#${h.id}">${esc(h.text)}</a></li>`
+  ).join("\n    ");
+  return `<aside class="toc" id="toc" aria-label="Table of contents">
+  <p class="toc-label">Contents</p>
+  <ul class="toc-list" id="toc-list">
+    ${items}
+  </ul>
+</aside>`;
+}
+
+// ── Series banner ─────────────────────────────────────────────────────────────
+function buildSeriesBanner(series, seriesPosts, currentSlug) {
+  const totalDefined = series.posts.length;
+  const currentIdx = series.posts.indexOf(currentSlug);
+  const partNum = currentIdx + 1;
+
+  const partsHTML = series.posts.map((slug, i) => {
+    const post = seriesPosts[i];
+    const isCurrent = slug === currentSlug;
+    const label = `<span class="part-num-label">${i + 1}.</span> ${post ? esc(post.title) : "Coming soon"}`;
+    if (isCurrent)
+      return `<span class="series-banner-part-link current">${label}</span>`;
+    if (!post)
+      return `<span class="series-banner-part-link unavailable">${label}</span>`;
+    return `<a href="../post/${esc(slug)}.html" class="series-banner-part-link">${label}</a>`;
+  }).join("");
+
+  return `<div class="series-banner fade-in d1">
+  <div class="series-banner-top">
+    <div class="series-banner-left">
+      <span class="series-chip">Series</span>
+      <a href="../series/${esc(series.id)}.html" class="series-banner-name">${esc(series.title)}</a>
+    </div>
+    <span class="series-banner-part">Part ${partNum} of ${totalDefined}</span>
+  </div>
+  <div class="series-banner-parts">${partsHTML}</div>
+</div>`;
+}
+
+// ── Series prev/next nav strip ────────────────────────────────────────────────
+const ARROW_LEFT = `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6H4M6 4L4 6l2 2"/></svg>`;
+const ARROW_RIGHT = `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h4M6 4l2 2-2 2"/></svg>`;
+
+function buildSeriesNavStrip(series, seriesPosts, currentSlug) {
+  const currentIdx = series.posts.indexOf(currentSlug);
+  const totalDefined = series.posts.length;
+  const prevSlug = currentIdx > 0 ? series.posts[currentIdx - 1] : null;
+  const nextSlug = currentIdx < totalDefined - 1 ? series.posts[currentIdx + 1] : null;
+  const prevPost = prevSlug ? seriesPosts[series.posts.indexOf(prevSlug)] : null;
+  const nextPost = nextSlug ? seriesPosts[series.posts.indexOf(nextSlug)] : null;
+
+  const prevLink = prevPost
+    ? `<a href="../post/${esc(prevSlug)}.html" class="series-nav-link" title="${esc(prevPost.title)}">${ARROW_LEFT}<span class="series-nav-link-label">${esc(prevPost.title)}</span></a>`
+    : `<span class="series-nav-link faded">${ARROW_LEFT}<span class="series-nav-link-label">First part</span></span>`;
+
+  const nextLink = nextPost
+    ? `<a href="../post/${esc(nextSlug)}.html" class="series-nav-link" style="justify-content:flex-end;text-align:right" title="${esc(nextPost.title)}"><span class="series-nav-link-label">${esc(nextPost.title)}</span>${ARROW_RIGHT}</a>`
+    : nextSlug
+      ? `<span class="series-nav-link faded" style="justify-content:flex-end"><span class="series-nav-link-label">Coming soon</span>${ARROW_RIGHT}</span>`
+      : `<a href="../series/${esc(series.id)}.html" class="series-nav-link" style="justify-content:flex-end;text-align:right"><span class="series-nav-link-label">View series</span>${ARROW_RIGHT}</a>`;
+
+  return `<div class="series-nav-strip">
+  ${prevLink}
+  <span class="series-nav-center">${currentIdx + 1} / ${totalDefined}</span>
+  ${nextLink}
+</div>`;
 }
 
 // ── Post page HTML ────────────────────────────────────────────────────────────
-function buildPostHTML(post, cv) {
+function buildPostHTML(post, cv, seriesData) {
   const slug = post.slug;
   const tags = normaliseTags(post.tag);
-  const image = resolveImage(post["og-image"]);
+  const parentSeries = seriesData.find(s => s.posts.includes(slug));
+  const image = resolveImage(post["og-image"] ?? parentSeries?.["og-image"]);
   const canonUrl = `${BASE_URL}/post/${slug}.html`;
   const description = post.description ?? post.excerpt ?? "";
   const fullTitle = `${post.title} — ${SITE_NAME}`;
   const authorName = cv.name ?? SITE_NAME;
+
+  // Load sibling posts if this post belongs to a series
+  let seriesBannerHTML = "";
+  let seriesNavHTML = "";
+  if (parentSeries) {
+    const seriesPosts = parentSeries.posts.map(s => {
+      try { return JSON.parse(fs.readFileSync(path.join(BLOGS_DIR, `${s}.json`), "utf8")); }
+      catch { return null; }
+    });
+    seriesBannerHTML = buildSeriesBanner(parentSeries, seriesPosts, slug);
+    seriesNavHTML = buildSeriesNavStrip(parentSeries, seriesPosts, slug);
+  }
 
   const tagChipsHTML = tags.map(t =>
     `<a href="../writing.html?tag=${encodeURIComponent(t.toLowerCase())}" class="post-header-tag-chip" rel="tag">${esc(t)}</a>`
@@ -114,6 +190,9 @@ function buildPostHTML(post, cv) {
   const articleTagMeta = tags.map(t =>
     `  <meta property="article:tag" content="${esc(t)}" />`
   ).join("\n");
+
+  const { html: contentHTML, headings } = renderContent(post.content);
+  const tocHTML = buildTOC(headings);
 
   return `<!doctype html>
 <html lang="en">
@@ -153,7 +232,6 @@ ${articleTagMeta}
   <link rel="manifest" href="../images/favicon/site.webmanifest" />
   <link rel="icon" href="../images/favicon/favicon.ico" />
 
-  <!-- Theme flash prevention -->
   <script>
     (function () {
       const saved = localStorage.getItem("theme");
@@ -166,6 +244,7 @@ ${articleTagMeta}
 
   <link rel="stylesheet" href="../style.css" />
   <style>
+    /* ── Nav mobile ── */
     .menu-toggle {
       display: none; background: none; border: 1px solid var(--faint);
       border-radius: 4px; color: var(--ink); font-size: 18px; line-height: 1;
@@ -186,6 +265,34 @@ ${articleTagMeta}
       .nav-links li a { display: block; padding: 12px 20px; font-size: 15px; border-bottom: 1px solid var(--faint); }
       .nav-links li:last-child a { border-bottom: none; }
     }
+
+    /* ── TOC ── */
+    .toc {
+      position: fixed; top: 50%; left: 0; transform: translateY(-50%);
+      width: 200px; padding: 0 24px 0 32px; opacity: 1; z-index: 10;
+    }
+    .toc-label {
+      font-size: 10px; font-weight: 500; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 16px;
+    }
+    .toc-list {
+      list-style: none; padding: 0; margin: 0; border-left: 1px solid var(--faint);
+    }
+    .toc-list a {
+      display: block; padding: 5px 0 5px 14px; margin-left: -1px;
+      color: var(--muted); text-decoration: none; font-size: 12px;
+      font-weight: 400; line-height: 1.45; border-left: 2px solid transparent;
+      transition: color 0.2s, border-color 0.15s;
+    }
+    .toc-list a:hover { color: var(--ink); }
+    .toc-list a.active { color: var(--ink); border-left-color: var(--accent); font-weight: 500; }
+    .toc-empty-msg {
+      font-size: 12px; color: var(--muted); font-style: italic;
+      line-height: 1.5; padding-left: 14px; border-left: 1px solid var(--faint);
+    }
+    @media (max-width: 1000px) { .toc { display: none; } }
+
+    /* ── Post page ── */
     .post-page { max-width: 720px; margin: 0 auto; padding: 100px 32px 100px; }
     .post-section-heading {
       font-family: "Lora", serif; font-size: 16px; font-weight: 400;
@@ -206,6 +313,8 @@ ${articleTagMeta}
       gap: 12px; flex-wrap: wrap;
     }
     .post-header-meta { font-size: 13px; color: var(--muted); margin: 0; }
+
+    /* ── Share button ── */
     .share-btn {
       display: inline-flex; align-items: center; gap: 6px; font-size: 12px;
       font-weight: 500; letter-spacing: 0.04em; color: var(--muted);
@@ -218,6 +327,8 @@ ${articleTagMeta}
       background: color-mix(in srgb, var(--accent) 6%, transparent);
     }
     .share-btn svg { width: 13px; height: 13px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── Share toast ── */
     [data-theme="dark"] .share-toast { background: #ffffff; color: #000000; }
     [data-theme="light"] .share-toast { background: #000000; color: #ffffff; }
     .share-toast {
@@ -231,7 +342,72 @@ ${articleTagMeta}
     }
     .share-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
     .share-toast svg { width: 14px; height: 14px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    @media (max-width: 540px) { .post-page { padding: 84px 18px 64px; } }
+
+    /* ── Series banner ── */
+    .series-banner {
+      border: 1px solid var(--faint); border-radius: 10px;
+      padding: 16px 18px; margin-bottom: 16px;
+      background: color-mix(in srgb, var(--accent) 3%, transparent);
+    }
+    .series-banner-top {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .series-banner-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .series-chip {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 10%, transparent);
+      padding: 3px 8px; border-radius: 99px;
+    }
+    .series-banner-name {
+      font-size: 13px; font-weight: 500; color: var(--ink);
+      text-decoration: none; transition: color 0.15s; letter-spacing: -0.01em;
+    }
+    .series-banner-name:hover { color: var(--accent); }
+    .series-banner-part { font-size: 11.5px; color: var(--muted); }
+    .series-banner-parts { display: flex; gap: 8px; flex-wrap: wrap; }
+    .series-banner-part-link {
+      display: inline-flex; align-items: center; gap: 4px; font-size: 12px;
+      color: var(--muted); text-decoration: none; padding: 4px 10px;
+      border: 1px solid var(--faint); border-radius: 6px;
+      transition: border-color 0.15s, color 0.15s; white-space: nowrap;
+    }
+    .series-banner-part-link:hover { border-color: var(--accent); color: var(--ink); }
+    .series-banner-part-link.current {
+      border-color: var(--accent); color: var(--ink);
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
+      font-weight: 500; pointer-events: none;
+    }
+    .series-banner-part-link.unavailable { opacity: 0.35; pointer-events: none; font-style: italic; }
+    .part-num-label {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+      color: var(--muted); opacity: 0.6; margin-right: 1px;
+    }
+    .series-banner-part-link.current .part-num-label { opacity: 1; color: var(--accent); }
+
+    /* ── Series nav strip ── */
+    .series-nav-strip {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; margin-bottom: 32px; padding: 8px 0;
+      border-bottom: 1px solid var(--faint);
+    }
+    .series-nav-link {
+      display: inline-flex; align-items: center; gap: 5px; font-size: 12px;
+      color: var(--muted); text-decoration: none; padding: 2px 0;
+      transition: color 0.15s; max-width: 42%;
+    }
+    .series-nav-link:hover { color: var(--ink); }
+    .series-nav-link.faded { opacity: 0.3; pointer-events: none; }
+    .series-nav-link svg { width: 12px; height: 12px; flex-shrink: 0; }
+    .series-nav-link-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+    .series-nav-center { font-size: 11px; color: var(--muted); opacity: 0.45; white-space: nowrap; letter-spacing: 0.05em; flex-shrink: 0; }
+
+    @media (max-width: 540px) {
+      .post-page { padding: 84px 18px 64px; }
+      .series-nav-center { display: none; }
+      .series-nav-link { max-width: 48%; }
+    }
   </style>
 </head>
 <body>
@@ -253,6 +429,8 @@ ${articleTagMeta}
     </div>
   </nav>
 
+  ${tocHTML}
+
   <div class="share-toast" id="share-toast" role="status" aria-live="polite">
     <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4" /></svg>
     Link copied
@@ -262,6 +440,8 @@ ${articleTagMeta}
     <div class="post-page">
       <a href="../writing.html" class="back-link">← All writing</a>
       <article itemscope itemtype="https://schema.org/BlogPosting">
+        ${seriesBannerHTML}
+        ${seriesNavHTML}
         <div class="post-header fade-in d2">
           ${tagChipsHTML ? `<div class="post-header-tags">${tagChipsHTML}</div>` : ""}
           <h1 class="post-header-title" itemprop="headline">${esc(post.title)}</h1>
@@ -277,7 +457,7 @@ ${articleTagMeta}
         </div>
         <hr class="post-header-divider">
         <div class="post-body fade-in d3" itemprop="articleBody">
-          ${renderContent(post.content)}
+          ${contentHTML}
         </div>
       </article>
     </div>
@@ -288,6 +468,26 @@ ${articleTagMeta}
   </footer>
 
   <script>
+    // ── TOC active link tracking ──
+    (function () {
+      const tocList = document.getElementById("toc-list");
+      if (!tocList) return;
+      const links    = tocList.querySelectorAll("a");
+      const headings = document.querySelectorAll("#post-content h2.post-section-heading, .post-body h2.post-section-heading");
+      if (!links.length || !headings.length) return;
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            links.forEach(l => l.classList.remove("active"));
+            const match = tocList.querySelector('a[href="#' + entry.target.id + '"]');
+            if (match) match.classList.add("active");
+          }
+        });
+      }, { rootMargin: "-15% 0px -75% 0px", threshold: 0 });
+      headings.forEach(h => observer.observe(h));
+    })();
+
+    // ── Share button ──
     const CANON_URL    = ${JSON.stringify(canonUrl)};
     const POST_TITLE   = ${JSON.stringify(post.title)};
     const POST_EXCERPT = ${JSON.stringify(description)};
@@ -498,12 +698,19 @@ function buildSeriesHTML(series, posts, cv) {
 function main() {
   console.log("\n🔨  build-og.js — generating static pages for GitHub Pages\n");
 
-  // Load cv.json
   let cv = {};
   const cvPath = path.join(ROOT_DIR, "cv.json");
   if (fs.existsSync(cvPath)) {
     try { cv = JSON.parse(fs.readFileSync(cvPath, "utf8")); }
     catch (e) { console.warn("  ⚠  Could not parse cv.json:", e.message); }
+  }
+
+  // Preload series.json once — used for og-image fallback + banner/nav in posts
+  let seriesData = [];
+  const seriesJsonPath = path.join(BLOGS_DIR, "series.json");
+  if (fs.existsSync(seriesJsonPath)) {
+    try { seriesData = JSON.parse(fs.readFileSync(seriesJsonPath, "utf8")); }
+    catch (e) { console.warn("  ⚠  Could not parse series.json:", e.message); }
   }
 
   // ── Posts ──
@@ -514,41 +721,26 @@ function main() {
     .filter(f => f.endsWith(".json") && f !== "series.json");
   let postCount = 0;
 
-  // Preload series.json so we can fall back to series og-image for posts
-  let seriesData = [];
-  const seriesJsonPath = path.join(BLOGS_DIR, "series.json");
-  if (fs.existsSync(seriesJsonPath)) {
-    try { seriesData = JSON.parse(fs.readFileSync(seriesJsonPath, "utf8")); }
-    catch (e) { console.warn("  ⚠  Could not parse series.json for fallback:", e.message); }
-  }
-
   for (const file of files) {
     let post;
     try { post = JSON.parse(fs.readFileSync(path.join(BLOGS_DIR, file), "utf8")); }
     catch (e) { console.warn(`  ⚠  Skipping ${file}: ${e.message}`); continue; }
 
     const slug = post.slug ?? path.basename(file, ".json");
-    const parentSeries = seriesData.find(s => s.posts.includes(slug));
-    const image = resolveImage(post["og-image"] ?? parentSeries?.["og-image"]);
+    const image = resolveImage(post["og-image"] ?? seriesData.find(s => s.posts.includes(slug))?.["og-image"]);
     const outPath = path.join(postOutDir, `${slug}.html`);
-    fs.writeFileSync(outPath, buildPostHTML(post, cv), "utf8");
+    fs.writeFileSync(outPath, buildPostHTML(post, cv, seriesData), "utf8");
     console.log(`  ✓  post/${slug}.html  [og:image → ${image}]`);
     postCount++;
   }
 
   // ── Series ──
-  const seriesFile = path.join(BLOGS_DIR, "series.json");
   let seriesCount = 0;
-
-  if (fs.existsSync(seriesFile)) {
+  if (seriesData.length > 0) {
     const seriesOutDir = path.join(ROOT_DIR, "series");
     fs.mkdirSync(seriesOutDir, { recursive: true });
 
-    let allSeries;
-    try { allSeries = JSON.parse(fs.readFileSync(seriesFile, "utf8")); }
-    catch (e) { console.warn("  ⚠  Could not parse series.json:", e.message); allSeries = []; }
-
-    for (const series of allSeries) {
+    for (const series of seriesData) {
       const posts = series.posts.map(slug => {
         try { return JSON.parse(fs.readFileSync(path.join(BLOGS_DIR, `${slug}.json`), "utf8")); }
         catch { return null; }
@@ -564,11 +756,11 @@ function main() {
   }
 
   console.log(`\n✅  Done — ${postCount} post(s), ${seriesCount} series\n`);
-  console.log("📋  SHARE THESE URLS (they have real OG tags):");
+  console.log("📋  SHARE THESE URLS:");
   console.log(`    Posts:   ${BASE_URL}/post/{slug}.html`);
   console.log(`    Series:  ${BASE_URL}/series/{id}.html\n`);
-  console.log("📁  Commit the generated  post/  and  series/  folders to your repo.");
-  console.log("🔁  Re-run this script whenever you publish a new post.\n");
+  console.log("📁  Commit the generated  post/  and  series/  folders.");
+  console.log("🔁  Re-run after every new post or edit.\n");
 }
 
 main();
