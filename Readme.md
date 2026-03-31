@@ -1,6 +1,6 @@
 # Blog Content Guide
 
-A reference for writing and publishing posts on your site.
+A reference for writing and publishing posts on the site.
 
 ---
 
