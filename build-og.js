@@ -418,7 +418,6 @@ ${articleTagMeta}
         <ul class="nav-links" id="nav-links">
           <li><a href="../writing.html">Writing</a></li>
           <li><a href="../projects.html">Projects</a></li>
-          <li><a href="../about.html">About</a></li>
           <li><a href="../contact.html">Contact</a></li>
         </ul>
         <button class="menu-toggle" id="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
@@ -620,7 +619,6 @@ function buildSeriesHTML(series, posts, cv) {
         <ul class="nav-links" id="nav-links">
           <li><a href="../writing.html">Writing</a></li>
           <li><a href="../projects.html">Projects</a></li>
-          <li><a href="../about.html">About</a></li>
           <li><a href="../contact.html">Contact</a></li>
         </ul>
         <button class="menu-toggle" id="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button>

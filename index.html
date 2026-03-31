@@ -272,7 +272,6 @@
           <ul class="nav-links" id="nav-links">
             <li><a href="writing.html">Writing</a></li>
             <li><a href="projects.html">Projects</a></li>
-            <li><a href="about.html">About</a></li>
             <li><a href="contact.html">Contact</a></li>
           </ul>
           <button
@@ -309,6 +308,24 @@
           >
           <hr class="hero-divider" />
         </div>
+        <section id="about" class="home-section" aria-label="About">
+          <p class="section-label fade-in d1">Background</p>
+          <h2 class="section-title fade-in d2">About</h2>
+
+          <div
+            class="about-layout fade-in d3"
+            itemscope
+            itemtype="https://schema.org/Person"
+          >
+            <div class="about-body" id="about-body" itemprop="description">
+              <p>Loading…</p>
+            </div>
+
+            <div class="about-photo" id="about-photo">
+              <div class="about-photo-placeholder">🧑</div>
+            </div>
+          </div>
+        </section>
 
         <section class="home-section" aria-label="Pinned writing">
           <div class="home-section-header">
@@ -365,6 +382,16 @@
         document.getElementById("hero-bio").textContent = cv.bio_short;
         document.getElementById("footer-name").textContent =
           `© ${new Date().getFullYear()} ${cv.name} · Made with care`;
+
+        // About section
+        document.getElementById("about-body").innerHTML = cv.bio_long
+          .map((p) => `<p>${p}</p>`)
+          .join("");
+
+        if (cv.photo) {
+          document.getElementById("about-photo").innerHTML =
+            `<img src="${cv.photo}" alt="${cv.name}" itemprop="image">`;
+        }
 
         const posts = await Promise.all(
           BLOGS.map((slug) =>
