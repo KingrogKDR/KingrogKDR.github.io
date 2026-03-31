@@ -44,77 +44,77 @@ const ROOT_DIR = __dirname;
 // ─────────────────────────────────────────────────────────────────────────────
 
 function esc(str) {
-    return String(str ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 function resolveImage(raw) {
-    if (!raw) return DEFAULT_OG;
-    if (raw.startsWith("http")) return raw;
-    return `${BASE_URL}/${raw.replace(/^\//, "")}`;
+  if (!raw) return DEFAULT_OG;
+  if (raw.startsWith("http")) return raw;
+  return `${BASE_URL}/${raw.replace(/^\//, "")}`;
 }
 
 function formatDate(iso) {
-    return new Date(iso).toLocaleDateString("en", {
-        year: "numeric", month: "long", day: "numeric",
-    });
+  return new Date(iso).toLocaleDateString("en", {
+    year: "numeric", month: "long", day: "numeric",
+  });
 }
 
 function slugify(text) {
-    return text.toLowerCase().replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-");
+  return text.toLowerCase().replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-");
 }
 
 function renderContent(items) {
-    if (!Array.isArray(items)) return "";
-    return items.map(item => {
-        if (typeof item === "string") {
-            const withBold = item.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-            return `<p>${withBold}</p>`;
-        }
-        if (item.heading) {
-            const id = slugify(item.heading);
-            return `<h2 id="${id}" class="post-section-heading">${esc(item.heading)}</h2>`;
-        }
-        if (item.image) {
-            const caption = item.caption
-                ? `<figcaption class="post-image-caption">${esc(item.caption)}</figcaption>`
-                : "";
-            return `<figure class="post-image">
+  if (!Array.isArray(items)) return "";
+  return items.map(item => {
+    if (typeof item === "string") {
+      const withBold = item.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+      return `<p>${withBold}</p>`;
+    }
+    if (item.heading) {
+      const id = slugify(item.heading);
+      return `<h2 id="${id}" class="post-section-heading">${esc(item.heading)}</h2>`;
+    }
+    if (item.image) {
+      const caption = item.caption
+        ? `<figcaption class="post-image-caption">${esc(item.caption)}</figcaption>`
+        : "";
+      return `<figure class="post-image">
         <img src="${esc(item.image)}" alt="${esc(item.caption || "")}" loading="lazy">
         ${caption}
       </figure>`;
-        }
-        return "";
-    }).join("\n");
+    }
+    return "";
+  }).join("\n");
 }
 
 function normaliseTags(raw) {
-    if (!raw) return [];
-    return Array.isArray(raw) ? raw : [raw];
+  if (!raw) return [];
+  return Array.isArray(raw) ? raw : [raw];
 }
 
 // ── Post page HTML ────────────────────────────────────────────────────────────
 function buildPostHTML(post, cv) {
-    const slug = post.slug;
-    const tags = normaliseTags(post.tag);
-    const image = resolveImage(post["og-image"]);
-    const canonUrl = `${BASE_URL}/post/${slug}.html`;
-    const description = post.description ?? post.excerpt ?? "";
-    const fullTitle = `${post.title} — ${SITE_NAME}`;
-    const authorName = cv.name ?? SITE_NAME;
+  const slug = post.slug;
+  const tags = normaliseTags(post.tag);
+  const image = resolveImage(post["og-image"]);
+  const canonUrl = `${BASE_URL}/post/${slug}.html`;
+  const description = post.description ?? post.excerpt ?? "";
+  const fullTitle = `${post.title} — ${SITE_NAME}`;
+  const authorName = cv.name ?? SITE_NAME;
 
-    const tagChipsHTML = tags.map(t =>
-        `<a href="../writing.html?tag=${encodeURIComponent(t.toLowerCase())}" class="post-header-tag-chip" rel="tag">${esc(t)}</a>`
-    ).join("");
+  const tagChipsHTML = tags.map(t =>
+    `<a href="../writing.html?tag=${encodeURIComponent(t.toLowerCase())}" class="post-header-tag-chip" rel="tag">${esc(t)}</a>`
+  ).join("");
 
-    const articleTagMeta = tags.map(t =>
-        `  <meta property="article:tag" content="${esc(t)}" />`
-    ).join("\n");
+  const articleTagMeta = tags.map(t =>
+    `  <meta property="article:tag" content="${esc(t)}" />`
+  ).join("\n");
 
-    return `<!doctype html>
+  return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -321,25 +321,25 @@ ${articleTagMeta}
 
 // ── Series page HTML ──────────────────────────────────────────────────────────
 function buildSeriesHTML(series, posts, cv) {
-    const image = resolveImage(series["og-image"]);
-    const canonUrl = `${BASE_URL}/series/${series.id}.html`;
-    const fullTitle = `${series.title} — ${SITE_NAME}`;
-    const authorName = cv.name ?? SITE_NAME;
-    const totalParts = series.posts.length;
-    const loadedCount = posts.filter(Boolean).length;
+  const image = resolveImage(series["og-image"]);
+  const canonUrl = `${BASE_URL}/series/${series.id}.html`;
+  const fullTitle = `${series.title} — ${SITE_NAME}`;
+  const authorName = cv.name ?? SITE_NAME;
+  const totalParts = series.posts.length;
+  const loadedCount = posts.filter(Boolean).length;
 
-    const postsHTML = posts.map((post, i) => {
-        const partNum = i + 1;
-        if (!post) {
-            return `<div style="display:flex;align-items:flex-start;gap:20px;padding:20px 0;opacity:0.4;pointer-events:none;">
+  const postsHTML = posts.map((post, i) => {
+    const partNum = i + 1;
+    if (!post) {
+      return `<div style="display:flex;align-items:flex-start;gap:20px;padding:20px 0;opacity:0.4;pointer-events:none;">
         <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1.5px solid var(--faint);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--muted);position:relative;z-index:1;">${partNum}</div>
         <div style="padding-top:5px;">
           <p style="font-size:10.5px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Part ${partNum} of ${totalParts}</p>
           <h2 style="font-size:16px;font-weight:500;color:var(--ink);margin:0;">Coming soon</h2>
         </div>
       </div>`;
-        }
-        return `<a href="../post/${esc(post.slug)}.html" style="display:flex;align-items:flex-start;gap:20px;padding:20px 0;text-decoration:none;color:inherit;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.78'" onmouseout="this.style.opacity='1'">
+    }
+    return `<a href="../post/${esc(post.slug)}.html" style="display:flex;align-items:flex-start;gap:20px;padding:20px 0;text-decoration:none;color:inherit;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.78'" onmouseout="this.style.opacity='1'">
       <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1.5px solid var(--faint);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--muted);position:relative;z-index:1;">${partNum}</div>
       <div style="flex:1;padding-top:5px;">
         <p style="font-size:10.5px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Part ${partNum} of ${totalParts}</p>
@@ -348,9 +348,9 @@ function buildSeriesHTML(series, posts, cv) {
         <time style="font-size:12px;color:var(--muted);opacity:0.7;" datetime="${post.date}">${formatDate(post.date)}</time>
       </div>
     </a>`;
-    }).join('<div style="border-top:1px solid var(--faint);"></div>');
+  }).join('<div style="border-top:1px solid var(--faint);"></div>');
 
-    return `<!doctype html>
+  return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -495,70 +495,79 @@ function buildSeriesHTML(series, posts, cv) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 function main() {
-    console.log("\n🔨  build-og.js — generating static pages for GitHub Pages\n");
+  console.log("\n🔨  build-og.js — generating static pages for GitHub Pages\n");
 
-    // Load cv.json
-    let cv = {};
-    const cvPath = path.join(ROOT_DIR, "cv.json");
-    if (fs.existsSync(cvPath)) {
-        try { cv = JSON.parse(fs.readFileSync(cvPath, "utf8")); }
-        catch (e) { console.warn("  ⚠  Could not parse cv.json:", e.message); }
+  // Load cv.json
+  let cv = {};
+  const cvPath = path.join(ROOT_DIR, "cv.json");
+  if (fs.existsSync(cvPath)) {
+    try { cv = JSON.parse(fs.readFileSync(cvPath, "utf8")); }
+    catch (e) { console.warn("  ⚠  Could not parse cv.json:", e.message); }
+  }
+
+  // ── Posts ──
+  const postOutDir = path.join(ROOT_DIR, "post");
+  fs.mkdirSync(postOutDir, { recursive: true });
+
+  const files = fs.readdirSync(BLOGS_DIR)
+    .filter(f => f.endsWith(".json") && f !== "series.json");
+  let postCount = 0;
+
+  // Preload series.json so we can fall back to series og-image for posts
+  let seriesData = [];
+  const seriesJsonPath = path.join(BLOGS_DIR, "series.json");
+  if (fs.existsSync(seriesJsonPath)) {
+    try { seriesData = JSON.parse(fs.readFileSync(seriesJsonPath, "utf8")); }
+    catch (e) { console.warn("  ⚠  Could not parse series.json for fallback:", e.message); }
+  }
+
+  for (const file of files) {
+    let post;
+    try { post = JSON.parse(fs.readFileSync(path.join(BLOGS_DIR, file), "utf8")); }
+    catch (e) { console.warn(`  ⚠  Skipping ${file}: ${e.message}`); continue; }
+
+    const slug = post.slug ?? path.basename(file, ".json");
+    const parentSeries = seriesData.find(s => s.posts.includes(slug));
+    const image = resolveImage(post["og-image"] ?? parentSeries?.["og-image"]);
+    const outPath = path.join(postOutDir, `${slug}.html`);
+    fs.writeFileSync(outPath, buildPostHTML(post, cv), "utf8");
+    console.log(`  ✓  post/${slug}.html  [og:image → ${image}]`);
+    postCount++;
+  }
+
+  // ── Series ──
+  const seriesFile = path.join(BLOGS_DIR, "series.json");
+  let seriesCount = 0;
+
+  if (fs.existsSync(seriesFile)) {
+    const seriesOutDir = path.join(ROOT_DIR, "series");
+    fs.mkdirSync(seriesOutDir, { recursive: true });
+
+    let allSeries;
+    try { allSeries = JSON.parse(fs.readFileSync(seriesFile, "utf8")); }
+    catch (e) { console.warn("  ⚠  Could not parse series.json:", e.message); allSeries = []; }
+
+    for (const series of allSeries) {
+      const posts = series.posts.map(slug => {
+        try { return JSON.parse(fs.readFileSync(path.join(BLOGS_DIR, `${slug}.json`), "utf8")); }
+        catch { return null; }
+      });
+      const image = resolveImage(series["og-image"]);
+      const outPath = path.join(ROOT_DIR, "series", `${series.id}.html`);
+      fs.writeFileSync(outPath, buildSeriesHTML(series, posts, cv), "utf8");
+      console.log(`  ✓  series/${series.id}.html  [og:image → ${image}]`);
+      seriesCount++;
     }
+  } else {
+    console.log("  (no series.json — skipping series build)");
+  }
 
-    // ── Posts ──
-    const postOutDir = path.join(ROOT_DIR, "post");
-    fs.mkdirSync(postOutDir, { recursive: true });
-
-    const files = fs.readdirSync(BLOGS_DIR)
-        .filter(f => f.endsWith(".json") && f !== "series.json");
-    let postCount = 0;
-
-    for (const file of files) {
-        let post;
-        try { post = JSON.parse(fs.readFileSync(path.join(BLOGS_DIR, file), "utf8")); }
-        catch (e) { console.warn(`  ⚠  Skipping ${file}: ${e.message}`); continue; }
-
-        const slug = post.slug ?? path.basename(file, ".json");
-        const image = resolveImage(post["og-image"]);
-        const outPath = path.join(postOutDir, `${slug}.html`);
-        fs.writeFileSync(outPath, buildPostHTML(post, cv), "utf8");
-        console.log(`  ✓  post/${slug}.html  [og:image → ${image}]`);
-        postCount++;
-    }
-
-    // ── Series ──
-    const seriesFile = path.join(BLOGS_DIR, "series.json");
-    let seriesCount = 0;
-
-    if (fs.existsSync(seriesFile)) {
-        const seriesOutDir = path.join(ROOT_DIR, "series");
-        fs.mkdirSync(seriesOutDir, { recursive: true });
-
-        let allSeries;
-        try { allSeries = JSON.parse(fs.readFileSync(seriesFile, "utf8")); }
-        catch (e) { console.warn("  ⚠  Could not parse series.json:", e.message); allSeries = []; }
-
-        for (const series of allSeries) {
-            const posts = series.posts.map(slug => {
-                try { return JSON.parse(fs.readFileSync(path.join(BLOGS_DIR, `${slug}.json`), "utf8")); }
-                catch { return null; }
-            });
-            const image = resolveImage(series["og-image"]);
-            const outPath = path.join(ROOT_DIR, "series", `${series.id}.html`);
-            fs.writeFileSync(outPath, buildSeriesHTML(series, posts, cv), "utf8");
-            console.log(`  ✓  series/${series.id}.html  [og:image → ${image}]`);
-            seriesCount++;
-        }
-    } else {
-        console.log("  (no series.json — skipping series build)");
-    }
-
-    console.log(`\n✅  Done — ${postCount} post(s), ${seriesCount} series\n`);
-    console.log("📋  SHARE THESE URLS (they have real OG tags):");
-    console.log(`    Posts:   ${BASE_URL}/post/{slug}.html`);
-    console.log(`    Series:  ${BASE_URL}/series/{id}.html\n`);
-    console.log("📁  Commit the generated  post/  and  series/  folders to your repo.");
-    console.log("🔁  Re-run this script whenever you publish a new post.\n");
+  console.log(`\n✅  Done — ${postCount} post(s), ${seriesCount} series\n`);
+  console.log("📋  SHARE THESE URLS (they have real OG tags):");
+  console.log(`    Posts:   ${BASE_URL}/post/{slug}.html`);
+  console.log(`    Series:  ${BASE_URL}/series/{id}.html\n`);
+  console.log("📁  Commit the generated  post/  and  series/  folders to your repo.");
+  console.log("🔁  Re-run this script whenever you publish a new post.\n");
 }
 
 main();
