@@ -1,730 +1,338 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>On slowness as a creative practice — Abhishek Saikia</title>
-    <meta
-      name="description"
-      content="What happens when you deliberately resist the pressure to ship, publish, and post — and what you find waiting in the silence. An essay on slowness as a creative practice."
-    />
-    <link
-      rel="canonical"
-      href="https://kingrogkdr.github.io/post/on-slowness-as-a-creative-practice.html"
-    />
+  <title>On slowness as a creative practice — Abhishek Saikia</title>
+  <meta name="description" content="What happens when you deliberately resist the pressure to ship, publish, and post — and what you find waiting in the silence. An essay on slowness as a creative practice." />
+  <link rel="canonical" href="https://kingrogkdr.github.io/post/on-slowness-as-a-creative-practice.html" />
 
-    <!-- Open Graph — baked in at build time so crawlers read them without JS -->
-    <meta property="og:site_name" content="Abhishek Saikia" />
-    <meta property="og:type" content="article" />
-    <meta
-      property="og:title"
-      content="On slowness as a creative practice — Abhishek Saikia"
-    />
-    <meta
-      property="og:description"
-      content="What happens when you deliberately resist the pressure to ship, publish, and post — and what you find waiting in the silence. An essay on slowness as a creative practice."
-    />
-    <meta
-      property="og:url"
-      content="https://kingrogkdr.github.io/post/on-slowness-as-a-creative-practice.html"
-    />
-    <meta
-      property="og:image"
-      content="https://kingrogkdr.github.io/images/og-default.png"
-    />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="article:published_time" content="2026-03-29" />
-    <meta property="article:modified_time" content="2026-03-29" />
-    <meta property="article:author" content="Abhishek Saikia" />
-    <meta property="article:tag" content="Essay" />
-    <meta property="article:tag" content="Thoughts" />
-    <meta property="article:tag" content="Creativity" />
+  <!-- Open Graph — baked in at build time so crawlers read them without JS -->
+  <meta property="og:site_name"    content="Abhishek Saikia" />
+  <meta property="og:type"         content="article" />
+  <meta property="og:title"        content="On slowness as a creative practice — Abhishek Saikia" />
+  <meta property="og:description"  content="What happens when you deliberately resist the pressure to ship, publish, and post — and what you find waiting in the silence. An essay on slowness as a creative practice." />
+  <meta property="og:url"          content="https://kingrogkdr.github.io/post/on-slowness-as-a-creative-practice.html" />
+  <meta property="og:image"        content="https://kingrogkdr.github.io/images/og-default.png" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="article:published_time" content="2026-03-29" />
+  <meta property="article:modified_time"  content="2026-03-29" />
+  <meta property="article:author"         content="Abhishek Saikia" />
+  <meta property="article:tag" content="Essay" />
+  <meta property="article:tag" content="Thoughts" />
+  <meta property="article:tag" content="Creativity" />
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="On slowness as a creative practice — Abhishek Saikia"
-    />
-    <meta
-      name="twitter:description"
-      content="What happens when you deliberately resist the pressure to ship, publish, and post — and what you find waiting in the silence. An essay on slowness as a creative practice."
-    />
-    <meta
-      name="twitter:image"
-      content="https://kingrogkdr.github.io/images/og-default.png"
-    />
-    <meta name="twitter:site" content="@king_rog234" />
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="On slowness as a creative practice — Abhishek Saikia" />
+  <meta name="twitter:description" content="What happens when you deliberately resist the pressure to ship, publish, and post — and what you find waiting in the silence. An essay on slowness as a creative practice." />
+  <meta name="twitter:image"       content="https://kingrogkdr.github.io/images/og-default.png" />
+  <meta name="twitter:site"        content="@king_rog234" />
 
-    <!-- Favicons -->
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="../images/favicon/apple-touch-icon.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="../images/favicon/favicon-32x32.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="../images/favicon/favicon-16x16.png"
-    />
-    <link rel="manifest" href="../images/favicon/site.webmanifest" />
-    <link rel="icon" href="../images/favicon/favicon.ico" />
+  <!-- Favicons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png" />
+  <link rel="manifest" href="../images/favicon/site.webmanifest" />
+  <link rel="icon" href="../images/favicon/favicon.ico" />
 
-    <script>
-      (function () {
-        const saved = localStorage.getItem("theme");
-        const prefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)",
-        ).matches;
-        if (saved === "dark" || (!saved && prefersDark)) {
-          document.documentElement.setAttribute("data-theme", "dark");
-        }
-      })();
-    </script>
+  <script>
+    (function () {
+      const saved = localStorage.getItem("theme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (saved === "dark" || (!saved && prefersDark)) {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    })();
+  </script>
 
-    <link rel="stylesheet" href="../style.css" />
-    <style>
-      /* ── Nav mobile ── */
-      .menu-toggle {
-        display: none;
-        background: none;
-        border: 1px solid var(--faint);
-        border-radius: 4px;
-        color: var(--ink);
-        font-size: 18px;
-        line-height: 1;
-        width: 36px;
-        height: 36px;
-        cursor: pointer;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        transition:
-          border-color 0.2s,
-          color 0.2s;
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    /* ── Nav mobile ── */
+    .menu-toggle {
+      display: none; background: none; border: 1px solid var(--faint);
+      border-radius: 4px; color: var(--ink); font-size: 18px; line-height: 1;
+      width: 36px; height: 36px; cursor: pointer; align-items: center;
+      justify-content: center; flex-shrink: 0;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    @media (max-width: 640px) {
+      .menu-toggle { display: flex; }
+      .nav-inner { padding: 0 20px; gap: 12px; }
+      .nav-links {
+        display: none; flex-direction: column; gap: 0; position: absolute;
+        top: 56px; left: 0; right: 0; background: var(--nav-bg);
+        backdrop-filter: blur(10px); border-bottom: 1px solid var(--faint);
+        padding: 8px 0 16px; list-style: none;
       }
-      @media (max-width: 640px) {
-        .menu-toggle {
-          display: flex;
-        }
-        .nav-inner {
-          padding: 0 20px;
-          gap: 12px;
-        }
-        .nav-links {
-          display: none;
-          flex-direction: column;
-          gap: 0;
-          position: absolute;
-          top: 56px;
-          left: 0;
-          right: 0;
-          background: var(--nav-bg);
-          backdrop-filter: blur(10px);
-          border-bottom: 1px solid var(--faint);
-          padding: 8px 0 16px;
-          list-style: none;
-        }
-        .nav-links.open {
-          display: flex;
-        }
-        .nav-links li a {
-          display: block;
-          padding: 12px 20px;
-          font-size: 15px;
-          border-bottom: 1px solid var(--faint);
-        }
-        .nav-links li:last-child a {
-          border-bottom: none;
-        }
-      }
+      .nav-links.open { display: flex; }
+      .nav-links li a { display: block; padding: 12px 20px; font-size: 15px; border-bottom: 1px solid var(--faint); }
+      .nav-links li:last-child a { border-bottom: none; }
+    }
 
-      /* ── TOC ── */
-      .toc {
-        position: fixed;
-        top: 50%;
-        left: 0;
-        transform: translateY(-50%);
-        width: 200px;
-        padding: 0 24px 0 32px;
-        opacity: 1;
-        z-index: 10;
-      }
-      .toc-label {
-        font-size: 10px;
-        font-weight: 500;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: var(--accent);
-        margin-bottom: 16px;
-      }
-      .toc-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        border-left: 1px solid var(--faint);
-      }
-      .toc-list a {
-        display: block;
-        padding: 5px 0 5px 14px;
-        margin-left: -1px;
-        color: var(--muted);
-        text-decoration: none;
-        font-size: 12px;
-        font-weight: 400;
-        line-height: 1.45;
-        border-left: 2px solid transparent;
-        transition:
-          color 0.2s,
-          border-color 0.15s;
-      }
-      .toc-list a:hover {
-        color: var(--ink);
-      }
-      .toc-list a.active {
-        color: var(--ink);
-        border-left-color: var(--accent);
-        font-weight: 500;
-      }
-      .toc-empty-msg {
-        font-size: 12px;
-        color: var(--muted);
-        font-style: italic;
-        line-height: 1.5;
-        padding-left: 14px;
-        border-left: 1px solid var(--faint);
-      }
-      @media (max-width: 1000px) {
-        .toc {
-          display: none;
-        }
-      }
+    /* ── TOC ── */
+    .toc {
+      position: fixed; top: 50%; left: 0; transform: translateY(-50%);
+      width: 200px; padding: 0 24px 0 32px; opacity: 1; z-index: 10;
+    }
+    .toc-label {
+      font-size: 10px; font-weight: 500; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 16px;
+    }
+    .toc-list {
+      list-style: none; padding: 0; margin: 0; border-left: 1px solid var(--faint);
+    }
+    .toc-list a {
+      display: block; padding: 5px 0 5px 14px; margin-left: -1px;
+      color: var(--muted); text-decoration: none; font-size: 12px;
+      font-weight: 400; line-height: 1.45; border-left: 2px solid transparent;
+      transition: color 0.2s, border-color 0.15s;
+    }
+    .toc-list a:hover { color: var(--ink); }
+    .toc-list a.active { color: var(--ink); border-left-color: var(--accent); font-weight: 500; }
+    .toc-empty-msg {
+      font-size: 12px; color: var(--muted); font-style: italic;
+      line-height: 1.5; padding-left: 14px; border-left: 1px solid var(--faint);
+    }
+    @media (max-width: 1000px) { .toc { display: none; } }
 
-      /* ── Post page ── */
-      .post-page {
-        max-width: 720px;
-        margin: 0 auto;
-        padding: 100px 32px 100px;
-      }
-      .post-section-heading {
-        font-family: "Lora", serif;
-        font-size: 16px;
-        font-weight: 400;
-        letter-spacing: -0.01em;
-        color: var(--ink);
-        opacity: 0.8;
-        margin: 52px 0 20px;
-        scroll-margin-top: 80px;
-        line-height: 1.3;
-      }
-      .post-header-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 20px;
-      }
-      .post-header-tag-chip {
-        display: inline-flex;
-        align-items: center;
-        font-size: 11px;
-        font-weight: 500;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        padding: 5px 12px;
-        border-radius: 99px;
-        border: 1px solid var(--faint);
-        color: var(--muted);
-        background: transparent;
-        line-height: 1;
-        transition:
-          border-color 0.2s,
-          color 0.2s;
-        text-decoration: none;
-      }
-      .post-header-tag-chip:hover {
-        border-color: var(--accent);
-        color: var(--accent);
-      }
-      .post-header-meta-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-      .post-header-meta {
-        font-size: 13px;
-        color: var(--muted);
-        margin: 0;
-      }
+    /* ── Post page ── */
+    .post-page { max-width: 720px; margin: 0 auto; padding: 100px 32px 100px; }
+    .post-section-heading {
+      font-family: "Lora", serif; font-size: 16px; font-weight: 400;
+      letter-spacing: -0.01em; color: var(--ink); opacity: 0.8;
+      margin: 52px 0 20px; scroll-margin-top: 80px; line-height: 1.3;
+    }
+    .post-header-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .post-header-tag-chip {
+      display: inline-flex; align-items: center; font-size: 11px; font-weight: 500;
+      letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 12px;
+      border-radius: 99px; border: 1px solid var(--faint); color: var(--muted);
+      background: transparent; line-height: 1;
+      transition: border-color 0.2s, color 0.2s; text-decoration: none;
+    }
+    .post-header-tag-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .post-header-meta-row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap;
+    }
+    .post-header-meta { font-size: 13px; color: var(--muted); margin: 0; }
 
-      /* ── Share button ── */
-      .share-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 12px;
-        font-weight: 500;
-        letter-spacing: 0.04em;
-        color: var(--muted);
-        background: transparent;
-        border: 1px solid var(--faint);
-        border-radius: 99px;
-        padding: 5px 13px;
-        cursor: pointer;
-        flex-shrink: 0;
-        transition:
-          border-color 0.2s,
-          color 0.2s,
-          background 0.2s;
-      }
-      .share-btn:hover {
-        border-color: var(--accent);
-        color: var(--accent);
-        background: color-mix(in srgb, var(--accent) 6%, transparent);
-      }
-      .share-btn svg {
-        width: 13px;
-        height: 13px;
-        flex-shrink: 0;
-        stroke: currentColor;
-        fill: none;
-        stroke-width: 1.6;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
+    /* ── Share button ── */
+    .share-btn {
+      display: inline-flex; align-items: center; gap: 6px; font-size: 12px;
+      font-weight: 500; letter-spacing: 0.04em; color: var(--muted);
+      background: transparent; border: 1px solid var(--faint);
+      border-radius: 99px; padding: 5px 13px; cursor: pointer; flex-shrink: 0;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+    .share-btn:hover {
+      border-color: var(--accent); color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 6%, transparent);
+    }
+    .share-btn svg { width: 13px; height: 13px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 
-      /* ── Share toast ── */
-      [data-theme="dark"] .share-toast {
-        background: #ffffff;
-        color: #000000;
-      }
-      [data-theme="light"] .share-toast {
-        background: #000000;
-        color: #ffffff;
-      }
-      .share-toast {
-        position: fixed;
-        bottom: 28px;
-        left: 50%;
-        transform: translateX(-50%) translateY(12px);
-        font-size: 13px;
-        font-weight: 450;
-        letter-spacing: 0.01em;
-        padding: 10px 18px;
-        border-radius: 99px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
-        opacity: 0;
-        pointer-events: none;
-        transition:
-          opacity 0.22s ease,
-          transform 0.22s ease;
-        white-space: nowrap;
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        gap: 7px;
-      }
-      .share-toast.visible {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-      }
-      .share-toast svg {
-        width: 14px;
-        height: 14px;
-        flex-shrink: 0;
-        stroke: currentColor;
-        fill: none;
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
+    /* ── Share toast ── */
+    [data-theme="dark"] .share-toast { background: #ffffff; color: #000000; }
+    [data-theme="light"] .share-toast { background: #000000; color: #ffffff; }
+    .share-toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      font-size: 13px; font-weight: 450; letter-spacing: 0.01em;
+      padding: 10px 18px; border-radius: 99px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.18); opacity: 0;
+      pointer-events: none; transition: opacity 0.22s ease, transform 0.22s ease;
+      white-space: nowrap; z-index: 9999; display: flex; align-items: center; gap: 7px;
+    }
+    .share-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .share-toast svg { width: 14px; height: 14px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-      /* ── Series banner ── */
-      .series-banner {
-        border: 1px solid var(--faint);
-        border-radius: 10px;
-        padding: 16px 18px;
-        margin-bottom: 16px;
-        background: color-mix(in srgb, var(--accent) 3%, transparent);
-      }
-      .series-banner-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        margin-bottom: 12px;
-        flex-wrap: wrap;
-      }
-      .series-banner-left {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-      .series-chip {
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--accent);
-        background: color-mix(in srgb, var(--accent) 10%, transparent);
-        padding: 3px 8px;
-        border-radius: 99px;
-      }
-      .series-banner-name {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--ink);
-        text-decoration: none;
-        transition: color 0.15s;
-        letter-spacing: -0.01em;
-      }
-      .series-banner-name:hover {
-        color: var(--accent);
-      }
-      .series-banner-part {
-        font-size: 11.5px;
-        color: var(--muted);
-      }
-      .series-banner-parts {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-      .series-banner-part-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 12px;
-        color: var(--muted);
-        text-decoration: none;
-        padding: 4px 10px;
-        border: 1px solid var(--faint);
-        border-radius: 6px;
-        transition:
-          border-color 0.15s,
-          color 0.15s;
-        white-space: nowrap;
-      }
-      .series-banner-part-link:hover {
-        border-color: var(--accent);
-        color: var(--ink);
-      }
-      .series-banner-part-link.current {
-        border-color: var(--accent);
-        color: var(--ink);
-        background: color-mix(in srgb, var(--accent) 8%, transparent);
-        font-weight: 500;
-        pointer-events: none;
-      }
-      .series-banner-part-link.unavailable {
-        opacity: 0.35;
-        pointer-events: none;
-        font-style: italic;
-      }
-      .part-num-label {
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 0.06em;
-        color: var(--muted);
-        opacity: 0.6;
-        margin-right: 1px;
-      }
-      .series-banner-part-link.current .part-num-label {
-        opacity: 1;
-        color: var(--accent);
-      }
+    /* ── Series banner ── */
+    .series-banner {
+      border: 1px solid var(--faint); border-radius: 10px;
+      padding: 16px 18px; margin-bottom: 16px;
+      background: color-mix(in srgb, var(--accent) 3%, transparent);
+    }
+    .series-banner-top {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .series-banner-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .series-chip {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 10%, transparent);
+      padding: 3px 8px; border-radius: 99px;
+    }
+    .series-banner-name {
+      font-size: 13px; font-weight: 500; color: var(--ink);
+      text-decoration: none; transition: color 0.15s; letter-spacing: -0.01em;
+    }
+    .series-banner-name:hover { color: var(--accent); }
+    .series-banner-part { font-size: 11.5px; color: var(--muted); }
+    .series-banner-parts { display: flex; gap: 8px; flex-wrap: wrap; }
+    .series-banner-part-link {
+      display: inline-flex; align-items: center; gap: 4px; font-size: 12px;
+      color: var(--muted); text-decoration: none; padding: 4px 10px;
+      border: 1px solid var(--faint); border-radius: 6px;
+      transition: border-color 0.15s, color 0.15s; white-space: nowrap;
+    }
+    .series-banner-part-link:hover { border-color: var(--accent); color: var(--ink); }
+    .series-banner-part-link.current {
+      border-color: var(--accent); color: var(--ink);
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
+      font-weight: 500; pointer-events: none;
+    }
+    .series-banner-part-link.unavailable { opacity: 0.35; pointer-events: none; font-style: italic; }
+    .part-num-label {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
+      color: var(--muted); opacity: 0.6; margin-right: 1px;
+    }
+    .series-banner-part-link.current .part-num-label { opacity: 1; color: var(--accent); }
 
-      /* ── Series nav strip ── */
-      .series-nav-strip {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        margin-bottom: 32px;
-        padding: 8px 0;
-        border-bottom: 1px solid var(--faint);
-      }
-      .series-nav-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 12px;
-        color: var(--muted);
-        text-decoration: none;
-        padding: 2px 0;
-        transition: color 0.15s;
-        max-width: 42%;
-      }
-      .series-nav-link:hover {
-        color: var(--ink);
-      }
-      .series-nav-link.faded {
-        opacity: 0.3;
-        pointer-events: none;
-      }
-      .series-nav-link svg {
-        width: 12px;
-        height: 12px;
-        flex-shrink: 0;
-      }
-      .series-nav-link-label {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        line-height: 1.3;
-      }
-      .series-nav-center {
-        font-size: 11px;
-        color: var(--muted);
-        opacity: 0.45;
-        white-space: nowrap;
-        letter-spacing: 0.05em;
-        flex-shrink: 0;
-      }
+    /* ── Series nav strip ── */
+    .series-nav-strip {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 8px; margin-bottom: 32px; padding: 8px 0;
+      border-bottom: 1px solid var(--faint);
+    }
+    .series-nav-link {
+      display: inline-flex; align-items: center; gap: 5px; font-size: 12px;
+      color: var(--muted); text-decoration: none; padding: 2px 0;
+      transition: color 0.15s; max-width: 42%;
+    }
+    .series-nav-link:hover { color: var(--ink); }
+    .series-nav-link.faded { opacity: 0.3; pointer-events: none; }
+    .series-nav-link svg { width: 12px; height: 12px; flex-shrink: 0; }
+    .series-nav-link-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+    .series-nav-center { font-size: 11px; color: var(--muted); opacity: 0.45; white-space: nowrap; letter-spacing: 0.05em; flex-shrink: 0; }
 
-      @media (max-width: 540px) {
-        .post-page {
-          padding: 84px 18px 64px;
-        }
-        .series-nav-center {
-          display: none;
-        }
-        .series-nav-link {
-          max-width: 48%;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <nav>
-      <div class="nav-inner">
-        <a href="../index.html" class="nav-logo">Abhishek Saikia</a>
-        <div class="nav-right">
-          <ul class="nav-links" id="nav-links">
-            <li><a href="../writing.html">Writing</a></li>
-            <li><a href="../projects.html">Projects</a></li>
-            <li><a href="../contact.html">Contact</a></li>
-          </ul>
-          <button
-            class="menu-toggle"
-            id="menu-toggle"
-            aria-label="Open menu"
-            aria-expanded="false"
-          >
-            ☰
-          </button>
-          <button
-            class="theme-toggle"
-            id="theme-toggle"
-            aria-label="Toggle theme"
-          >
-            <span class="theme-toggle-thumb"></span>
-          </button>
-        </div>
+    @media (max-width: 540px) {
+      .post-page { padding: 84px 18px 64px; }
+      .series-nav-center { display: none; }
+      .series-nav-link { max-width: 48%; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">Abhishek Saikia</a>
+      <div class="nav-right">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="../writing.html">Writing</a></li>
+          <li><a href="../projects.html">Projects</a></li>
+          <li><a href="../contact.html">Contact</a></li>
+        </ul>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+          <span class="theme-toggle-thumb"></span>
+        </button>
       </div>
-    </nav>
-
-    <aside class="toc" id="toc" aria-label="Table of contents">
-      <p class="toc-label">Contents</p>
-      <ul class="toc-list" id="toc-list">
-        <li>
-          <a href="#the-anxiety-of-constant-output"
-            >The anxiety of constant output</a
-          >
-        </li>
-        <li><a href="#protecting-the-slow">Protecting the slow</a></li>
-      </ul>
-    </aside>
-
-    <div class="share-toast" id="share-toast" role="status" aria-live="polite">
-      <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4" /></svg>
-      Link copied
     </div>
+  </nav>
 
-    <main>
-      <div class="post-page">
-        <a href="../writing.html" class="back-link">← All writing</a>
-        <article itemscope itemtype="https://schema.org/BlogPosting">
-          <div class="post-header fade-in d2">
-            <div class="post-header-tags">
-              <a
-                href="../writing.html?tag=essay"
-                class="post-header-tag-chip"
-                rel="tag"
-                >Essay</a
-              ><a
-                href="../writing.html?tag=thoughts"
-                class="post-header-tag-chip"
-                rel="tag"
-                >Thoughts</a
-              ><a
-                href="../writing.html?tag=creativity"
-                class="post-header-tag-chip"
-                rel="tag"
-                >Creativity</a
-              >
-            </div>
-            <h1 class="post-header-title" itemprop="headline">
-              On slowness as a creative practice
-            </h1>
-            <div class="post-header-meta-row">
-              <p class="post-header-meta">
-                <time itemprop="datePublished" datetime="2026-03-29"
-                  >March 29, 2026</time
-                >
-              </p>
-              <button
-                class="share-btn"
-                id="share-btn"
-                aria-label="Share this post"
-              >
-                <svg viewBox="0 0 14 14">
-                  <circle cx="11" cy="2.5" r="1.5" />
-                  <circle cx="11" cy="11.5" r="1.5" />
-                  <circle cx="3" cy="7" r="1.5" />
-                  <line x1="4.4" y1="7.7" x2="9.7" y2="10.9" />
-                  <line x1="9.7" y1="3.1" x2="4.4" y2="6.3" />
-                </svg>
-                Share
-              </button>
-            </div>
+  <aside class="toc" id="toc" aria-label="Table of contents">
+  <p class="toc-label">Contents</p>
+  <ul class="toc-list" id="toc-list">
+    <li><a href="#the-anxiety-of-constant-output">The anxiety of constant output</a></li>
+    <li><a href="#protecting-the-slow">Protecting the slow</a></li>
+  </ul>
+</aside>
+
+  <div class="share-toast" id="share-toast" role="status" aria-live="polite">
+    <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4" /></svg>
+    Link copied
+  </div>
+
+  <main>
+    <div class="post-page">
+      <a href="../writing.html" class="back-link">← All writing</a>
+      <article itemscope itemtype="https://schema.org/BlogPosting">
+        
+        
+        <div class="post-header fade-in d2">
+          <div class="post-header-tags"><a href="../writing.html?tag=essay" class="post-header-tag-chip" rel="tag">Essay</a><a href="../writing.html?tag=thoughts" class="post-header-tag-chip" rel="tag">Thoughts</a><a href="../writing.html?tag=creativity" class="post-header-tag-chip" rel="tag">Creativity</a></div>
+          <h1 class="post-header-title" itemprop="headline">On slowness as a creative practice</h1>
+          <div class="post-header-meta-row">
+            <p class="post-header-meta">
+              <time itemprop="datePublished" datetime="2026-03-29">March 29, 2026</time>
+            </p>
+            <button class="share-btn" id="share-btn" aria-label="Share this post">
+              <svg viewBox="0 0 14 14"><circle cx="11" cy="2.5" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><line x1="4.4" y1="7.7" x2="9.7" y2="10.9"/><line x1="9.7" y1="3.1" x2="4.4" y2="6.3"/></svg>
+              Share
+            </button>
           </div>
-          <hr class="post-header-divider" />
-          <div class="post-body fade-in d3" itemprop="articleBody">
-            <h2
-              id="the-anxiety-of-constant-output"
-              class="post-section-heading"
-            >
-              The anxiety of constant output
-            </h2>
-            <p>
-              There is a particular kind of anxiety that comes with the modern
-              creative life: the feeling that if you are not producing, you are
-              falling behind. Every day without a post, a tweet, a shipped
-              feature, is a day lost. The feed moves on without you.
-            </p>
-            <p>
-              I've been trying, deliberately, to move slower. Not out of
-              laziness (honestly, I've never worked harder before) but out of a
-              suspicion that the pressure to constantly output is quietly
-              destroying the conditions that make good work possible.
-            </p>
-            <p>
-              Speed optimizes for volume. Slowness optimizes for depth. And
-              depth is what I actually care about.
-            </p>
-            <p>
-              When I gave myself permission to sit with an idea for weeks
-              instead of days, I was finally able to understand it well. The
-              idea stopped being a thing to be processed or consumed and became
-              a thing to be understood. I started noticing what I actually
-              thought, rather than what I was supposed to think.
-            </p>
-            <h2 id="protecting-the-slow" class="post-section-heading">
-              Protecting the slow
-            </h2>
-            <p>
-              This is not an argument against shipping, or publishing, or being
-              present online. It's an argument for protecting some portion of
-              your creative life from the logic of throughput. For letting some
-              things be slow.
-            </p>
-            <p>
-              The best work I've done and will do from now on, the pieces I'm
-              most proud of, the projects that held together - all came from
-              periods where I resisted the urge to publish too soon. The silence
-              before the task is as much a part of the work as the task itself.
-            </p>
-          </div>
-        </article>
-      </div>
-    </main>
+        </div>
+        <hr class="post-header-divider">
+        <div class="post-body fade-in d3" itemprop="articleBody">
+          <h2 id="the-anxiety-of-constant-output" class="post-section-heading">The anxiety of constant output</h2>
+<p>There is a particular kind of anxiety that comes with the modern creative life: the feeling that if you are not producing, you are falling behind. Every day without a post, a tweet, a shipped feature, is a day lost. The feed moves on without you.</p>
+<p>I've been trying, deliberately, to move slower. Not out of laziness (honestly, I've never worked harder before) but out of a suspicion that the pressure to constantly output is quietly destroying the conditions that make good work possible.</p>
+<p>Speed optimizes for volume. Slowness optimizes for depth. And depth is what I actually care about.</p>
+<p>When I gave myself permission to sit with an idea for weeks instead of days, I was finally able to understand it well. The idea stopped being a thing to be processed or consumed and became a thing to be understood. I started noticing what I actually thought, rather than what I was supposed to think.</p>
+<h2 id="protecting-the-slow" class="post-section-heading">Protecting the slow</h2>
+<p>This is not an argument against shipping, or publishing, or being present online. It's an argument for protecting some portion of your creative life from the logic of throughput. For letting some things be slow.</p>
+<p>The best work I've done and will do from now on, the pieces I'm most proud of, the projects that held together - all came from periods where I resisted the urge to publish too soon. The silence before the task is as much a part of the work as the task itself.</p>
+        </div>
+      </article>
+    </div>
+  </main>
 
-    <footer>
-      <p>© 2026 Abhishek Saikia · Made with care</p>
-    </footer>
+  <footer>
+    <p>© 2026 Abhishek Saikia · Made with care</p>
+  </footer>
 
-    <script>
-      // ── TOC active link tracking ──
-      (function () {
-        const tocList = document.getElementById("toc-list");
-        if (!tocList) return;
-        const links = tocList.querySelectorAll("a");
-        const headings = document.querySelectorAll(
-          "#post-content h2.post-section-heading, .post-body h2.post-section-heading",
-        );
-        if (!links.length || !headings.length) return;
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (entry.isIntersecting) {
-                links.forEach((l) => l.classList.remove("active"));
-                const match = tocList.querySelector(
-                  'a[href="#' + entry.target.id + '"]',
-                );
-                if (match) match.classList.add("active");
-              }
-            });
-          },
-          { rootMargin: "-15% 0px -75% 0px", threshold: 0 },
-        );
-        headings.forEach((h) => observer.observe(h));
-      })();
-
-      // ── Share button ──
-      const CANON_URL =
-        "https://kingrogkdr.github.io/post/on-slowness-as-a-creative-practice.html";
-      const POST_TITLE = "On slowness as a creative practice";
-      const POST_EXCERPT =
-        "What happens when you deliberately resist the pressure to ship, publish, and post — and what you find waiting in the silence. An essay on slowness as a creative practice.";
-      let toastTimer = null;
-      function showToast(msg) {
-        const toast = document.getElementById("share-toast");
-        toast.childNodes[2].textContent = " " + msg;
-        toast.classList.add("visible");
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => toast.classList.remove("visible"), 2400);
-      }
-      document
-        .getElementById("share-btn")
-        .addEventListener("click", async () => {
-          if (navigator.share) {
-            try {
-              await navigator.share({
-                title: POST_TITLE,
-                text: POST_EXCERPT,
-                url: CANON_URL,
-              });
-              return;
-            } catch (e) {
-              if (e.name === "AbortError") return;
-            }
-          }
-          try {
-            await navigator.clipboard.writeText(CANON_URL);
-            showToast("Link copied");
-          } catch {
-            const inp = document.createElement("input");
-            inp.value = CANON_URL;
-            document.body.appendChild(inp);
-            inp.select();
-            document.execCommand("copy");
-            document.body.removeChild(inp);
-            showToast("Link copied");
+  <script>
+    // ── TOC active link tracking ──
+    (function () {
+      const tocList = document.getElementById("toc-list");
+      if (!tocList) return;
+      const links    = tocList.querySelectorAll("a");
+      const headings = document.querySelectorAll("#post-content h2.post-section-heading, .post-body h2.post-section-heading");
+      if (!links.length || !headings.length) return;
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            links.forEach(l => l.classList.remove("active"));
+            const match = tocList.querySelector('a[href="#' + entry.target.id + '"]');
+            if (match) match.classList.add("active");
           }
         });
-    </script>
-    <script src="../nav.js"></script>
-  </body>
+      }, { rootMargin: "-15% 0px -75% 0px", threshold: 0 });
+      headings.forEach(h => observer.observe(h));
+    })();
+
+    // ── Share button ──
+    const CANON_URL    = "https://kingrogkdr.github.io/post/on-slowness-as-a-creative-practice.html";
+    const POST_TITLE   = "On slowness as a creative practice";
+    const POST_EXCERPT = "What happens when you deliberately resist the pressure to ship, publish, and post — and what you find waiting in the silence. An essay on slowness as a creative practice.";
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById("share-toast");
+      toast.childNodes[2].textContent = " " + msg;
+      toast.classList.add("visible");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("visible"), 2400);
+    }
+    document.getElementById("share-btn").addEventListener("click", async () => {
+      if (navigator.share) {
+        try { await navigator.share({ title: POST_TITLE, text: POST_EXCERPT, url: CANON_URL }); return; }
+        catch (e) { if (e.name === "AbortError") return; }
+      }
+      try {
+        await navigator.clipboard.writeText(CANON_URL);
+        showToast("Link copied");
+      } catch {
+        const inp = document.createElement("input");
+        inp.value = CANON_URL; document.body.appendChild(inp);
+        inp.select(); document.execCommand("copy");
+        document.body.removeChild(inp); showToast("Link copied");
+      }
+    });
+  </script>
+  <script src="../nav.js"></script>
+</body>
 </html>
