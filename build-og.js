@@ -82,8 +82,9 @@ function renderContent(items) {
       const caption = item.caption
         ? `<figcaption class="post-image-caption">${esc(item.caption)}</figcaption>`
         : "";
+      const imgSrc = item.image.startsWith("http") ? item.image : `../${item.image.replace(/^\//, "")}`;
       return `<figure class="post-image">
-        <img src="${esc(item.image)}" alt="${esc(item.caption || "")}" loading="lazy">
+        <img src="${esc(imgSrc)}" alt="${esc(item.caption || "")}" loading="lazy">
         ${caption}
       </figure>`;
     }
