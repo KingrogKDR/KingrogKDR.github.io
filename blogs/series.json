@@ -4,6 +4,9 @@
     "title": "A Custom Kubernetes Scheduler",
     "description": "A series of understanding, tinkering and developing my own custom Kubernetes scheduler.",
     "og-image": "images/og/kubernetes-scheduler.jpg",
-    "posts": ["why-a-custom-kube-scheduler"]
+    "posts": [
+      "why-a-custom-kube-scheduler",
+      "kubernetes-scheduler-from-first-principles"
+    ]
   }
 ]

@@ -1,0 +1,191 @@
+{
+  "title": "Understanding the Kubernetes Scheduler Framework",
+  "slug": "kubernetes-scheduler-from-first-principles",
+  "date": "2026-04-01",
+  "tag": ["Kubernetes", "Systems", "Distributed Systems"],
+  "excerpt": "A first-principles approach to understanding the Kubernetes scheduler by building a minimal version using plugins and scoring logic.",
+  "series": "a-custom-kubernetes-scheduler",
+  "pinned": true,
+  "content": [
+    "In my previous post, I discussed the need for a custom Kubernetes Scheduler.",
+    "There are a lot of resources on directly implementing a custom scheduler. But I decided to jump to its foundations first. I read the Kubernetes scheduling framework and wanted to share what I learnt and discovered.",
+    "This post breaks down the Kubernetes Scheduler Framework by reconstructing its core ideas from first principles.",
+    { "heading": "The core idea" },
+    "At a high level, scheduling is just a decision pipeline.",
+    "1. **Pick a node** from the filtered list\n2. **Assign** the pod to that node",
+    "These correspond to two phases.",
+    "- **Scheduling Cycle**: decide which node should run the Pod.",
+    "- **Binding Cycle**: assign the Pod to that node.",
+    "Together, they form the **scheduling context**.",
+
+    { "heading": "The three building blocks" },
+    "To customize scheduling, Kubernetes exposes three key concepts.",
+
+    "==Extension Points==: These are hooks in the scheduling pipeline where logic can be injected.",
+    "Examples include **Filter**, **Score**, and **Bind**.",
+    "These are points or stages in the scheduling pipeline where we can inject our own logic.",
+
+    "==Plugins==: These are the actual implementations of scheduling logic.",
+    "Examples include preferring nodes with more CPU or balanced usage.",
+    "We can think of these as the logic that we want to implement. These are tests that the nodes have to go through to be selected.",
+
+    "==Interfaces==: These define the contracts or methods that plugins must implement.",
+    "For example, a `ScorePlugin` must implement a `Score` method.",
+    "So, these are methods that plugins use to select the nodes. A single plugin can use multiple interfaces/methods.",
+
+    { "heading": "Building a minimal scheduler" },
+    "To understand how these concepts work together, I tried implementing them into a small scheduler.",
+
+    {
+      "note": "This is a simplified version of how the Kubernetes scheduler works, built from first principles and not the accurate representation of using the Kubernetes scheduler framework."
+    },
+
+    {
+      "heading": "Data Models"
+    },
+    {
+      "code": "type Node struct {\n    name       string\n    noOfCPUs   int\n    usedCPUs   int\n}\n\ntype Pod struct {\n    requiredCPUs int\n}",
+      "language": "go"
+    },
+
+    { "heading": "Plugin Interface" },
+    {
+      "code": "type ScorePlugin interface {\n    Name() string\n    Score(node Node, pod Pod) int\n}",
+      "language": "go"
+    },
+
+    { "heading": "Scoring plugins" },
+    "I implemented two scoring strategies.",
+
+    "**CPU Plugin**: prefers nodes with more free CPU.",
+    {
+      "code": "type CPU struct{}\n\nfunc (c *CPU) Name() string {\n    return \"CPUScore\"\n}\n\nfunc (c *CPU) Score(node Node, pod Pod) int {\n    free := node.noOfCPUs - node.usedCPUs\n    return free\n}",
+      "language": "go",
+      "caption": "Scores nodes based on available free CPU."
+    },
+
+    "**Balanced Usage Plugin**: prefers nodes close to 50% utilization.",
+    {
+      "code": "type BalancedUsage struct{}\n\nfunc (b *BalancedUsage) Name() string {\n    return \"BalancedUsage\"\n}\n\nfunc (b *BalancedUsage) Score(node Node, pod Pod) int {\n    usageRatio := float64(node.usedCPUs) / float64(node.noOfCPUs)\n\n    diff := usageRatio - 0.5\n    if diff < 0 {\n        diff = -diff\n    }\n\n    return int((1 - diff) * 100)\n}",
+      "language": "go",
+      "caption": "Scores nodes based on how close CPU usage is to an optimal balanced state (50%)."
+    },
+    "This avoids both overload and underutilization.",
+
+    { "heading": "Weighted plugins" },
+    "Not all policies are equally important.",
+    "So, I assigned a weight to each plugin, and final scores are computed as a weighted sum.",
+    "`totalScore += pluginScore * weight`",
+    "This allows one policy to dominate over others.",
+
+    { "heading": "Scheduling logic" },
+    {
+      "code": "func schedule(nodes []Node, pod Pod, plugins []WeightedPlugin) Node {\n    bestScore := -1\n    var bestNode Node\n\n    for _, node := range nodes {\n        totalScore := 0\n\n        for _, wp := range plugins {\n            score := wp.plugin.Score(node, pod)\n            totalScore += score * wp.weight\n        }\n\n        if totalScore > bestScore {\n            bestScore = totalScore\n            bestNode = node\n        }\n    }\n\n    return bestNode\n}",
+      "language": "go"
+    },
+    "The scheduler iterates over all nodes, computes a total score using all plugins, and selects the node with the highest score.",
+    "This is effectively the **Score extension point** in action.",
+    "Each plugin runs independently, and the scheduler aggregates their outputs.",
+
+    "To better understand how scheduling decisions change, I added multiple scenarios and printed detailed outputs for each node.",
+
+    {
+      "code": "func runScenario(title string, nodes []Node, pod Pod, plugins []WeightedPlugin) {\n    println(\"\\n---\", title, \"---\")\n\n    // Print detailed scoring\n    for _, node := range nodes {\n        totalScore := 0\n        println(\"Node:\", node.name)\n\n        for _, wp := range plugins {\n            score := wp.plugin.Score(node, pod)\n            weighted := score * wp.weight\n\n            println(\"  Plugin:\", wp.plugin.Name(),\n                \"Raw:\", score,\n                \"Weight:\", wp.weight,\n                \"Weighted:\", weighted)\n\n            totalScore += weighted\n        }\n\n        println(\"  Total Score:\", totalScore)\n    }\n\n    // Use schedule function for final decision\n    best := schedule(nodes, pod, plugins)\n    println(\"=> Selected Node:\", best.name)\n}",
+      "language": "go"
+    },
+    "This function runs multiple scheduling scenarios, prints per-plugin contributions, and shows how weighted scores determine the final node selection.",
+
+    { "heading": "Scenario 1: Equal weights" },
+    "Both plugins have equal importance.",
+    {
+      "code": "runScenario(\"Equal Weights\", nodes, pod, []WeightedPlugin{\n    {&CPU{}, 1},\n    {&BalancedUsage{}, 1},\n})",
+      "language": "go"
+    },
+    {
+      "code": "--- Equal Weights ---\nNode: A\n  Plugin: CPUScore Raw: 6 Weight: 1 Weighted: 6\n  Plugin: BalancedUsage Raw: 75 Weight: 1 Weighted: 75\n  Total Score: 81\nNode: B\n  Plugin: CPUScore Raw: 2 Weight: 1 Weighted: 2\n  Plugin: BalancedUsage Raw: 75 Weight: 1 Weighted: 75\n  Total Score: 77\nNode: C\n  Plugin: CPUScore Raw: 4 Weight: 1 Weighted: 4\n  Plugin: BalancedUsage Raw: 100 Weight: 1 Weighted: 100\n  Total Score: 104\n=> Selected Node: C",
+      "language": "bash"
+    },
+    "This shows how decisions look when no policy dominates.",
+
+    { "heading": "Scenario 2: CPU dominates" },
+    "CPU availability is given higher importance.",
+    {
+      "code": "runScenario(\"CPU Dominates\", nodes, pod, []WeightedPlugin{\n    {&CPU{}, 14},\n    {&BalancedUsage{}, 1},\n})",
+      "language": "go"
+    },
+    {
+      "code": "--- CPU Dominates ---\nNode: A\n  Plugin: CPUScore Raw: 6 Weight: 14 Weighted: 84\n  Plugin: BalancedUsage Raw: 75 Weight: 1 Weighted: 75\n  Total Score: 159\nNode: B\n  Plugin: CPUScore Raw: 2 Weight: 14 Weighted: 28\n  Plugin: BalancedUsage Raw: 75 Weight: 1 Weighted: 75\n  Total Score: 103\nNode: C\n  Plugin: CPUScore Raw: 4 Weight: 14 Weighted: 56\n  Plugin: BalancedUsage Raw: 100 Weight: 1 Weighted: 100\n  Total Score: 156\n=> Selected Node: A",
+      "language": "bash",
+      "caption": "Node A with the highest free CPU is selected."
+    },
+
+    { "heading": "Scenario 3: Balanced usage dominates" },
+    "Balanced usage is prioritized over raw CPU.",
+    {
+      "code": "runScenario(\"Balanced Usage Dominates\", nodes, pod, []WeightedPlugin{\n    {&CPU{}, 1},\n    {&BalancedUsage{}, 10},\n})",
+      "language": "go"
+    },
+    {
+      "code": "--- Balanced Usage Dominates ---\nNode: A\n  Plugin: CPUScore Raw: 6 Weight: 1 Weighted: 6\n  Plugin: BalancedUsage Raw: 75 Weight: 10 Weighted: 750\n  Total Score: 756\nNode: B\n  Plugin: CPUScore Raw: 2 Weight: 1 Weighted: 2\n  Plugin: BalancedUsage Raw: 75 Weight: 10 Weighted: 750\n  Total Score: 752\nNode: C\n  Plugin: CPUScore Raw: 4 Weight: 1 Weighted: 4\n  Plugin: BalancedUsage Raw: 100 Weight: 10 Weighted: 1000\n  Total Score: 1004\n=> Selected Node: C",
+      "language": "bash",
+      "caption": "Node closest to optimal utilization (Node C) is selected."
+    },
+    "This favors nodes closer to 50% utilization.",
+
+    { "heading": "Scenario 4: Extreme weight bias" },
+    {
+      "code": "runScenario(\"Extreme Weight Bias\", nodes, pod, []WeightedPlugin{\n    {&CPU{}, 100},\n    {&BalancedUsage{}, 1},\n})",
+      "language": "go"
+    },
+    {
+      "code": "--- Extreme Weight Bias ---\nNode: A\n  Plugin: CPUScore Raw: 6 Weight: 100 Weighted: 600\n  Plugin: BalancedUsage Raw: 75 Weight: 1 Weighted: 75\n  Total Score: 675\nNode: B\n  Plugin: CPUScore Raw: 2 Weight: 100 Weighted: 200\n  Plugin: BalancedUsage Raw: 75 Weight: 1 Weighted: 75\n  Total Score: 275\nNode: C\n  Plugin: CPUScore Raw: 4 Weight: 100 Weighted: 400\n  Plugin: BalancedUsage Raw: 100 Weight: 1 Weighted: 100\n  Total Score: 500\n=> Selected Node: A",
+      "language": "bash",
+      "caption": "Extreme weighting makes scheduling decisions single-dimensional."
+    },
+    "This demonstrates how poor weighting can make other policies irrelevant.",
+    { "heading": "Scenario 5: Edge case (invalid node)" },
+    {
+      "code": "nodesWithEdge := append(nodes, Node{\"D\", 8, 8})\n\nrunScenario(\"Includes Fully Utilized Node\", nodesWithEdge, pod, []WeightedPlugin{\n    {&CPU{}, 1},\n    {&BalancedUsage{}, 1},\n})",
+      "language": "go",
+      "caption": "Adding a fully utilized node to observe how the scheduler behaves without a filtering phase."
+    },
+    {
+      "code": "--- Includes Fully Utilized Node ---\nNode: A\n  Plugin: CPUScore Raw: 6 Weight: 1 Weighted: 6\n  Plugin: BalancedUsage Raw: 75 Weight: 1 Weighted: 75\n  Total Score: 81\nNode: B\n  Plugin: CPUScore Raw: 2 Weight: 1 Weighted: 2\n  Plugin: BalancedUsage Raw: 75 Weight: 1 Weighted: 75\n  Total Score: 77\nNode: C\n  Plugin: CPUScore Raw: 4 Weight: 1 Weighted: 4\n  Plugin: BalancedUsage Raw: 100 Weight: 1 Weighted: 100\n  Total Score: 104\nNode: D\n  Plugin: CPUScore Raw: 0 Weight: 1 Weighted: 0\n  Plugin: BalancedUsage Raw: 50 Weight: 1 Weighted: 50\n  Total Score: 50\n=> Selected Node: C",
+      "language": "bash"
+    },
+    "Even though Node D cannot run the pod (no free CPU), it is still evaluated, highlighting the absence of a Filter phase.",
+
+    {
+      "note": "You can view the code <a href='https://github.com/KingrogKDR/prototypes/blob/main/anything/ext-plug-interface/main.go'>here!</a>"
+    },
+
+    { "heading": "What this demonstrates" },
+    "- Policy tradeoffs: Different weights lead to different scheduling outcomes.",
+    "- Sensitivity: Small changes in weights can drastically change decisions.",
+    "- Missing constraints: Without a Filter phase, invalid nodes are still considered.",
+    "- Real-world complexity: Highlights the need for normalization and constraint enforcement.",
+
+    { "heading": "Key insights" },
+
+    "**Scheduling is optimization, not mandatory**",
+    "From what I learnt, we can argue that pods can still run on nodes without a scheduler. It can be assigned to any random node at any moment. But to make sure, it runs efficiently and reliably, scheduler is important.",
+
+    "**Weights change behavior drastically**",
+    "Increasing a plugin’s weight can completely dominate scheduling decisions. It can make or break plugins. Different plugins may return scores/values in different ranges (e.g., 2–6 vs 0–100). This leads to imbalance. Normalization of scores can ensure fairness across plugins.",
+
+    "**Plugins are independent**",
+    "Each plugin operates in isolation. The scheduler is responsible for combining the results.",
+
+    { "heading": "Mapping to real Kubernetes" },
+    "`ScorePlugin` → Plugin",
+    "`Score()` → Score extension point",
+    "`WeightedPlugin` → Plugin weighting",
+    "`schedule()` → Scheduling cycle",
+
+    { "heading": "Conclusion" },
+    "If we strip Kubernetes scheduling to its essence:",
+    "1. **Filter**: remove invalid nodes\n2. **Score**: rank valid nodes\n3. **Bind**: assign the pod",
+
+    "Everything else is an optimization layer on top."
+  ]
+}

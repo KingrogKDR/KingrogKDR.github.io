@@ -5,7 +5,7 @@
   "tag": ["Kubernetes", "Systems", "Distributed Systems"],
   "excerpt": "A simple explanation of how Kubernetes decides where your Pods run, and why you might want to build your own scheduler.",
   "series": "a-custom-kubernetes-scheduler",
-  "pinned": true,
+  "pinned": false,
   "content": [
     { "heading": "What a Kubernetes Scheduler does" },
     "A Kubernetes Scheduler is a component that decides which machine (node) should run a new Pod.",

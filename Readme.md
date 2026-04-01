@@ -222,6 +222,40 @@ Inline formatting works inside bullets:
 "- Use **kubectl** to manage resources\n- Learn `helm` for package management\n- Read the [official docs](https://kubernetes.io)"
 ```
 
+### Numbered list
+
+```json
+"1. First step\n2. Second step\n3. Third step"
+```
+
+### Note blocks
+
+```json
+{ "note": "Your note text here." }
+{ "note": "Be careful with this.", "type": "warning" }
+{ "note": "Pro tip: use labels for better filtering.", "type": "tip" }
+```
+
+| Type           | Icon | Color  |
+| -------------- | ---- | ------ |
+| info (default) | `*`  | Accent |
+| warning        | ⚠️   | Amber  |
+| tip            | 💡   | Green  |
+
+### Code blocks
+
+```json
+{
+  "code": "func main() {\n    fmt.Println(\"hello\")\n}",
+  "language": "go",
+  "caption": "Optional caption below the block."
+}
+```
+
+Supported languages: `go`, `typescript`, `javascript`, `python`, `rust`, `c`, `bash`, `yaml`, `json`, `sql`, `html`, `css`, and [100+ more](https://highlightjs.org/demo).
+
+Write newlines as `\n` inside the `"code"` string. Indentation with spaces works normally.
+
 ---
 
 ### Full example post content

@@ -52,6 +52,13 @@
     <priority>0.8</priority>
   </url>
 
+  <url>
+    <loc>https://kingrogkdr.github.io/post.html?slug=kubernetes-scheduler-from-first-principles</loc>
+    <lastmod>2026-04-1</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Series pages -->
   <url>
     <loc>https://kingrogkdr.github.io/series.html?id=a-custom-kubernetes-scheduler</loc>

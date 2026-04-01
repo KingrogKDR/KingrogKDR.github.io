@@ -43,6 +43,22 @@ function formatDate(iso) {
   });
 }
 
+function readingTime(content) {
+  if (!Array.isArray(content)) return "1 min read";
+  const text = content
+    .map(item => {
+      if (typeof item === "string") return item;
+      if (item.heading) return item.heading;
+      if (item.note) return item.note;
+      if (item.code) return item.code;
+      return "";
+    })
+    .join(" ");
+  const words = text.trim().split(/\s+/).length;
+  const mins = Math.max(1, Math.round(words / 200));
+  return `${mins} min read`;
+}
+
 function slugify(text) {
   return text.toLowerCase().replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-");
 }
@@ -69,13 +85,15 @@ function renderContent(items) {
   const headings = [];
   const html = items.map(item => {
     if (typeof item === "string") {
-      if (item.startsWith("- ")) {
-        const bullets = item
-          .split("\n")
-          .filter(l => l.startsWith("- "))
-          .map(l => `<li>${renderInline(l.slice(2))}</li>`)
+      if (item.startsWith("- ") || item.startsWith("1. ")) {
+        const lines = item.split("\n");
+        const isOrdered = lines[0].match(/^\d+\.\s/);
+        const listTag = isOrdered ? "ol" : "ul";
+        const items = lines
+          .filter(l => l.match(/^(-|\d+\.)\s/))
+          .map(l => `<li>${renderInline(l.replace(/^(-|\d+\.)\s/, ""))}</li>`)
           .join("");
-        return `<ul class="post-list">${bullets}</ul>`;
+        return `<${listTag} class="post-list">${items}</${listTag}>`;
       }
       return `<p>${renderInline(item)}</p>`;
     }
@@ -95,6 +113,34 @@ function renderContent(items) {
         <img src="${esc(imgSrc)}" alt="${esc(item.caption || "")}" loading="lazy">
         ${caption}
       </figure>`;
+    }
+    if (item.note) {
+      const type = item.type || "info";
+      const icons = { info: "*", warning: "⚠️", tip: "💡" };
+      const icon = icons[type] || icons.info;
+      return `<div class="post-note post-note--${type}">
+        <span class="post-note-icon">${icon}</span>
+        <p>${renderInline(item.note)}</p>
+      </div>`;
+    }
+    if (item.code) {
+      const lang = item.code_language || item.language || "plaintext";
+      const escaped = item.code
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+      const caption = item.caption
+        ? `<div class="post-code-caption">${esc(item.caption)}</div>`
+        : "";
+      const id = "code-" + Math.random().toString(36).slice(2, 7);
+      return `<div class="post-code-block">
+        <div class="post-code-header">
+          <span class="post-code-lang">${lang}</span>
+          <button class="post-code-copy" onclick="copyCode('${id}', this)">Copy</button>
+        </div>
+        <pre><code id="${id}" class="language-${lang}">${escaped}</code></pre>
+        ${caption}
+      </div>`;
     }
     return "";
   }).join("\n");
@@ -261,6 +307,8 @@ ${articleTagMeta}
   </script>
 
   <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <style>
     /* ── Nav mobile ── */
     .menu-toggle {
@@ -349,6 +397,105 @@ ${articleTagMeta}
     .post-body a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
     .post-list { padding-left: 1.4em; margin: 16px 0; display: flex; flex-direction: column; gap: 6px; }
     .post-list li { font-size: 15px; line-height: 1.7; color: var(--ink); }
+    .post-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 8px;
+      margin: 24px 0;
+      font-size: 14px;
+      line-height: 1.65;
+      border: 1px solid transparent;
+    }
+    .post-note p { margin: 0; }
+    .post-note-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .post-note--info {
+      background: color-mix(in srgb, var(--accent) 8%, transparent);
+      border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+      color: var(--ink);
+    }
+    .post-note--warning {
+      background: color-mix(in srgb, #f59e0b 10%, transparent);
+      border-color: color-mix(in srgb, #f59e0b 30%, transparent);
+      color: var(--ink);
+    }
+    .post-note--tip {
+      background: color-mix(in srgb, #10b981 8%, transparent);
+      border-color: color-mix(in srgb, #10b981 25%, transparent);
+      color: var(--ink);
+    }
+    .post-code-block {
+      margin: 28px 0;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+    }
+    .post-code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 14px;
+      background: #1a1a1a;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .post-code-lang {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      font-family: monospace;
+    }
+    .post-code-copy {
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.35);
+      background: none;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 4px;
+      padding: 3px 9px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      letter-spacing: 0.04em;
+    }
+    .post-code-copy:hover {
+      color: rgba(255,255,255,0.75);
+      border-color: rgba(255,255,255,0.3);
+    }
+    .post-code-copy.copied {
+      color: #10b981;
+      border-color: #10b981;
+    }
+    .post-code-block pre {
+      margin: 0;
+      border-radius: 0;
+    }
+    .post-code-block pre code {
+      font-family: "Fira Code", "Cascadia Code", "JetBrains Mono", monospace;
+      font-size: 13.5px;
+      line-height: 1.65;
+      padding: 18px 20px !important;
+      background: #1e1e1e !important;
+      border-radius: 0;
+    }
+    .post-code-caption {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      padding: 8px 16px 10px;
+      background: color-mix(in srgb, var(--ink) 4%, transparent);
+      border-top: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
+      font-style: italic;
+    }
+
+    .post-meta-sep {
+      margin: 0 6px;
+      opacity: 0.4;
+    }
+    .post-read-time {
+      color: var(--muted);
+    }
 
     /* ── Share button ── */
     .share-btn {
@@ -483,6 +630,8 @@ ${articleTagMeta}
           <div class="post-header-meta-row">
             <p class="post-header-meta">
               <time itemprop="datePublished" datetime="${esc(post.date)}">${formatDate(post.date)}</time>
+              <span class="post-meta-sep">·</span>
+              <span class="post-read-time">${readingTime(post.content)}</span>
             </p>
             <button class="share-btn" id="share-btn" aria-label="Share this post">
               <svg viewBox="0 0 14 14"><circle cx="11" cy="2.5" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><line x1="4.4" y1="7.7" x2="9.7" y2="10.9"/><line x1="9.7" y1="3.1" x2="4.4" y2="6.3"/></svg>
@@ -548,6 +697,19 @@ ${articleTagMeta}
         inp.select(); document.execCommand("copy");
         document.body.removeChild(inp); showToast("Link copied");
       }
+    });
+    function copyCode(id, btn) {
+      const text = document.getElementById(id).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = "Copied!";
+        btn.classList.add("copied");
+        setTimeout(() => { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 2000);
+      });
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".post-code-block code").forEach(el => {
+        hljs.highlightElement(el);
+      });
     });
   </script>
   <script src="../nav.js"></script>
