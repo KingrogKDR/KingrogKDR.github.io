@@ -867,21 +867,23 @@
           )
           .join("");
         const links = tocList.querySelectorAll("a");
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (entry.isIntersecting) {
-                links.forEach((l) => l.classList.remove("active"));
-                const match = tocList.querySelector(
-                  `a[href="#${entry.target.id}"]`,
-                );
-                if (match) match.classList.add("active");
-              }
-            });
-          },
-          { rootMargin: "-15% 0px -75% 0px", threshold: 0 },
-        );
-        headings.forEach((h) => observer.observe(h));
+        function updateActiveTOC() {
+          const scrollY = window.scrollY + 100; // 100px offset for nav
+          let current = headings[0];
+
+          headings.forEach((h) => {
+            if (h.offsetTop <= scrollY) {
+              current = h;
+            }
+          });
+
+          links.forEach((l) => l.classList.remove("active"));
+          const match = tocList.querySelector(`a[href="#${current.id}"]`);
+          if (match) match.classList.add("active");
+        }
+
+        updateActiveTOC();
+        window.addEventListener("scroll", updateActiveTOC, { passive: true });
       }
 
       function buildSeriesBanner(series, seriesPosts, currentSlug) {
