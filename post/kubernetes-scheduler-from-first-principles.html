@@ -431,7 +431,6 @@
 <p>To customize scheduling, Kubernetes exposes three key concepts.</p>
 <p><mark>Extension Points</mark>: These are hooks in the scheduling pipeline where logic can be injected.</p>
 <p>Examples include <strong>Filter</strong>, <strong>Score</strong>, and <strong>Bind</strong>.</p>
-<p>These are points or stages in the scheduling pipeline where we can inject our own logic.</p>
 <p><mark>Plugins</mark>: These are the actual implementations of scheduling logic.</p>
 <p>Examples include preferring nodes with more CPU or balanced usage.</p>
 <p>We can think of these as the logic that we want to implement. These are tests that the nodes have to go through to be selected.</p>
@@ -448,9 +447,9 @@
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">go</span>
-          <button class="post-code-copy" onclick="copyCode('code-z4m9j', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-6soy3', this)">Copy</button>
         </div>
-        <pre><code id="code-z4m9j" class="language-go">type Node struct {
+        <pre><code id="code-6soy3" class="language-go">type Node struct {
     name       string
     noOfCPUs   int
     usedCPUs   int
@@ -465,9 +464,9 @@ type Pod struct {
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">go</span>
-          <button class="post-code-copy" onclick="copyCode('code-0e9tr', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-zrmd1', this)">Copy</button>
         </div>
-        <pre><code id="code-0e9tr" class="language-go">type ScorePlugin interface {
+        <pre><code id="code-zrmd1" class="language-go">type ScorePlugin interface {
     Name() string
     Score(node Node, pod Pod) int
 }</code></pre>
@@ -479,9 +478,9 @@ type Pod struct {
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">go</span>
-          <button class="post-code-copy" onclick="copyCode('code-8ikqh', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-z58kv', this)">Copy</button>
         </div>
-        <pre><code id="code-8ikqh" class="language-go">type CPU struct{}
+        <pre><code id="code-z58kv" class="language-go">type CPU struct{}
 
 func (c *CPU) Name() string {
     return "CPUScore"
@@ -497,9 +496,9 @@ func (c *CPU) Score(node Node, pod Pod) int {
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">go</span>
-          <button class="post-code-copy" onclick="copyCode('code-ajola', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-2fbzv', this)">Copy</button>
         </div>
-        <pre><code id="code-ajola" class="language-go">type BalancedUsage struct{}
+        <pre><code id="code-2fbzv" class="language-go">type BalancedUsage struct{}
 
 func (b *BalancedUsage) Name() string {
     return "BalancedUsage"
@@ -524,33 +523,6 @@ func (b *BalancedUsage) Score(node Node, pod Pod) int {
 <p><code>totalScore += pluginScore * weight</code></p>
 <p>This allows one policy to dominate over others.</p>
 <h2 id="scheduling-logic" class="post-section-heading">Scheduling logic</h2>
-<div class="post-code-block">
-        <div class="post-code-header">
-          <span class="post-code-lang">go</span>
-          <button class="post-code-copy" onclick="copyCode('code-luwvu', this)">Copy</button>
-        </div>
-        <pre><code id="code-luwvu" class="language-go">func schedule(nodes []Node, pod Pod, plugins []WeightedPlugin) Node {
-    bestScore := -1
-    var bestNode Node
-
-    for _, node := range nodes {
-        totalScore := 0
-
-        for _, wp := range plugins {
-            score := wp.plugin.Score(node, pod)
-            totalScore += score * wp.weight
-        }
-
-        if totalScore &gt; bestScore {
-            bestScore = totalScore
-            bestNode = node
-        }
-    }
-
-    return bestNode
-}</code></pre>
-        
-      </div>
 <p>The scheduler iterates over all nodes, computes a total score using all plugins, and selects the node with the highest score.</p>
 <p>This is effectively the <strong>Score extension point</strong> in action.</p>
 <p>Each plugin runs independently, and the scheduler aggregates their outputs.</p>
@@ -558,12 +530,14 @@ func (b *BalancedUsage) Score(node Node, pod Pod) int {
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">go</span>
-          <button class="post-code-copy" onclick="copyCode('code-vtyaw', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-nigwr', this)">Copy</button>
         </div>
-        <pre><code id="code-vtyaw" class="language-go">func runScenario(title string, nodes []Node, pod Pod, plugins []WeightedPlugin) {
+        <pre><code id="code-nigwr" class="language-go">func runScenario(title string, nodes []Node, pod Pod, plugins []WeightedPlugin) {
     println("\n---", title, "---")
 
-    // Print detailed scoring
+    bestScore := -1
+    var bestNode Node
+
     for _, node := range nodes {
         totalScore := 0
         println("Node:", node.name)
@@ -581,11 +555,14 @@ func (b *BalancedUsage) Score(node Node, pod Pod) int {
         }
 
         println("  Total Score:", totalScore)
+
+        if totalScore &gt; bestScore {
+            bestScore = totalScore
+            bestNode = node
+        }
     }
 
-    // Use schedule function for final decision
-    best := schedule(nodes, pod, plugins)
-    println("=&gt; Selected Node:", best.name)
+    println("=&gt; Selected Node:", bestNode.name)
 }</code></pre>
         
       </div>
@@ -595,9 +572,9 @@ func (b *BalancedUsage) Score(node Node, pod Pod) int {
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">go</span>
-          <button class="post-code-copy" onclick="copyCode('code-f9brl', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-i7bmc', this)">Copy</button>
         </div>
-        <pre><code id="code-f9brl" class="language-go">runScenario("Equal Weights", nodes, pod, []WeightedPlugin{
+        <pre><code id="code-i7bmc" class="language-go">runScenario("Equal Weights", nodes, pod, []WeightedPlugin{
     {&amp;CPU{}, 1},
     {&amp;BalancedUsage{}, 1},
 })</code></pre>
@@ -606,9 +583,9 @@ func (b *BalancedUsage) Score(node Node, pod Pod) int {
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">bash</span>
-          <button class="post-code-copy" onclick="copyCode('code-o62s8', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-y8iyl', this)">Copy</button>
         </div>
-        <pre><code id="code-o62s8" class="language-bash">--- Equal Weights ---
+        <pre><code id="code-y8iyl" class="language-bash">--- Equal Weights ---
 Node: A
   Plugin: CPUScore Raw: 6 Weight: 1 Weighted: 6
   Plugin: BalancedUsage Raw: 75 Weight: 1 Weighted: 75
@@ -630,9 +607,9 @@ Node: C
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">go</span>
-          <button class="post-code-copy" onclick="copyCode('code-cy98n', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-1mbtc', this)">Copy</button>
         </div>
-        <pre><code id="code-cy98n" class="language-go">runScenario("CPU Dominates", nodes, pod, []WeightedPlugin{
+        <pre><code id="code-1mbtc" class="language-go">runScenario("CPU Dominates", nodes, pod, []WeightedPlugin{
     {&amp;CPU{}, 14},
     {&amp;BalancedUsage{}, 1},
 })</code></pre>
@@ -641,9 +618,9 @@ Node: C
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">bash</span>
-          <button class="post-code-copy" onclick="copyCode('code-mjjsc', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-it02w', this)">Copy</button>
         </div>
-        <pre><code id="code-mjjsc" class="language-bash">--- CPU Dominates ---
+        <pre><code id="code-it02w" class="language-bash">--- CPU Dominates ---
 Node: A
   Plugin: CPUScore Raw: 6 Weight: 14 Weighted: 84
   Plugin: BalancedUsage Raw: 75 Weight: 1 Weighted: 75
@@ -664,9 +641,9 @@ Node: C
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">go</span>
-          <button class="post-code-copy" onclick="copyCode('code-sjx0d', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-chl2x', this)">Copy</button>
         </div>
-        <pre><code id="code-sjx0d" class="language-go">runScenario("Balanced Usage Dominates", nodes, pod, []WeightedPlugin{
+        <pre><code id="code-chl2x" class="language-go">runScenario("Balanced Usage Dominates", nodes, pod, []WeightedPlugin{
     {&amp;CPU{}, 1},
     {&amp;BalancedUsage{}, 10},
 })</code></pre>
@@ -675,9 +652,9 @@ Node: C
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">bash</span>
-          <button class="post-code-copy" onclick="copyCode('code-qt7m1', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-gi5x1', this)">Copy</button>
         </div>
-        <pre><code id="code-qt7m1" class="language-bash">--- Balanced Usage Dominates ---
+        <pre><code id="code-gi5x1" class="language-bash">--- Balanced Usage Dominates ---
 Node: A
   Plugin: CPUScore Raw: 6 Weight: 1 Weighted: 6
   Plugin: BalancedUsage Raw: 75 Weight: 10 Weighted: 750
@@ -698,9 +675,9 @@ Node: C
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">go</span>
-          <button class="post-code-copy" onclick="copyCode('code-hndqr', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-cqz1d', this)">Copy</button>
         </div>
-        <pre><code id="code-hndqr" class="language-go">runScenario("Extreme Weight Bias", nodes, pod, []WeightedPlugin{
+        <pre><code id="code-cqz1d" class="language-go">runScenario("Extreme Weight Bias", nodes, pod, []WeightedPlugin{
     {&amp;CPU{}, 100},
     {&amp;BalancedUsage{}, 1},
 })</code></pre>
@@ -709,9 +686,9 @@ Node: C
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">bash</span>
-          <button class="post-code-copy" onclick="copyCode('code-zutmh', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-ds3ce', this)">Copy</button>
         </div>
-        <pre><code id="code-zutmh" class="language-bash">--- Extreme Weight Bias ---
+        <pre><code id="code-ds3ce" class="language-bash">--- Extreme Weight Bias ---
 Node: A
   Plugin: CPUScore Raw: 6 Weight: 100 Weighted: 600
   Plugin: BalancedUsage Raw: 75 Weight: 1 Weighted: 75
@@ -732,9 +709,9 @@ Node: C
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">go</span>
-          <button class="post-code-copy" onclick="copyCode('code-p2wm8', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-wl0jl', this)">Copy</button>
         </div>
-        <pre><code id="code-p2wm8" class="language-go">nodesWithEdge := append(nodes, Node{"D", 8, 8})
+        <pre><code id="code-wl0jl" class="language-go">nodesWithEdge := append(nodes, Node{"D", 8, 8})
 
 runScenario("Includes Fully Utilized Node", nodesWithEdge, pod, []WeightedPlugin{
     {&amp;CPU{}, 1},
@@ -745,9 +722,9 @@ runScenario("Includes Fully Utilized Node", nodesWithEdge, pod, []WeightedPlugin
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">bash</span>
-          <button class="post-code-copy" onclick="copyCode('code-7nan3', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-fyjom', this)">Copy</button>
         </div>
-        <pre><code id="code-7nan3" class="language-bash">--- Includes Fully Utilized Node ---
+        <pre><code id="code-fyjom" class="language-bash">--- Includes Fully Utilized Node ---
 Node: A
   Plugin: CPUScore Raw: 6 Weight: 1 Weighted: 6
   Plugin: BalancedUsage Raw: 75 Weight: 1 Weighted: 75
