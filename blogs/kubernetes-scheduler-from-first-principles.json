@@ -175,7 +175,7 @@
     "`ScorePlugin` → Plugin",
     "`Score()` → Score extension point",
     "`WeightedPlugin` → Plugin weighting",
-    "`schedule()` → Scheduling cycle",
+    "`runScenario()` → Scheduling cycle",
 
     { "heading": "Conclusion" },
     "If we strip Kubernetes scheduling to its essence:",
