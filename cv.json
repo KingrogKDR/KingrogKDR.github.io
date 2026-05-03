@@ -21,22 +21,21 @@
       "icon": "/images/craw.png",
       "description": "A Developer-focused Web Crawler from Scratch",
       "url": "https://github.com/KingrogKDR/Craw",
-      "tags": [
-        "Go",
-        "Redis",
-        "Minio (S3)"
-      ]
+      "tags": ["Go", "Redis", "Minio (S3)"]
+    },
+    {
+      "name": "Video Transcoding Pipeline",
+      "icon": "/images/vts.png",
+      "description": "A Scalable Video Transcoding Service",
+      "url": "https://github.com/KingrogKDR/video-transcoding",
+      "tags": ["Typescript", "PostgreSQL", "Minio (S3)", "BullMQ"]
     },
     {
       "name": "StoreDoc",
       "icon": "images/storeDoc.png",
       "description": "A web application designed to facilitate the upload and storage of files on the web and local storage solutions.",
       "url": "https://store-doc-one.vercel.app",
-      "tags": [
-        "NextJs",
-        "TailwindCSS",
-        "Appwrite"
-      ]
+      "tags": ["NextJs", "TailwindCSS", "Appwrite"]
     }
   ]
 }
