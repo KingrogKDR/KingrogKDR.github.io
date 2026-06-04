@@ -3,14 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Writing — Abhishek Saikia</title>
+    <title>Blogs — Abhishek Saikia</title>
     <meta
       name="description"
       content="Essays, notes, and series by Abhishek Saikia on creativity, slowness, and building things with intention."
     />
     <link rel="canonical" href="https://kingrogkdr.github.io/writing.html" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Writing — Abhishek Saikia" />
+    <meta property="og:title" content="Blogs — Abhishek Saikia" />
     <meta
       property="og:description"
       content="Essays, notes, and series by Abhishek Saikia."
@@ -462,7 +462,7 @@
         <a href="index.html" class="nav-logo" id="nav-name">Abhishek Saikia</a>
         <div class="nav-right">
           <ul class="nav-links" id="nav-links">
-            <li><a href="writing.html">Writing</a></li>
+            <li><a href="writing.html">Blogs</a></li>
             <li><a href="projects.html">Projects</a></li>
             <li><a href="contact.html">Contact</a></li>
           </ul>
@@ -488,7 +488,7 @@
     <main>
       <div class="page">
         <p class="section-label fade-in d1">Essays &amp; Notes</p>
-        <h1 class="section-title fade-in d2">Writing</h1>
+        <h1 class="section-title fade-in d2">Blogs</h1>
 
         <div class="fade-in d3">
           <div class="search-row" role="search">
@@ -817,13 +817,13 @@
       async function init() {
         const cv = await fetch("cv.json").then((r) => r.json());
         window.SEO.setPage({
-          title: "Writing",
+          title: "Blogs",
           description: `Essays, notes, and series by ${cv.name} on creativity, building, and ideas.`,
           url: window.SEO.BASE_URL + "/writing.html",
           type: "website",
           breadcrumbs: [
             { name: "Home", url: window.SEO.BASE_URL + "/" },
-            { name: "Writing", url: window.SEO.BASE_URL + "/writing.html" },
+            { name: "Blogs", url: window.SEO.BASE_URL + "/writing.html" },
           ],
         });
         document.getElementById("nav-name").textContent = cv.name;
