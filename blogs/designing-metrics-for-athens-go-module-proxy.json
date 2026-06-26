@@ -53,21 +53,34 @@
     },
     "The next challenge was determining where these metrics should be recorded.",
     "Following the execution path through the codebase revealed two natural insertion points: cache lookup and upstream fetch.",
-
     {
       "heading": "Key Design Decisions"
     },
-    "The implementation intentionally uses ==low-cardinality labels== such as `hit`, `miss`, `success`, `info`, `gomod`, and `zip`.",
+    "One of the most important decisions during implementation was the choice of tags. The metrics intentionally use a small, bounded set of values such as `success`, `failure`, `hit`, and `miss`, keeping label cardinality low and the resulting time series manageable.",
     {
-      "note": "Avoid using module paths or versions as labels. High-cardinality metrics create an explosion of time series and significantly increase monitoring costs.",
-      "type": "warning"
+      "note": "Avoid using dynamic values such as module paths or versions as metric labels. High-cardinality labels can create an explosion of time series and significantly increase storage and query costs in monitoring systems like Prometheus.",
+      "type": "tip"
     },
-    "For latency measurement, I chose histograms instead of averages.",
+    {
+      "heading": "Why Histograms Instead of Averages?"
+    },
+    "The upstream fetch latency metric uses a histogram with carefully chosen bucket boundaries:",
     {
       "code": "Aggregation: view.Distribution(\n    0.05,\n    0.1,\n    0.2,\n    0.5,\n    1,\n    2,\n    5,\n    10,\n    30,\n)",
       "language": "go",
-      "caption": "Latency bucket boundaries used for upstream fetches."
+      "caption": "Histogram bucket boundaries used for upstream fetch latency (in seconds)."
     },
+    "Instead of storing every latency value individually, requests are grouped into ranges. For example, fetch durations of `0.04s`, `0.08s`, `0.15s`, `0.90s`, and `1.30s` would fall into progressively larger buckets.",
+    "- `≤ 0.05s` → 1 request\n- `≤ 0.1s` → 1 request\n- `≤ 0.2s` → 1 request\n- `≤ 0.5s` → 0 requests\n- `≤ 1s` → 1 request\n- `≤ 2s` → 1 request",
+    "This bucketing preserves the latency distribution and enables percentile calculations such as p95 and p99.",
+    "To see why this matters, consider two different workloads with the same average latency:",
+    {
+      "code": "Run A:\n100ms, 100ms, 100ms, 100ms\nAverage = 100ms\n\nRun B:\n10ms, 10ms, 10ms, 370ms\nAverage = 100ms",
+      "language": "text",
+      "caption": "Two latency distributions with identical averages but very different behavior."
+    },
+    "Although both runs have an average latency of 100 ms, the second contains a significant outlier that would be hidden by the average alone.",
+
     "Histograms preserve latency distributions and enable percentile calculations such as p95 and p99, whereas averages can hide significant outliers.",
 
     {

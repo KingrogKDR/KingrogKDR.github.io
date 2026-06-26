@@ -362,6 +362,7 @@
     <li><a href="#how-it-started">How It Started</a></li>
     <li><a href="#designing-the-metrics">Designing the Metrics</a></li>
     <li><a href="#key-design-decisions">Key Design Decisions</a></li>
+    <li><a href="#why-histograms-instead-of-averages">Why Histograms Instead of Averages?</a></li>
     <li><a href="#implementation">Implementation</a></li>
     <li><a href="#testing-and-validation">Testing and Validation</a></li>
     <li><a href="#results">Results</a></li>
@@ -387,7 +388,7 @@
             <p class="post-header-meta">
               <time itemprop="datePublished" datetime="2026-06-26">June 26, 2026</time>
               <span class="post-meta-sep">·</span>
-              <span class="post-read-time">5 min read</span>
+              <span class="post-read-time">6 min read</span>
             </p>
             <button class="share-btn" id="share-btn" aria-label="Share this post">
               <svg viewBox="0 0 14 14"><circle cx="11" cy="2.5" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><line x1="4.4" y1="7.7" x2="9.7" y2="10.9"/><line x1="9.7" y1="3.1" x2="4.4" y2="6.3"/></svg>
@@ -433,18 +434,19 @@
 <p>The next challenge was determining where these metrics should be recorded.</p>
 <p>Following the execution path through the codebase revealed two natural insertion points: cache lookup and upstream fetch.</p>
 <h2 id="key-design-decisions" class="post-section-heading">Key Design Decisions</h2>
-<p>The implementation intentionally uses <mark>low-cardinality labels</mark> such as <code>hit</code>, <code>miss</code>, <code>success</code>, <code>info</code>, <code>gomod</code>, and <code>zip</code>.</p>
-<div class="post-note post-note--warning">
-        <span class="post-note-icon">⚠️</span>
-        <p>Avoid using module paths or versions as labels. High-cardinality metrics create an explosion of time series and significantly increase monitoring costs.</p>
+<p>One of the most important decisions during implementation was the choice of tags. The metrics intentionally use a small, bounded set of values such as <code>success</code>, <code>failure</code>, <code>hit</code>, and <code>miss</code>, keeping label cardinality low and the resulting time series manageable.</p>
+<div class="post-note post-note--tip">
+        <span class="post-note-icon">💡</span>
+        <p>Avoid using dynamic values such as module paths or versions as metric labels. High-cardinality labels can create an explosion of time series and significantly increase storage and query costs in monitoring systems like Prometheus.</p>
       </div>
-<p>For latency measurement, I chose histograms instead of averages.</p>
+<h2 id="why-histograms-instead-of-averages" class="post-section-heading">Why Histograms Instead of Averages?</h2>
+<p>The upstream fetch latency metric uses a histogram with carefully chosen bucket boundaries:</p>
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">go</span>
-          <button class="post-code-copy" onclick="copyCode('code-3e61f', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-udf7q', this)">Copy</button>
         </div>
-        <pre><code id="code-3e61f" class="language-go">Aggregation: view.Distribution(
+        <pre><code id="code-udf7q" class="language-go">Aggregation: view.Distribution(
     0.05,
     0.1,
     0.2,
@@ -455,8 +457,27 @@
     10,
     30,
 )</code></pre>
-        <div class="post-code-caption">Latency bucket boundaries used for upstream fetches.</div>
+        <div class="post-code-caption">Histogram bucket boundaries used for upstream fetch latency (in seconds).</div>
       </div>
+<p>Instead of storing every latency value individually, requests are grouped into ranges. For example, fetch durations of <code>0.04s</code>, <code>0.08s</code>, <code>0.15s</code>, <code>0.90s</code>, and <code>1.30s</code> would fall into progressively larger buckets.</p>
+<ul class="post-list"><li><code>≤ 0.05s</code> → 1 request</li><li><code>≤ 0.1s</code> → 1 request</li><li><code>≤ 0.2s</code> → 1 request</li><li><code>≤ 0.5s</code> → 0 requests</li><li><code>≤ 1s</code> → 1 request</li><li><code>≤ 2s</code> → 1 request</li></ul>
+<p>This bucketing preserves the latency distribution and enables percentile calculations such as p95 and p99.</p>
+<p>To see why this matters, consider two different workloads with the same average latency:</p>
+<div class="post-code-block">
+        <div class="post-code-header">
+          <span class="post-code-lang">text</span>
+          <button class="post-code-copy" onclick="copyCode('code-lskx3', this)">Copy</button>
+        </div>
+        <pre><code id="code-lskx3" class="language-text">Run A:
+100ms, 100ms, 100ms, 100ms
+Average = 100ms
+
+Run B:
+10ms, 10ms, 10ms, 370ms
+Average = 100ms</code></pre>
+        <div class="post-code-caption">Two latency distributions with identical averages but very different behavior.</div>
+      </div>
+<p>Although both runs have an average latency of 100 ms, the second contains a significant outlier that would be hidden by the average alone.</p>
 <p>Histograms preserve latency distributions and enable percentile calculations such as p95 and p99, whereas averages can hide significant outliers.</p>
 <h2 id="implementation" class="post-section-heading">Implementation</h2>
 <p>The implementation introduced three new OpenCensus measures and corresponding views.</p>
@@ -464,9 +485,9 @@
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">go</span>
-          <button class="post-code-copy" onclick="copyCode('code-sorot', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-2i2cx', this)">Copy</button>
         </div>
-        <pre><code id="code-sorot" class="language-go">var (
+        <pre><code id="code-2i2cx" class="language-go">var (
 	cacheResult = tag.MustNewKey("cache_result")
 	cacheType   = tag.MustNewKey("cache_type")
 	fetchResult = tag.MustNewKey("fetch_result")
@@ -476,9 +497,9 @@
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">go</span>
-          <button class="post-code-copy" onclick="copyCode('code-ao2nx', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-5zg69', this)">Copy</button>
         </div>
-        <pre><code id="code-ao2nx" class="language-go">var (
+        <pre><code id="code-5zg69" class="language-go">var (
 	cacheStats                 = stats.Int64("cache_lookup_total", "Count of cache lookup results", stats.UnitDimensionless)
 	upstreamFetchStats         = stats.Int64("upstream_fetch_total", "Count of upstream fetch attempts", stats.UnitDimensionless)
 	upstreamFetchDurationStats = stats.Float64("upstream_fetch_duration_seconds", "Distribution of upstream fetch latency in seconds", stats.UnitSeconds)
@@ -488,17 +509,17 @@
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">go</span>
-          <button class="post-code-copy" onclick="copyCode('code-v1fqn', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-7yfxa', this)">Copy</button>
         </div>
-        <pre><code id="code-v1fqn" class="language-go">var upstreamExponentialBuckets = []float64{0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 30}</code></pre>
+        <pre><code id="code-7yfxa" class="language-go">var upstreamExponentialBuckets = []float64{0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 30}</code></pre>
         <div class="post-code-caption">Histogram bucket boundaries (in seconds) used to group upstream fetch latencies. These buckets enable percentile calculations such as p95 and p99.</div>
       </div>
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">go</span>
-          <button class="post-code-copy" onclick="copyCode('code-i1c1d', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-5lwck', this)">Copy</button>
         </div>
-        <pre><code id="code-i1c1d" class="language-go">var (
+        <pre><code id="code-5lwck" class="language-go">var (
 	cacheLookupView = &amp;view.View{
 		Name:        "cache_lookup_total",
 		Measure:     cacheStats,
@@ -532,9 +553,9 @@
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">bash</span>
-          <button class="post-code-copy" onclick="copyCode('code-7goe0', this)">Copy</button>
+          <button class="post-code-copy" onclick="copyCode('code-agfmb', this)">Copy</button>
         </div>
-        <pre><code id="code-7goe0" class="language-bash">make run-docker
+        <pre><code id="code-agfmb" class="language-bash">make run-docker
 
 go env -w GOPROXY=http://localhost:3000
 go mod download github.com/gorilla/mux@latest
