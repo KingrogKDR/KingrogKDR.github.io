@@ -4,31 +4,32 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>On slowness as a creative practice — Abhishek Saikia</title>
-  <meta name="description" content="What happens when you deliberately resist the pressure to ship, publish, and post — and what you find waiting in the silence. An essay on slowness as a creative practice." />
-  <link rel="canonical" href="https://kingrogkdr.github.io/post/on-slowness-as-a-creative-practice.html" />
+  <title>Designing Metrics for Athens: A Go Module Proxy — Abhishek Saikia</title>
+  <meta name="description" content="A deep dive into my open source contribution to Athens, where I designed and implemented cache lookup and upstream fetch metrics to improve observability for production deployments." />
+  <link rel="canonical" href="https://kingrogkdr.github.io/post/designing-metrics-for-athens-go-module-proxy.html" />
 
   <!-- Open Graph — baked in at build time so crawlers read them without JS -->
   <meta property="og:site_name"    content="Abhishek Saikia" />
   <meta property="og:type"         content="article" />
-  <meta property="og:title"        content="On slowness as a creative practice — Abhishek Saikia" />
-  <meta property="og:description"  content="What happens when you deliberately resist the pressure to ship, publish, and post — and what you find waiting in the silence. An essay on slowness as a creative practice." />
-  <meta property="og:url"          content="https://kingrogkdr.github.io/post/on-slowness-as-a-creative-practice.html" />
-  <meta property="og:image"        content="https://kingrogkdr.github.io/images/og-default.png" />
+  <meta property="og:title"        content="Designing Metrics for Athens: A Go Module Proxy — Abhishek Saikia" />
+  <meta property="og:description"  content="A deep dive into my open source contribution to Athens, where I designed and implemented cache lookup and upstream fetch metrics to improve observability for production deployments." />
+  <meta property="og:url"          content="https://kingrogkdr.github.io/post/designing-metrics-for-athens-go-module-proxy.html" />
+  <meta property="og:image"        content="https://kingrogkdr.github.io/images/og/designing-metrics-for-athens-go-module-proxy.jpg" />
   <meta property="og:image:width"  content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="article:published_time" content="2026-03-29" />
-  <meta property="article:modified_time"  content="2026-03-29" />
+  <meta property="article:published_time" content="2026-06-26" />
+  <meta property="article:modified_time"  content="2026-06-26" />
   <meta property="article:author"         content="Abhishek Saikia" />
-  <meta property="article:tag" content="Essay" />
-  <meta property="article:tag" content="Thoughts" />
-  <meta property="article:tag" content="Creativity" />
+  <meta property="article:tag" content="Go" />
+  <meta property="article:tag" content="Open Source" />
+  <meta property="article:tag" content="Observability" />
+  <meta property="article:tag" content="Prometheus" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary_large_image" />
-  <meta name="twitter:title"       content="On slowness as a creative practice — Abhishek Saikia" />
-  <meta name="twitter:description" content="What happens when you deliberately resist the pressure to ship, publish, and post — and what you find waiting in the silence. An essay on slowness as a creative practice." />
-  <meta name="twitter:image"       content="https://kingrogkdr.github.io/images/og-default.png" />
+  <meta name="twitter:title"       content="Designing Metrics for Athens: A Go Module Proxy — Abhishek Saikia" />
+  <meta name="twitter:description" content="A deep dive into my open source contribution to Athens, where I designed and implemented cache lookup and upstream fetch metrics to improve observability for production deployments." />
+  <meta name="twitter:image"       content="https://kingrogkdr.github.io/images/og/designing-metrics-for-athens-go-module-proxy.jpg" />
   <meta name="twitter:site"        content="@king_rog234" />
 
   <!-- Favicons -->
@@ -356,8 +357,15 @@
   <aside class="toc" id="toc" aria-label="Table of contents">
   <p class="toc-label">Contents</p>
   <ul class="toc-list" id="toc-list">
-    <li><a href="#the-anxiety-of-constant-output">The anxiety of constant output</a></li>
-    <li><a href="#protecting-the-slow">Protecting the slow</a></li>
+    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#what-is-athens">What is Athens?</a></li>
+    <li><a href="#how-it-started">How It Started</a></li>
+    <li><a href="#designing-the-metrics">Designing the Metrics</a></li>
+    <li><a href="#key-design-decisions">Key Design Decisions</a></li>
+    <li><a href="#implementation">Implementation</a></li>
+    <li><a href="#testing-and-validation">Testing and Validation</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#lessons-learned">Lessons Learned</a></li>
   </ul>
 </aside>
 
@@ -373,13 +381,13 @@
         
         
         <div class="post-header fade-in d2">
-          <div class="post-header-tags"><a href="../writing.html?tag=essay" class="post-header-tag-chip" rel="tag">Essay</a><a href="../writing.html?tag=thoughts" class="post-header-tag-chip" rel="tag">Thoughts</a><a href="../writing.html?tag=creativity" class="post-header-tag-chip" rel="tag">Creativity</a></div>
-          <h1 class="post-header-title" itemprop="headline">On slowness as a creative practice</h1>
+          <div class="post-header-tags"><a href="../writing.html?tag=go" class="post-header-tag-chip" rel="tag">Go</a><a href="../writing.html?tag=open%20source" class="post-header-tag-chip" rel="tag">Open Source</a><a href="../writing.html?tag=observability" class="post-header-tag-chip" rel="tag">Observability</a><a href="../writing.html?tag=prometheus" class="post-header-tag-chip" rel="tag">Prometheus</a></div>
+          <h1 class="post-header-title" itemprop="headline">Designing Metrics for Athens: A Go Module Proxy</h1>
           <div class="post-header-meta-row">
             <p class="post-header-meta">
-              <time itemprop="datePublished" datetime="2026-03-29">March 29, 2026</time>
+              <time itemprop="datePublished" datetime="2026-06-26">June 26, 2026</time>
               <span class="post-meta-sep">·</span>
-              <span class="post-read-time">1 min read</span>
+              <span class="post-read-time">5 min read</span>
             </p>
             <button class="share-btn" id="share-btn" aria-label="Share this post">
               <svg viewBox="0 0 14 14"><circle cx="11" cy="2.5" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><line x1="4.4" y1="7.7" x2="9.7" y2="10.9"/><line x1="9.7" y1="3.1" x2="4.4" y2="6.3"/></svg>
@@ -389,14 +397,167 @@
         </div>
         <hr class="post-header-divider">
         <div class="post-body fade-in d3" itemprop="articleBody">
-          <h2 id="the-anxiety-of-constant-output" class="post-section-heading">The anxiety of constant output</h2>
-<p>There is a particular kind of anxiety that comes with the modern creative life: the feeling that if you are not producing, you are falling behind. Every day without a post, a tweet, a shipped feature, is a day lost. The feed moves on without you.</p>
-<p>I've been trying, deliberately, to move slower. Not out of laziness (honestly, I've never worked harder before) but out of a suspicion that the pressure to constantly output is quietly destroying the conditions that make good work possible.</p>
-<p>Speed optimizes for volume. Slowness optimizes for depth. And depth is what I actually care about.</p>
-<p>When I gave myself permission to sit with an idea for weeks instead of days, I was finally able to understand it well. The idea stopped being a thing to be processed or consumed and became a thing to be understood. I started noticing what I actually thought, rather than what I was supposed to think.</p>
-<h2 id="protecting-the-slow" class="post-section-heading">Protecting the slow</h2>
-<p>This is not an argument against shipping, or publishing, or being present online. It's an argument for protecting some portion of your creative life from the logic of throughput. For letting some things be slow.</p>
-<p>The best work I've done and will do from now on, the pieces I'm most proud of, the projects that held together - all came from periods where I resisted the urge to publish too soon. The silence before the task is as much a part of the work as the task itself.</p>
+          <h2 id="introduction" class="post-section-heading">Introduction</h2>
+<p>When you run a service in production, one of the first questions you would want to ask after deploying it is, <em>"How is it performing?"</em> For a Go Module Proxy like Athens, that translates to questions like:</p>
+<ul class="post-list"><li>How many requests are served from cache?</li><li>How often is the proxy fetching modules from upstream sources?</li><li>Are these upstream sources becoming slower over time?</li></ul>
+<p>Without instrumentation, these questions are difficult to answer and operators often have to rely on logs or guesswork instead of concrete, measurable data.</p>
+<p>While exploring the Athens codebase for a potential open source contribution, I noticed that these insights were not readily available through metrics. That observation led me to propose and implement a set of OpenCensus metrics covering cache lookups and upstream fetch operations.</p>
+<p>In this post, I walk through the engineering behind that contribution and the design decisions that shaped it.</p>
+<div class="post-note post-note--info">
+        <span class="post-note-icon">*</span>
+        <p>The pull request was merged roughly three months before this article was written. You can view the PR <a href='https://github.com/gomods/athens/pull/2093'>here</a>.</p>
+      </div>
+<h2 id="what-is-athens" class="post-section-heading">What is Athens?</h2>
+<p>Before diving deeper, it helps to understand where Athens sits in the Go ecosystem.</p>
+<p>When you run <code>go get</code> or <code>go mod download</code>, the Go toolchain typically fetches modules through a module proxy instead of contacting version control systems directly. A module proxy serves previously downloaded artifacts from local storage and only reaches out upstream when a requested module is missing.</p>
+<figure class="post-image">
+        <img src="../images/athens/go-module-proxy.excalidraw.png" alt="How a Go module proxy serves cached modules and falls back to upstream sources." loading="lazy">
+        <figcaption class="post-image-caption">How a Go module proxy serves cached modules and falls back to upstream sources.</figcaption>
+      </figure>
+<p>Unlike Google's public module proxy, Athens is designed to be self-hosted and fully under the operator's control. It supports multiple storage backends including local filesystems and object stores like S3 and MinIO, making it attractive for organizations that need reproducible builds and reduced dependency on external services.</p>
+<h2 id="how-it-started" class="post-section-heading">How It Started</h2>
+<p>I've always been curious about how Go manages dependencies under the hood. Learning about <code>go get</code>, <code>go.mod</code>, <code>go.sum</code>, mirrors, and proxies made me appreciate the engineering behind Go's module system.</p>
+<p>After discovering Athens, I forked the repository and spent a few days exploring the codebase, tracing request flows, and understanding its architecture before attempting any changes.</p>
+<p>While reading through the observability layer, I asked myself: <mark>If I were operating this service in production, what metrics would I want on my dashboard?</mark></p>
+<p>Athens already exposed some metrics, but I noticed visibility into cache lookups and upstream fetch behavior could be improved.</p>
+<p>With that motivation, I opened an <a href='https://github.com/gomods/athens/issues/2091'>issue</a> proposing these additions and after a green light from one of the members, I implemented the feature myself.</p>
+<h2 id="designing-the-metrics" class="post-section-heading">Designing the Metrics</h2>
+<p>As I traced the request lifecycle, I realized there was no easy way to quantify one of the most important characteristics of a caching proxy: <em>how effectively it was using its cache</em>. An operator could infer behavior from logs, but there was no dedicated metric indicating whether a module request resulted in a cache hit or required contacting an upstream source.</p>
+<p>Similarly, while upstream fetches were a critical part of the request path, there was limited visibility into how frequently they occurred or how long they took. These values are especially useful when investigating increased latency, diagnosing cache misses, or monitoring the health of external dependencies.</p>
+<p>Hence, I proposed three additional metrics:</p>
+<ul class="post-list"><li>Cache lookup counter to track hits and misses.</li><li>Upstream fetch counter to measure external downloads.</li><li>Upstream fetch duration histogram to capture latency distributions.</li></ul>
+<figure class="post-image">
+        <img src="../images/athens/metrics-location.excalidraw.png" alt="Instrumentation points inside the Athens request lifecycle." loading="lazy">
+        <figcaption class="post-image-caption">Instrumentation points inside the Athens request lifecycle.</figcaption>
+      </figure>
+<p>The next challenge was determining where these metrics should be recorded.</p>
+<p>Following the execution path through the codebase revealed two natural insertion points: cache lookup and upstream fetch.</p>
+<h2 id="key-design-decisions" class="post-section-heading">Key Design Decisions</h2>
+<p>The implementation intentionally uses <mark>low-cardinality labels</mark> such as <code>hit</code>, <code>miss</code>, <code>success</code>, <code>info</code>, <code>gomod</code>, and <code>zip</code>.</p>
+<div class="post-note post-note--warning">
+        <span class="post-note-icon">⚠️</span>
+        <p>Avoid using module paths or versions as labels. High-cardinality metrics create an explosion of time series and significantly increase monitoring costs.</p>
+      </div>
+<p>For latency measurement, I chose histograms instead of averages.</p>
+<div class="post-code-block">
+        <div class="post-code-header">
+          <span class="post-code-lang">go</span>
+          <button class="post-code-copy" onclick="copyCode('code-3e61f', this)">Copy</button>
+        </div>
+        <pre><code id="code-3e61f" class="language-go">Aggregation: view.Distribution(
+    0.05,
+    0.1,
+    0.2,
+    0.5,
+    1,
+    2,
+    5,
+    10,
+    30,
+)</code></pre>
+        <div class="post-code-caption">Latency bucket boundaries used for upstream fetches.</div>
+      </div>
+<p>Histograms preserve latency distributions and enable percentile calculations such as p95 and p99, whereas averages can hide significant outliers.</p>
+<h2 id="implementation" class="post-section-heading">Implementation</h2>
+<p>The implementation introduced three new OpenCensus measures and corresponding views.</p>
+<ul class="post-list"><li><code>cache_lookup_total</code></li><li><code>upstream_fetch_total</code></li><li><code>upstream_fetch_duration_seconds</code></li></ul>
+<div class="post-code-block">
+        <div class="post-code-header">
+          <span class="post-code-lang">go</span>
+          <button class="post-code-copy" onclick="copyCode('code-sorot', this)">Copy</button>
+        </div>
+        <pre><code id="code-sorot" class="language-go">var (
+	cacheResult = tag.MustNewKey("cache_result")
+	cacheType   = tag.MustNewKey("cache_type")
+	fetchResult = tag.MustNewKey("fetch_result")
+)</code></pre>
+        <div class="post-code-caption">Tag keys used to categorize metrics. `cache_result` distinguishes hits from misses, `cache_type` identifies the requested artifact (`info`, `gomod`, or `zip`), and `fetch_result` records the outcome of upstream fetches.</div>
+      </div>
+<div class="post-code-block">
+        <div class="post-code-header">
+          <span class="post-code-lang">go</span>
+          <button class="post-code-copy" onclick="copyCode('code-ao2nx', this)">Copy</button>
+        </div>
+        <pre><code id="code-ao2nx" class="language-go">var (
+	cacheStats                 = stats.Int64("cache_lookup_total", "Count of cache lookup results", stats.UnitDimensionless)
+	upstreamFetchStats         = stats.Int64("upstream_fetch_total", "Count of upstream fetch attempts", stats.UnitDimensionless)
+	upstreamFetchDurationStats = stats.Float64("upstream_fetch_duration_seconds", "Distribution of upstream fetch latency in seconds", stats.UnitSeconds)
+)</code></pre>
+        <div class="post-code-caption">OpenCensus measures defining the three metrics introduced by the contribution: cache lookups, upstream fetch attempts, and upstream fetch latency.</div>
+      </div>
+<div class="post-code-block">
+        <div class="post-code-header">
+          <span class="post-code-lang">go</span>
+          <button class="post-code-copy" onclick="copyCode('code-v1fqn', this)">Copy</button>
+        </div>
+        <pre><code id="code-v1fqn" class="language-go">var upstreamExponentialBuckets = []float64{0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 30}</code></pre>
+        <div class="post-code-caption">Histogram bucket boundaries (in seconds) used to group upstream fetch latencies. These buckets enable percentile calculations such as p95 and p99.</div>
+      </div>
+<div class="post-code-block">
+        <div class="post-code-header">
+          <span class="post-code-lang">go</span>
+          <button class="post-code-copy" onclick="copyCode('code-i1c1d', this)">Copy</button>
+        </div>
+        <pre><code id="code-i1c1d" class="language-go">var (
+	cacheLookupView = &amp;view.View{
+		Name:        "cache_lookup_total",
+		Measure:     cacheStats,
+		Description: "Count of cache lookup results",
+		TagKeys:     []tag.Key{cacheResult, cacheType},
+		Aggregation: view.Count(),
+	}
+
+	upstreamFetchView = &amp;view.View{
+		Name:        "upstream_fetch_total",
+		Measure:     upstreamFetchStats,
+		Description: "Count of upstream fetch attempts",
+		TagKeys:     []tag.Key{fetchResult},
+		Aggregation: view.Count(),
+	}
+
+	upstreamFetchLatencyView = &amp;view.View{
+		Name:        "upstream_fetch_duration_seconds",
+		Measure:     upstreamFetchDurationStats,
+		Description: "Distribution of upstream fetch latency in seconds",
+		TagKeys:     []tag.Key{fetchResult},
+		Aggregation: view.Distribution(upstreamExponentialBuckets...),
+	}
+)</code></pre>
+        <div class="post-code-caption">Views define how the raw measures are aggregated. Cache lookups and upstream fetches are counted, while fetch latency is aggregated into a histogram using the predefined bucket boundaries.</div>
+      </div>
+<p>Cache lookups are tagged with both their result and artifact type, while upstream fetches record both outcome and duration.</p>
+<h2 id="testing-and-validation" class="post-section-heading">Testing and Validation</h2>
+<p>To verify the implementation, I added unit tests that register the corresponding views, record sample events, retrieve aggregated data, and validate the expected values.</p>
+<p>I also ran Athens locally and generated traffic through the proxy.</p>
+<div class="post-code-block">
+        <div class="post-code-header">
+          <span class="post-code-lang">bash</span>
+          <button class="post-code-copy" onclick="copyCode('code-7goe0', this)">Copy</button>
+        </div>
+        <pre><code id="code-7goe0" class="language-bash">make run-docker
+
+go env -w GOPROXY=http://localhost:3000
+go mod download github.com/gorilla/mux@latest
+go mod download golang.org/x/text@latest
+
+curl http://localhost:3000/metrics | grep cache_lookup_total
+curl http://localhost:3000/metrics | grep upstream_fetch_total
+curl http://localhost:3000/metrics | grep upstream_fetch_duration_seconds</code></pre>
+        <div class="post-code-caption">Generating traffic and inspecting exported metrics.</div>
+      </div>
+<figure class="post-image">
+        <img src="../images/athens/results.png" alt="Metrics exposed by Athens after exercising the proxy." loading="lazy">
+        <figcaption class="post-image-caption">Metrics exposed by Athens after exercising the proxy.</figcaption>
+      </figure>
+<h2 id="results" class="post-section-heading">Results</h2>
+<p>The exported metrics confirmed that cache hits, cache misses, upstream fetches, and fetch latency distributions were being recorded correctly.</p>
+<p>In my local testing, only two upstream fetches were required while subsequent requests were served from cache, demonstrating the effectiveness of the caching layer.</p>
+<p>These metrics provide operators with actionable insights into cache efficiency and upstream dependency performance and can be visualized directly in systems such as Grafana.</p>
+<h2 id="lessons-learned" class="post-section-heading">Lessons Learned</h2>
+<p>Looking back, the most valuable part of this contribution was understanding the problem well enough to design the right solution and not writing the code.</p>
+<p>The first lesson was that effective observability starts by asking the right questions rather than collecting every possible metric.</p>
+<p>The second lesson was the importance of low-cardinality labels. Keeping labels low-cardinality ensures metrics remain scalable and inexpensive to store.</p>
+<p>Finally, spending time understanding a mature codebase before implementing changes helped me learn a lot of new stuff. It also resulted in a smaller and easier-to-review pull request.</p>
         </div>
       </article>
     </div>
@@ -427,9 +588,9 @@
     })();
 
     // ── Share button ──
-    const CANON_URL    = "https://kingrogkdr.github.io/post/on-slowness-as-a-creative-practice.html";
-    const POST_TITLE   = "On slowness as a creative practice";
-    const POST_EXCERPT = "What happens when you deliberately resist the pressure to ship, publish, and post — and what you find waiting in the silence. An essay on slowness as a creative practice.";
+    const CANON_URL    = "https://kingrogkdr.github.io/post/designing-metrics-for-athens-go-module-proxy.html";
+    const POST_TITLE   = "Designing Metrics for Athens: A Go Module Proxy";
+    const POST_EXCERPT = "A deep dive into my open source contribution to Athens, where I designed and implemented cache lookup and upstream fetch metrics to improve observability for production deployments.";
     let toastTimer = null;
     function showToast(msg) {
       const toast = document.getElementById("share-toast");

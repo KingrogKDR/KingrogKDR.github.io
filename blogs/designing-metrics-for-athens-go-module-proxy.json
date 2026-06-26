@@ -1,0 +1,130 @@
+{
+  "title": "Designing Metrics for Athens: A Go Module Proxy",
+  "slug": "designing-metrics-for-athens-go-module-proxy",
+  "date": "2026-06-26",
+  "tag": ["Go", "Open Source", "Observability", "Prometheus"],
+  "excerpt": "A deep dive into my open source contribution to Athens, where I designed and implemented cache lookup and upstream fetch metrics to improve observability for production deployments.",
+  "pinned": true,
+  "og-image": "images/og/designing-metrics-for-athens-go-module-proxy.jpg",
+  "content": [
+    {
+      "heading": "Introduction"
+    },
+    "When you run a service in production, one of the first questions you would want to ask after deploying it is, *\"How is it performing?\"* For a Go Module Proxy like Athens, that translates to questions like:",
+    "- How many requests are served from cache?\n- How often is the proxy fetching modules from upstream sources?\n- Are these upstream sources becoming slower over time?",
+    "Without instrumentation, these questions are difficult to answer and operators often have to rely on logs or guesswork instead of concrete, measurable data.",
+    "While exploring the Athens codebase for a potential open source contribution, I noticed that these insights were not readily available through metrics. That observation led me to propose and implement a set of OpenCensus metrics covering cache lookups and upstream fetch operations.",
+    "In this post, I walk through the engineering behind that contribution and the design decisions that shaped it.",
+    {
+      "note": "The pull request was merged roughly three months before this article was written. You can view the PR <a href='https://github.com/gomods/athens/pull/2093'>here</a>.",
+      "type": "info"
+    },
+
+    {
+      "heading": "What is Athens?"
+    },
+    "Before diving deeper, it helps to understand where Athens sits in the Go ecosystem.",
+    "When you run `go get` or `go mod download`, the Go toolchain typically fetches modules through a module proxy instead of contacting version control systems directly. A module proxy serves previously downloaded artifacts from local storage and only reaches out upstream when a requested module is missing.",
+    {
+      "image": "images/athens/go-module-proxy.excalidraw.png",
+      "caption": "How a Go module proxy serves cached modules and falls back to upstream sources."
+    },
+    "Unlike Google's public module proxy, Athens is designed to be self-hosted and fully under the operator's control. It supports multiple storage backends including local filesystems and object stores like S3 and MinIO, making it attractive for organizations that need reproducible builds and reduced dependency on external services.",
+
+    {
+      "heading": "How It Started"
+    },
+    "I've always been curious about how Go manages dependencies under the hood. Learning about `go get`, `go.mod`, `go.sum`, mirrors, and proxies made me appreciate the engineering behind Go's module system.",
+    "After discovering Athens, I forked the repository and spent a few days exploring the codebase, tracing request flows, and understanding its architecture before attempting any changes.",
+    "While reading through the observability layer, I asked myself: ==If I were operating this service in production, what metrics would I want on my dashboard?==",
+    "Athens already exposed some metrics, but I noticed visibility into cache lookups and upstream fetch behavior could be improved.",
+    "With that motivation, I opened an <a href='https://github.com/gomods/athens/issues/2091'>issue</a> proposing these additions and after a green light from one of the members, I implemented the feature myself.",
+
+    {
+      "heading": "Designing the Metrics"
+    },
+    "As I traced the request lifecycle, I realized there was no easy way to quantify one of the most important characteristics of a caching proxy: *how effectively it was using its cache*. An operator could infer behavior from logs, but there was no dedicated metric indicating whether a module request resulted in a cache hit or required contacting an upstream source.",
+    "Similarly, while upstream fetches were a critical part of the request path, there was limited visibility into how frequently they occurred or how long they took. These values are especially useful when investigating increased latency, diagnosing cache misses, or monitoring the health of external dependencies.",
+    "Hence, I proposed three additional metrics:",
+    "- Cache lookup counter to track hits and misses.\n- Upstream fetch counter to measure external downloads.\n- Upstream fetch duration histogram to capture latency distributions.",
+    {
+      "image": "images/athens/metrics-location.excalidraw.png",
+      "caption": "Instrumentation points inside the Athens request lifecycle."
+    },
+    "The next challenge was determining where these metrics should be recorded.",
+    "Following the execution path through the codebase revealed two natural insertion points: cache lookup and upstream fetch.",
+
+    {
+      "heading": "Key Design Decisions"
+    },
+    "The implementation intentionally uses ==low-cardinality labels== such as `hit`, `miss`, `success`, `info`, `gomod`, and `zip`.",
+    {
+      "note": "Avoid using module paths or versions as labels. High-cardinality metrics create an explosion of time series and significantly increase monitoring costs.",
+      "type": "warning"
+    },
+    "For latency measurement, I chose histograms instead of averages.",
+    {
+      "code": "Aggregation: view.Distribution(\n    0.05,\n    0.1,\n    0.2,\n    0.5,\n    1,\n    2,\n    5,\n    10,\n    30,\n)",
+      "language": "go",
+      "caption": "Latency bucket boundaries used for upstream fetches."
+    },
+    "Histograms preserve latency distributions and enable percentile calculations such as p95 and p99, whereas averages can hide significant outliers.",
+
+    {
+      "heading": "Implementation"
+    },
+    "The implementation introduced three new OpenCensus measures and corresponding views.",
+    "- `cache_lookup_total`\n- `upstream_fetch_total`\n- `upstream_fetch_duration_seconds`",
+    {
+      "code": "var (\n\tcacheResult = tag.MustNewKey(\"cache_result\")\n\tcacheType   = tag.MustNewKey(\"cache_type\")\n\tfetchResult = tag.MustNewKey(\"fetch_result\")\n)",
+      "language": "go",
+      "caption": "Tag keys used to categorize metrics. `cache_result` distinguishes hits from misses, `cache_type` identifies the requested artifact (`info`, `gomod`, or `zip`), and `fetch_result` records the outcome of upstream fetches."
+    },
+    {
+      "code": "var (\n\tcacheStats                 = stats.Int64(\"cache_lookup_total\", \"Count of cache lookup results\", stats.UnitDimensionless)\n\tupstreamFetchStats         = stats.Int64(\"upstream_fetch_total\", \"Count of upstream fetch attempts\", stats.UnitDimensionless)\n\tupstreamFetchDurationStats = stats.Float64(\"upstream_fetch_duration_seconds\", \"Distribution of upstream fetch latency in seconds\", stats.UnitSeconds)\n)",
+      "language": "go",
+      "caption": "OpenCensus measures defining the three metrics introduced by the contribution: cache lookups, upstream fetch attempts, and upstream fetch latency."
+    },
+    {
+      "code": "var upstreamExponentialBuckets = []float64{0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 30}",
+      "language": "go",
+      "caption": "Histogram bucket boundaries (in seconds) used to group upstream fetch latencies. These buckets enable percentile calculations such as p95 and p99."
+    },
+    {
+      "code": "var (\n\tcacheLookupView = &view.View{\n\t\tName:        \"cache_lookup_total\",\n\t\tMeasure:     cacheStats,\n\t\tDescription: \"Count of cache lookup results\",\n\t\tTagKeys:     []tag.Key{cacheResult, cacheType},\n\t\tAggregation: view.Count(),\n\t}\n\n\tupstreamFetchView = &view.View{\n\t\tName:        \"upstream_fetch_total\",\n\t\tMeasure:     upstreamFetchStats,\n\t\tDescription: \"Count of upstream fetch attempts\",\n\t\tTagKeys:     []tag.Key{fetchResult},\n\t\tAggregation: view.Count(),\n\t}\n\n\tupstreamFetchLatencyView = &view.View{\n\t\tName:        \"upstream_fetch_duration_seconds\",\n\t\tMeasure:     upstreamFetchDurationStats,\n\t\tDescription: \"Distribution of upstream fetch latency in seconds\",\n\t\tTagKeys:     []tag.Key{fetchResult},\n\t\tAggregation: view.Distribution(upstreamExponentialBuckets...),\n\t}\n)",
+      "language": "go",
+      "caption": "Views define how the raw measures are aggregated. Cache lookups and upstream fetches are counted, while fetch latency is aggregated into a histogram using the predefined bucket boundaries."
+    },
+    "Cache lookups are tagged with both their result and artifact type, while upstream fetches record both outcome and duration.",
+
+    {
+      "heading": "Testing and Validation"
+    },
+    "To verify the implementation, I added unit tests that register the corresponding views, record sample events, retrieve aggregated data, and validate the expected values.",
+    "I also ran Athens locally and generated traffic through the proxy.",
+    {
+      "code": "make run-docker\n\ngo env -w GOPROXY=http://localhost:3000\ngo mod download github.com/gorilla/mux@latest\ngo mod download golang.org/x/text@latest\n\ncurl http://localhost:3000/metrics | grep cache_lookup_total\ncurl http://localhost:3000/metrics | grep upstream_fetch_total\ncurl http://localhost:3000/metrics | grep upstream_fetch_duration_seconds",
+      "language": "bash",
+      "caption": "Generating traffic and inspecting exported metrics."
+    },
+    {
+      "image": "images/athens/results.png",
+      "caption": "Metrics exposed by Athens after exercising the proxy."
+    },
+
+    {
+      "heading": "Results"
+    },
+    "The exported metrics confirmed that cache hits, cache misses, upstream fetches, and fetch latency distributions were being recorded correctly.",
+    "In my local testing, only two upstream fetches were required while subsequent requests were served from cache, demonstrating the effectiveness of the caching layer.",
+    "These metrics provide operators with actionable insights into cache efficiency and upstream dependency performance and can be visualized directly in systems such as Grafana.",
+
+    {
+      "heading": "Lessons Learned"
+    },
+    "Looking back, the most valuable part of this contribution was understanding the problem well enough to design the right solution and not writing the code.",
+    "The first lesson was that effective observability starts by asking the right questions rather than collecting every possible metric.",
+    "The second lesson was the importance of low-cardinality labels. Keeping labels low-cardinality ensures metrics remain scalable and inexpensive to store.",
+    "Finally, spending time understanding a mature codebase before implementing changes helped me learn a lot of new stuff. It also resulted in a smaller and easier-to-review pull request."
+  ]
+}
