@@ -189,7 +189,7 @@
 
       let ALL_POSTS = [];
       let ALL_SERIES = [];
-      let activeTagFilter = null;
+      let activeTagFilters = new Set();
 
       const ARROW_SVG = `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6 2l4 4-4 4"/></svg>`;
 
@@ -225,14 +225,17 @@
         result.text = remaining.toLowerCase();
         return result;
       }
-      function matchPost(post, filters, pillTag) {
+      function matchPost(post, filters, pillTags) {
         const tags = normaliseTags(post.tag).map((t) => t.toLowerCase());
         const title = post.title.toLowerCase();
         const slug = (post.slug || "").toLowerCase();
         const isPinned = !!post.pinned;
-        if (pillTag) {
-          if (pillTag === "pinned" ? !isPinned : !tags.includes(pillTag))
-            return false;
+        if (pillTags && pillTags.size) {
+          // OR across selected pills: a post matches if it has *any* of them
+          const matchesAny = [...pillTags].some((t) =>
+            t === "pinned" ? isPinned : tags.includes(t),
+          );
+          if (!matchesAny) return false;
         }
         if (filters.tag) {
           if (
@@ -314,7 +317,7 @@
         const list = document.getElementById("post-list");
         const status = document.getElementById("search-status");
         let displayPosts = posts;
-        if (!isSearching && !activeTagFilter) {
+        if (!isSearching && !activeTagFilters.size) {
           const seriesSlugs = getSeriesSlugs();
           displayPosts = posts.filter((p) => !seriesSlugs.has(p.slug));
         }
@@ -327,7 +330,7 @@
         const hlTerm = filters ? filters.phrase || filters.text || "" : "";
         const showSectionLabel =
           !isSearching &&
-          !activeTagFilter &&
+          !activeTagFilters.size &&
           ALL_SERIES.length > 0 &&
           displayPosts.length > 0;
         list.innerHTML =
@@ -361,12 +364,12 @@
             .join("");
         if (rawQ && rawQ.trim()) {
           status.textContent = `${posts.length} ${posts.length === 1 ? "post" : "posts"} found`;
-        } else if (activeTagFilter) {
-          const label =
-            activeTagFilter === "pinned"
-              ? "pinned"
-              : `tagged "${activeTagFilter}"`;
-          status.textContent = `${posts.length} ${posts.length === 1 ? "post" : "posts"} ${label}`;
+        } else if (activeTagFilters.size) {
+          const labels = [...activeTagFilters].map((t) =>
+            t === "pinned" ? "pinned" : `"${t}"`,
+          );
+          const label = labels.length === 1 ? labels[0] : labels.join(" or ");
+          status.textContent = `${posts.length} ${posts.length === 1 ? "post" : "posts"} tagged ${label}`;
         } else {
           status.textContent = "";
         }
@@ -394,14 +397,11 @@
         container.querySelectorAll(".tag-pill").forEach((btn) => {
           btn.addEventListener("click", () => {
             const tag = btn.dataset.tag;
-            if (activeTagFilter === tag) {
-              activeTagFilter = null;
+            if (activeTagFilters.has(tag)) {
+              activeTagFilters.delete(tag);
               btn.classList.remove("active");
             } else {
-              activeTagFilter = tag;
-              container
-                .querySelectorAll(".tag-pill")
-                .forEach((b) => b.classList.remove("active"));
+              activeTagFilters.add(tag);
               btn.classList.add("active");
             }
             run();
@@ -414,10 +414,10 @@
         document
           .getElementById("search-clear")
           .classList.toggle("visible", q.length > 0);
-        const isSearching = !!(q.trim() || activeTagFilter);
+        const isSearching = !!(q.trim() || activeTagFilters.size);
         const filters = q.trim() ? parseQuery(q) : {};
         let results = ALL_POSTS.filter((p) =>
-          matchPost(p, filters, activeTagFilter),
+          matchPost(p, filters, activeTagFilters),
         );
         results = sortPosts(results, order);
         renderSeriesCards(isSearching);
@@ -477,11 +477,15 @@
 
         const urlTag = new URLSearchParams(window.location.search).get("tag");
         if (urlTag) {
-          activeTagFilter = urlTag.toLowerCase();
-          const pill = document
-            .getElementById("tag-filter-list")
-            .querySelector(`[data-tag="${activeTagFilter}"]`);
-          if (pill) pill.classList.add("active");
+          urlTag.split(",").forEach((t) => {
+            const tag = t.trim().toLowerCase();
+            if (!tag) return;
+            activeTagFilters.add(tag);
+            const pill = document
+              .getElementById("tag-filter-list")
+              .querySelector(`[data-tag="${tag}"]`);
+            if (pill) pill.classList.add("active");
+          });
           run();
         }
         document.addEventListener("keydown", (e) => {
