@@ -43,428 +43,36 @@
     />
     <link rel="manifest" href="images/favicon/site.webmanifest" />
     <link rel="icon" href="images/favicon/favicon.ico" />
+
+    <!-- Theme flash prevention: dark is the default working theme, light is opt-in and remembered -->
     <script>
       (function () {
-        const saved = localStorage.getItem("theme");
-        const prefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)",
-        ).matches;
-        if (saved === "dark" || (!saved && prefersDark)) {
-          document.documentElement.setAttribute("data-theme", "dark");
-        }
+        var saved = localStorage.getItem("theme");
+        document.documentElement.setAttribute(
+          "data-theme",
+          saved === "light" ? "light" : "dark",
+        );
       })();
     </script>
+
     <link rel="stylesheet" href="style.css" />
-    <style>
-      .menu-toggle {
-        display: none;
-        background: none;
-        border: 1px solid var(--faint);
-        border-radius: 4px;
-        color: var(--ink);
-        font-size: 18px;
-        line-height: 1;
-        width: 36px;
-        height: 36px;
-        cursor: pointer;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        transition:
-          border-color 0.2s,
-          color 0.2s;
-      }
-      .menu-toggle:hover {
-        border-color: var(--muted);
-      }
-      @media (max-width: 640px) {
-        .menu-toggle {
-          display: flex;
-        }
-        .nav-inner {
-          padding: 0 20px;
-          gap: 12px;
-        }
-        .nav-links {
-          display: none;
-          flex-direction: column;
-          gap: 0;
-          position: absolute;
-          top: 56px;
-          left: 0;
-          right: 0;
-          background: var(--nav-bg);
-          backdrop-filter: blur(10px);
-          border-bottom: 1px solid var(--faint);
-          padding: 8px 0 16px;
-          list-style: none;
-        }
-        .nav-links.open {
-          display: flex;
-        }
-        .nav-links li a {
-          display: block;
-          padding: 12px 20px;
-          font-size: 15px;
-          border-bottom: 1px solid var(--faint);
-        }
-        .nav-links li:last-child a {
-          border-bottom: none;
-        }
-        .nav-right {
-          gap: 10px;
-        }
-        .page {
-          padding: 96px 16px 64px;
-        }
-      }
-      .search-row {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        margin: 32px 0 0;
-        flex-wrap: wrap;
-      }
-      .search-wrap {
-        position: relative;
-        flex: 1 1 260px;
-        max-width: 420px;
-      }
-      .search-icon {
-        position: absolute;
-        left: 14px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--muted);
-        font-size: 14px;
-        pointer-events: none;
-        line-height: 1;
-      }
-      .search-input {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 9px 36px 9px 38px;
-        border: 1px solid var(--faint);
-        border-radius: 6px;
-        background: transparent;
-        color: var(--ink);
-        font-size: 13.5px;
-        font-family: inherit;
-        outline: none;
-        transition:
-          border-color 0.2s,
-          box-shadow 0.2s;
-        height: 38px;
-      }
-      .search-input:focus {
-        border-color: var(--accent);
-        box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
-      }
-      .search-input::placeholder {
-        color: var(--muted);
-      }
-      .search-clear {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: none;
-        border: none;
-        color: var(--muted);
-        font-size: 15px;
-        cursor: pointer;
-        padding: 4px;
-        line-height: 1;
-        display: none;
-        transition: color 0.15s;
-      }
-      .search-clear:hover {
-        color: var(--ink);
-      }
-      .search-clear.visible {
-        display: block;
-      }
-      .filter-controls {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-      .sort-select {
-        height: 38px;
-        padding: 0 28px 0 11px;
-        border: 1px solid var(--faint);
-        border-radius: 6px;
-        background: transparent;
-        color: var(--ink);
-        font-size: 13px;
-        font-family: inherit;
-        cursor: pointer;
-        outline: none;
-        appearance: none;
-        -webkit-appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 10px center;
-        transition: border-color 0.2s;
-      }
-      .sort-select:focus {
-        border-color: var(--accent);
-      }
-      .sort-select:hover {
-        border-color: var(--muted);
-      }
-      .filter-sep {
-        width: 1px;
-        height: 22px;
-        background: var(--faint);
-        flex-shrink: 0;
-      }
-      .tag-filter-list {
-        display: flex;
-        gap: 6px;
-        flex-wrap: wrap;
-        align-items: center;
-      }
-      .tag-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        height: 30px;
-        padding: 0 12px;
-        border-radius: 99px;
-        border: 1px solid var(--faint);
-        background: transparent;
-        color: var(--muted);
-        font-size: 11.5px;
-        font-weight: 500;
-        letter-spacing: 0.05em;
-        cursor: pointer;
-        font-family: inherit;
-        white-space: nowrap;
-        transition:
-          border-color 0.18s,
-          color 0.18s,
-          background 0.18s;
-      }
-      .tag-pill:hover {
-        border-color: var(--muted);
-        color: var(--ink);
-      }
-      .tag-pill.active {
-        border-color: var(--accent);
-        color: var(--accent);
-        background: color-mix(in srgb, var(--accent) 10%, transparent);
-      }
-      .tag-pill[data-tag="pinned"].active {
-        border-color: var(--ink);
-        color: var(--ink);
-        background: color-mix(in srgb, var(--ink) 8%, transparent);
-      }
-      .search-hint {
-        margin: 10px 0 0;
-        font-size: 11.5px;
-        color: var(--muted);
-        line-height: 1.7;
-      }
-      .search-hint code {
-        font-family: "SF Mono", "Fira Code", ui-monospace, monospace;
-        font-size: 10.5px;
-        background: color-mix(in srgb, var(--ink) 7%, transparent);
-        padding: 1px 5px;
-        border-radius: 3px;
-        color: var(--accent);
-      }
-      .search-status {
-        font-size: 13px;
-        color: var(--muted);
-        margin: 24px 0 0;
-        min-height: 20px;
-      }
-      .search-highlight {
-        background: color-mix(in srgb, var(--accent) 18%, transparent);
-        border-radius: 2px;
-        padding: 0 1px;
-      }
-      .post-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 5px;
-        margin-bottom: 4px;
-      }
-      .post-tag-chip {
-        font-size: 10.5px;
-        font-weight: 500;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--accent);
-        background: color-mix(in srgb, var(--accent) 10%, transparent);
-        padding: 2px 8px;
-        border-radius: 99px;
-      }
-      .pin-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 3px;
-        font-size: 10px;
-        font-weight: 500;
-        letter-spacing: 0.07em;
-        text-transform: uppercase;
-        color: var(--muted);
-        opacity: 0.5;
-        margin-left: 8px;
-        vertical-align: middle;
-        line-height: 1;
-        pointer-events: none;
-      }
-      .pin-badge svg {
-        width: 9px;
-        height: 9px;
-        flex-shrink: 0;
-      }
-      .series-section {
-        margin: 40px 0 0;
-      }
-      .series-section-label {
-        font-size: 10.5px;
-        font-weight: 600;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: var(--accent);
-        margin-bottom: 14px;
-      }
-      .series-card {
-        display: block;
-        text-decoration: none;
-        color: inherit;
-        border: 1px solid var(--faint);
-        border-radius: 10px;
-        padding: 20px 22px;
-        margin-bottom: 12px;
-        transition:
-          border-color 0.2s,
-          box-shadow 0.2s;
-        position: relative;
-        overflow: hidden;
-      }
-      .series-card::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 3px;
-        background: var(--accent);
-        opacity: 0.5;
-        transition: opacity 0.2s;
-      }
-      .series-card:hover {
-        border-color: var(--accent);
-        box-shadow: 0 2px 16px color-mix(in srgb, var(--accent) 8%, transparent);
-      }
-      .series-card:hover::before {
-        opacity: 1;
-      }
-      .series-card-eyebrow {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 6px;
-      }
-      .series-label-chip {
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--accent);
-        background: color-mix(in srgb, var(--accent) 10%, transparent);
-        padding: 3px 8px;
-        border-radius: 99px;
-      }
-      .series-part-count {
-        font-size: 11px;
-        color: var(--muted);
-        font-weight: 400;
-      }
-      .series-card-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--ink);
-        letter-spacing: -0.01em;
-        line-height: 1.3;
-        margin: 0 0 6px;
-      }
-      .series-card-description {
-        font-size: 13.5px;
-        color: var(--muted);
-        line-height: 1.65;
-        margin: 0 0 14px;
-      }
-      .series-card-posts-preview {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        margin-bottom: 14px;
-      }
-      .series-preview-post {
-        display: flex;
-        align-items: baseline;
-        gap: 8px;
-        font-size: 12.5px;
-        color: var(--muted);
-      }
-      .series-preview-num {
-        font-size: 10px;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        color: var(--muted);
-        opacity: 0.5;
-        flex-shrink: 0;
-        width: 20px;
-        text-align: right;
-      }
-      .series-preview-title {
-        color: var(--ink);
-        font-size: 13px;
-        line-height: 1.4;
-      }
-      .series-card-cta {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 12.5px;
-        font-weight: 500;
-        color: var(--accent);
-        letter-spacing: 0.01em;
-      }
-      .series-card-cta svg {
-        width: 12px;
-        height: 12px;
-        transition: transform 0.2s;
-      }
-      .series-card:hover .series-card-cta svg {
-        transform: translateX(3px);
-      }
-      .posts-section-label {
-        font-size: 10.5px;
-        font-weight: 600;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: var(--muted);
-        opacity: 0.6;
-        margin: 36px 0 2px;
-      }
-    </style>
   </head>
   <body>
     <nav>
       <div class="nav-inner">
-        <a href="index.html" class="nav-logo" id="nav-name">Abhishek Saikia</a>
+        <div class="nav-left">
+          <span class="window-dots"
+            ><span></span><span></span><span></span
+          ></span>
+          <a href="index.html" class="nav-logo" id="nav-name"
+            >abhishek-saikia</a
+          >
+        </div>
         <div class="nav-right">
           <ul class="nav-links" id="nav-links">
-            <li><a href="writing.html">Blogs</a></li>
-            <li><a href="projects.html">Projects</a></li>
-            <li><a href="contact.html">Contact</a></li>
+            <li><a href="writing.html">writing</a></li>
+            <li><a href="projects.html">projects</a></li>
+            <li><a href="contact.html">contact</a></li>
           </ul>
           <button
             class="menu-toggle"
@@ -487,79 +95,94 @@
 
     <main>
       <div class="page">
-        <p class="section-label fade-in d1">Essays &amp; Notes</p>
-        <h1 class="section-title fade-in d2">Blogs</h1>
+        <div class="gutter" id="gutter" aria-hidden="true"></div>
+        <div class="content-col">
+          <!-- SEARCH / FILTER PANE -->
+          <section
+            class="pane fade-in d1"
+            aria-label="Search and filter writing"
+          >
+            <div class="pane-tab">writing.log</div>
+            <div class="pane-body">
+              <p class="page-intro">
+                Essays, notes, and series — mostly on slowness, attention, and
+                building things with intention.
+              </p>
 
-        <div class="fade-in d3">
-          <div class="search-row" role="search">
-            <div class="search-wrap">
-              <span class="search-icon" aria-hidden="true">⌕</span>
-              <input
-                type="search"
-                id="search-input"
-                class="search-input"
-                placeholder="Search posts…"
-                autocomplete="off"
-                spellcheck="false"
-                aria-label="Search posts"
-              />
-              <button
-                class="search-clear"
-                id="search-clear"
-                aria-label="Clear search"
-              >
-                ✕
-              </button>
+              <div class="search-row" role="search">
+                <div class="search-wrap">
+                  <span class="search-icon" aria-hidden="true">⌕</span>
+                  <input
+                    type="search"
+                    id="search-input"
+                    class="search-input"
+                    placeholder="Search posts…"
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-label="Search posts"
+                  />
+                  <button
+                    class="search-clear"
+                    id="search-clear"
+                    aria-label="Clear search"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div class="filter-controls">
+                  <select
+                    class="sort-select"
+                    id="sort-select"
+                    aria-label="Sort order"
+                  >
+                    <option value="newest">newest first</option>
+                    <option value="oldest">oldest first</option>
+                    <option value="az">a → z</option>
+                    <option value="za">z → a</option>
+                  </select>
+                  <div class="filter-sep" aria-hidden="true"></div>
+                  <div
+                    class="tag-filter-list"
+                    id="tag-filter-list"
+                    role="group"
+                    aria-label="Filter by tag"
+                  ></div>
+                </div>
+              </div>
+
+              <p class="search-hint">
+                type to search titles &nbsp;·&nbsp;
+                <code>tag:&lt;topic&gt;</code> filter by tag &nbsp;·&nbsp;
+                <code>tag:pinned</code> show pinned &nbsp;·&nbsp;
+                <code>in:&lt;word&gt;</code> search slug &nbsp;·&nbsp;
+                <code>"exact phrase"</code> phrase match &nbsp;·&nbsp; press
+                <code>/</code> to focus
+              </p>
+              <p
+                class="search-status"
+                id="search-status"
+                aria-live="polite"
+              ></p>
             </div>
-            <div class="filter-controls">
-              <select
-                class="sort-select"
-                id="sort-select"
-                aria-label="Sort order"
-              >
-                <option value="newest">Newest first</option>
-                <option value="oldest">Oldest first</option>
-                <option value="az">A → Z</option>
-                <option value="za">Z → A</option>
-              </select>
-              <div class="filter-sep" aria-hidden="true"></div>
-              <div
-                class="tag-filter-list"
-                id="tag-filter-list"
-                role="group"
-                aria-label="Filter by tag"
-              ></div>
-            </div>
+          </section>
+
+          <div id="series-section" class="fade-in d2"></div>
+
+          <div class="post-list" id="post-list" role="list">
+            <p class="loading">Loading…</p>
           </div>
-          <p class="search-hint">
-            Type to search titles &nbsp;·&nbsp;
-            <code>tag:&lt;topic&gt;</code> filter by tag &nbsp;·&nbsp;
-            <code>tag:pinned</code> show pinned &nbsp;·&nbsp;
-            <code>in:&lt;word&gt;</code> search slug &nbsp;·&nbsp;
-            <code>"exact phrase"</code> phrase match &nbsp;·&nbsp; press
-            <code>/</code> to focus
-          </p>
-        </div>
-
-        <p class="search-status" id="search-status" aria-live="polite"></p>
-
-        <div id="series-section" class="fade-in d3"></div>
-
-        <div class="post-list fade-in d3" id="post-list" role="list">
-          <p class="loading">Loading…</p>
         </div>
       </div>
     </main>
 
     <footer>
-      <p id="footer-name">© 2026 Abhishek Saikia · Made with care</p>
+      <p id="footer-name">2026 Abhishek Saikia — Thanks for visiting!</p>
     </footer>
 
     <script src="seo.js"></script>
+    <script src="common.js"></script>
     <script>
       const BLOGS = [
-        "on-slowness-as-a-creative-practice",
-        "attention-is-infrastructure",
         "designing-metrics-for-athens-go-module-proxy",
         // add more slugs here
       ];
@@ -568,26 +191,8 @@
       let ALL_SERIES = [];
       let activeTagFilter = null;
 
-      const PIN_SVG = `<svg viewBox="0 0 10 10" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 1L9 3.5 6 6.5 5 9 4 6.5 1 3.5 3.5 1z"/></svg>`;
       const ARROW_SVG = `<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h8M6 2l4 4-4 4"/></svg>`;
 
-      function escHTML(str) {
-        return String(str)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;");
-      }
-      function normaliseTags(raw) {
-        return !raw ? [] : Array.isArray(raw) ? raw : [raw];
-      }
-      function formatDate(iso) {
-        const d = new Date(iso);
-        return {
-          mon: d.toLocaleString("en", { month: "short" }),
-          year: d.getFullYear(),
-        };
-      }
       function escapeRe(s) {
         return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       }
@@ -678,7 +283,7 @@
           const moreCount = seriesPosts.length - 3;
           const moreNote =
             moreCount > 0
-              ? `<div class="series-preview-post"><span class="series-preview-num"></span><span style="font-size:12px;color:var(--muted);opacity:0.6">+${moreCount} more</span></div>`
+              ? `<div class="series-preview-post"><span class="series-preview-num"></span><span style="opacity:0.6">+${moreCount} more</span></div>`
               : "";
           const countLabel =
             totalDefined > publishedCount
@@ -687,20 +292,20 @@
           return `
             <a href="series.html?id=${encodeURIComponent(series.id)}" class="series-card">
               <div class="series-card-eyebrow">
-                <span class="series-label-chip">Series</span>
+                <span class="series-label-chip">series</span>
                 <span class="series-part-count">${countLabel}</span>
               </div>
               <h2 class="series-card-title">${escHTML(series.title)}</h2>
               <p class="series-card-description">${escHTML(series.description)}</p>
               <div class="series-card-posts-preview">${previewItems}${moreNote}</div>
-              <span class="series-card-cta">View series ${ARROW_SVG}</span>
+              <span class="series-card-cta">view series ${ARROW_SVG}</span>
             </a>`;
         }).join("");
         if (!cardsHTML.trim()) {
           container.innerHTML = "";
           return;
         }
-        container.innerHTML = `<div class="series-section-label">Series</div>${cardsHTML}`;
+        container.innerHTML = `<div class="series-section-label">series</div>${cardsHTML}`;
       }
       function getSeriesSlugs() {
         return new Set(ALL_SERIES.flatMap((s) => s.posts));
@@ -714,8 +319,9 @@
           displayPosts = posts.filter((p) => !seriesSlugs.has(p.slug));
         }
         if (displayPosts.length === 0 && posts.length === 0) {
-          list.innerHTML = `<p style="color:var(--muted);font-size:14px;margin-top:24px;">No posts match your search.</p>`;
+          list.innerHTML = `<p class="no-pinned">No posts match your search.</p>`;
           status.textContent = "";
+          paintGutter();
           return;
         }
         const hlTerm = filters ? filters.phrase || filters.text || "" : "";
@@ -726,7 +332,7 @@
           displayPosts.length > 0;
         list.innerHTML =
           (showSectionLabel
-            ? `<div class="posts-section-label">Standalone</div>`
+            ? `<div class="posts-section-label">standalone</div>`
             : "") +
           displayPosts
             .map((p) => {
@@ -736,12 +342,15 @@
               const tagChips = tags
                 .map((t) => `<span class="post-tag-chip">${escHTML(t)}</span>`)
                 .join("");
+              const pinMark = p.pinned
+                ? `<span class="post-diff-mark">+</span>`
+                : "";
               const pinBadge = p.pinned
-                ? `<span class="pin-badge" aria-label="Pinned">${PIN_SVG} pinned</span>`
+                ? `<span class="pinned-badge">pinned</span>`
                 : "";
               return `
               <a href="post.html?slug=${encodeURIComponent(p.slug)}" class="post-item" role="listitem">
-                <div class="post-date"><span>${mon}</span><span>${year}</span></div>
+                <div class="post-meta">${pinMark}${mon} ${year}</div>
                 <div>
                   <div class="post-tags">${tagChips}</div>
                   <h2 class="post-title">${titleHl}${pinBadge}</h2>
@@ -761,6 +370,7 @@
         } else {
           status.textContent = "";
         }
+        paintGutter();
       }
       function buildTagPills() {
         const seen = new Set();
@@ -778,7 +388,7 @@
           )
           .join("");
         const pinnedPill = hasPinned
-          ? `<button class="tag-pill" data-tag="pinned">${PIN_SVG} Pinned</button>`
+          ? `<button class="tag-pill" data-tag="pinned">pinned</button>`
           : "";
         container.innerHTML = tagPills + pinnedPill;
         container.querySelectorAll(".tag-pill").forEach((btn) => {
@@ -825,13 +435,19 @@
             { name: "Blogs", url: window.SEO.BASE_URL + "/writing.html" },
           ],
         });
-        document.getElementById("nav-name").textContent = cv.name;
+        document.getElementById("nav-name").textContent = cv.name
+          .toLowerCase()
+          .replace(/\s+/g, "-");
         document.getElementById("footer-name").textContent =
-          `© ${new Date().getFullYear()} ${cv.name} · Made with care`;
+          `${new Date().getFullYear()} ${cv.name} — Thanks for visiting!`;
 
         const results = await Promise.allSettled(
           BLOGS.map((slug) =>
-            fetch(`blogs/${slug}.json`).then((r) => (r.ok ? r.json() : null)),
+            fetch(`blogs/${slug}.md`)
+              .then((r) => (r.ok ? r.text() : null))
+              .then((raw) =>
+                raw ? { ...parsePostFile(raw).meta, slug } : null,
+              ),
           ),
         );
         ALL_POSTS = results

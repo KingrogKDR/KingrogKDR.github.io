@@ -3,7 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Contact</title>
+    <title>Contact — Abhishek Saikia</title>
+    <meta
+      name="description"
+      content="Get in touch with Abhishek Saikia — email and links."
+    />
+    <link rel="canonical" href="https://kingrogkdr.github.io/contact.html" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Contact — Abhishek Saikia" />
+    <meta
+      property="og:description"
+      content="Get in touch with Abhishek Saikia — email and links."
+    />
+    <meta
+      property="og:url"
+      content="https://kingrogkdr.github.io/contact.html"
+    />
+    <meta
+      property="og:image"
+      content="https://kingrogkdr.github.io/images/og-default.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
     <link
       rel="apple-touch-icon"
       sizes="180x180"
@@ -23,94 +43,36 @@
     />
     <link rel="manifest" href="images/favicon/site.webmanifest" />
     <link rel="icon" href="images/favicon/favicon.ico" />
+
+    <!-- Theme flash prevention: dark is the default working theme, light is opt-in and remembered -->
     <script>
       (function () {
-        const saved = localStorage.getItem("theme");
-        const prefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)",
-        ).matches;
-
-        if (saved === "dark" || (!saved && prefersDark)) {
-          document.documentElement.setAttribute("data-theme", "dark");
-        }
+        var saved = localStorage.getItem("theme");
+        document.documentElement.setAttribute(
+          "data-theme",
+          saved === "light" ? "light" : "dark",
+        );
       })();
     </script>
-    <link rel="stylesheet" href="style.css" />
-    <style>
-      .menu-toggle {
-        display: none;
-        background: none;
-        border: 1px solid var(--faint);
-        border-radius: 4px;
-        color: var(--ink);
-        font-size: 18px;
-        line-height: 1;
-        width: 36px;
-        height: 36px;
-        cursor: pointer;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        transition:
-          border-color 0.2s,
-          color 0.2s;
-      }
-      .menu-toggle:hover {
-        border-color: var(--muted);
-      }
 
-      @media (max-width: 640px) {
-        .menu-toggle {
-          display: flex;
-        }
-        .nav-inner {
-          padding: 0 20px;
-          gap: 12px;
-        }
-        .nav-links {
-          display: none;
-          flex-direction: column;
-          gap: 0;
-          position: absolute;
-          top: 56px;
-          left: 0;
-          right: 0;
-          background: var(--nav-bg);
-          backdrop-filter: blur(10px);
-          border-bottom: 1px solid var(--faint);
-          padding: 8px 0 16px;
-          list-style: none;
-        }
-        .nav-links.open {
-          display: flex;
-        }
-        .nav-links li a {
-          display: block;
-          padding: 12px 20px;
-          font-size: 15px;
-          border-bottom: 1px solid var(--faint);
-        }
-        .nav-links li:last-child a {
-          border-bottom: none;
-        }
-        .nav-right {
-          gap: 10px;
-        }
-        .page {
-          padding: 96px 16px 64px;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <nav>
       <div class="nav-inner">
-        <a href="index.html" class="nav-logo" id="nav-name">Abhishek Saikia</a>
+        <div class="nav-left">
+          <span class="window-dots"
+            ><span></span><span></span><span></span
+          ></span>
+          <a href="index.html" class="nav-logo" id="nav-name"
+            >abhishek-saikia</a
+          >
+        </div>
         <div class="nav-right">
           <ul class="nav-links" id="nav-links">
-            <li><a href="writing.html">Blogs</a></li>
-            <li><a href="projects.html">Projects</a></li>
-            <li><a href="contact.html">Contact</a></li>
+            <li><a href="writing.html">writing</a></li>
+            <li><a href="projects.html">projects</a></li>
+            <li><a href="contact.html">contact</a></li>
           </ul>
           <button
             class="menu-toggle"
@@ -131,55 +93,78 @@
       </div>
     </nav>
 
-    <div class="page">
-      <p class="section-label fade-in d1">Get in touch</p>
-      <h1 class="section-title fade-in d2">Contact & Links</h1>
+    <main>
+      <div class="page">
+        <div class="gutter" id="gutter" aria-hidden="true"></div>
+        <div class="content-col">
+          <section class="pane fade-in d1" aria-label="Contact">
+            <div class="pane-tab">contact.md</div>
+            <div class="pane-body">
+              <p class="comment-label">get in touch</p>
+              <p class="page-intro" style="margin-bottom: 28px">
+                The best way to reach me is by email. I'm also around on the
+                internet in a few places — links below.
+              </p>
 
-      <p class="contact-intro fade-in d3">
-        The best way to reach me is by email. I'm also around on the internet in
-        a few places — links below.
-      </p>
-
-      <ul class="links-list fade-in d3" id="links-list">
-        <p class="loading">Loading…</p>
-      </ul>
-    </div>
+              <ul class="links-list" id="links-list">
+                <li><p class="loading">Loading…</p></li>
+              </ul>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
 
     <footer>
-      <p id="footer-name">© 2026 Abhishek Saikia · Made with care</p>
+      <p id="footer-name">2026 Abhishek Saikia — Thanks for visiting!</p>
     </footer>
 
+    <script src="seo.js"></script>
+    <script src="common.js"></script>
     <script>
       async function init() {
         const cv = await fetch("cv.json").then((r) => r.json());
-        document.title = `Contact — ${cv.name}`;
-        document.getElementById("nav-name").textContent = cv.name;
+
+        window.SEO.setPage({
+          title: "Contact",
+          description: `Get in touch with ${cv.name} — email and links.`,
+          url: window.SEO.BASE_URL + "/contact.html",
+          type: "website",
+          breadcrumbs: [
+            { name: "Home", url: window.SEO.BASE_URL + "/" },
+            { name: "Contact", url: window.SEO.BASE_URL + "/contact.html" },
+          ],
+        });
+
+        document.getElementById("nav-name").textContent = cv.name
+          .toLowerCase()
+          .replace(/\s+/g, "-");
         document.getElementById("footer-name").textContent =
-          `© ${new Date().getFullYear()} ${cv.name} · Made with care`;
+          `${new Date().getFullYear()} ${cv.name} — Thanks for visiting!`;
 
         const { email, twitter, linkedin, github } = cv.contact;
 
         const links = [
           email && {
-            icon: "✉️",
+            icon: "mail",
             label: "Email",
             handle: email,
             href: `mailto:${email}`,
           },
           twitter && {
-            icon: "𝕏",
+            icon: "x",
             label: "Twitter / X",
             handle: twitter,
             href: `https://twitter.com/${twitter.replace("@", "")}`,
           },
           linkedin && {
-            icon: "💼",
+            icon: "in",
             label: "LinkedIn",
             handle: linkedin,
             href: `https://linkedin.com/in/${linkedin}`,
           },
           github && {
-            icon: "🐙",
+            icon: "gh",
             label: "GitHub",
             handle: github,
             href: `https://github.com/${github}`,
@@ -190,13 +175,13 @@
           .map(
             (l) => `
         <li>
-          <a href="${l.href}" ${l.href.startsWith("http") ? 'target="_blank"' : ""}>
+          <a href="${l.href}" ${l.href.startsWith("http") ? 'target="_blank" rel="noopener"' : ""}>
             <span class="link-label">
               <span class="link-icon">${l.icon}</span>
               ${l.label}
             </span>
             <span style="display:flex;gap:12px;align-items:center;">
-              <span class="link-handle">${l.handle}</span>
+              <span class="link-handle">${escHTML(l.handle)}</span>
               <span class="link-arrow">↗</span>
             </span>
           </a>
@@ -204,6 +189,8 @@
       `,
           )
           .join("");
+
+        paintGutter();
       }
 
       init();

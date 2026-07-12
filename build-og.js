@@ -2,9 +2,19 @@
 /**
  * build-og.js — Generate static shareable HTML files for GitHub Pages
  *
+ * Reads the JSON-metadata + Markdown-body post files (blogs/*.md — see
+ * example-post.md for the format) and pre-bakes fully static, crawler-
+ * readable pages with real OG tags, since GitHub Pages can't run
+ * server-side rendering and crawlers don't execute the client-side JS
+ * in post.html.
+ *
  * Generates:
  *   post/{slug}.html    — full post with OG tags, TOC, series banner + prev/next
  *   series/{id}.html    — series index with OG tags
+ *
+ * Requires the `marked` package (same Markdown renderer post.html uses
+ * client-side, so the static export and the live page render identically):
+ *   npm install marked
  *
  * Run:  node build-og.js
  * Then commit the generated post/ and series/ folders.
@@ -13,6 +23,17 @@
 
 const fs = require("fs");
 const path = require("path");
+
+let marked;
+try {
+  const m = require("marked");
+  marked = m.marked || m; // handles both the v4 default export and v5+ named export
+} catch (e) {
+  console.error("\n✖  Missing dependency: marked");
+  console.error("   This script needs it to render the Markdown post bodies.");
+  console.error("   Run:  npm install marked\n");
+  process.exit(1);
+}
 
 // ── Config ────────────────────────────────────────────────────────────────────
 const BASE_URL = "https://kingrogkdr.github.io";
@@ -43,18 +64,8 @@ function formatDate(iso) {
   });
 }
 
-function readingTime(content) {
-  if (!Array.isArray(content)) return "1 min read";
-  const text = content
-    .map(item => {
-      if (typeof item === "string") return item;
-      if (item.heading) return item.heading;
-      if (item.note) return item.note;
-      if (item.code) return item.code;
-      return "";
-    })
-    .join(" ");
-  const words = text.trim().split(/\s+/).length;
+function readingTime(markdown) {
+  const words = markdown.trim().split(/\s+/).filter(Boolean).length;
   const mins = Math.max(1, Math.round(words / 200));
   return `${mins} min read`;
 }
@@ -68,90 +79,110 @@ function normaliseTags(raw) {
   return Array.isArray(raw) ? raw : [raw];
 }
 
-// ── Render post content + collect headings for TOC ───────────────────────────
-function renderInline(text) {
-  return text
-    .replace(/\{color:([a-zA-Z#0-9,%. ]+)\|(.+?)\}/g, '<span style="color:$1">$2</span>')
-    .replace(/==(.+?)==/g, '<mark>$1</mark>')
-    .replace(/\+\+(.+?)\+\+/g, '<u>$1</u>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-    .replace(/`(.+?)`/g, '<code>$1</code>')
-    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+// Splits a blogs/*.md file into its JSON metadata block and Markdown body.
+// Mirrors parsePostFile() in common.js so both the live site and this
+// static export agree on the file format.
+function parsePostFile(raw) {
+  const sep = raw.match(/\r?\n---[ \t]*\r?\n/);
+  if (!sep) {
+    throw new Error(
+      "missing the '---' line separating JSON metadata from Markdown content",
+    );
+  }
+  const headerRaw = raw.slice(0, sep.index).trim();
+  const body = raw.slice(sep.index + sep[0].length);
+  let meta;
+  try {
+    meta = JSON.parse(headerRaw);
+  } catch (e) {
+    throw new Error("metadata block is not valid JSON: " + e.message);
+  }
+  return { meta, body };
 }
 
-function renderContent(items) {
-  if (!Array.isArray(items)) return { html: "", headings: [] };
+// ── Markdown → HTML, then post-process for the site's custom presentation ────
+// Mirrors renderMarkdown()/postProcessBody() in post.html's client script,
+// just implemented with string/regex passes instead of DOM APIs since this
+// runs in plain Node with no browser available.
+
+function renderMarkdown(md) {
+  const withMarks = md.replace(/==(.+?)==/g, "<mark>$1</mark>");
+  return marked.parse(withMarks);
+}
+
+function processHeadings(html) {
   const headings = [];
-  const html = items.map(item => {
-    if (typeof item === "string") {
-      if (item.startsWith("- ") || item.startsWith("1. ")) {
-        const lines = item.split("\n");
-        const isOrdered = lines[0].match(/^\d+\.\s/);
-        const listTag = isOrdered ? "ol" : "ul";
-        const items = lines
-          .filter(l => l.match(/^(-|\d+\.)\s/))
-          .map(l => `<li>${renderInline(l.replace(/^(-|\d+\.)\s/, ""))}</li>`)
-          .join("");
-        return `<${listTag} class="post-list">${items}</${listTag}>`;
-      }
-      return `<p>${renderInline(item)}</p>`;
-    }
-    if (item.heading) {
-      const id = slugify(item.heading);
-      headings.push({ id, text: item.heading });
-      return `<h2 id="${id}" class="post-section-heading">${esc(item.heading)}</h2>`;
-    }
-    if (item.image) {
-      const imgSrc = item.image.startsWith("http")
-        ? item.image
-        : `../${item.image.replace(/^\//, "")}`;
-      const caption = item.caption
-        ? `<figcaption class="post-image-caption">${esc(item.caption)}</figcaption>`
-        : "";
-      return `<figure class="post-image">
-        <img src="${esc(imgSrc)}" alt="${esc(item.caption || "")}" loading="lazy">
-        ${caption}
-      </figure>`;
-    }
-    if (item.note) {
-      const type = item.type || "info";
-      const icons = { info: "*", warning: "⚠️", tip: "💡" };
-      const icon = icons[type] || icons.info;
-      return `<div class="post-note post-note--${type}">
-        <span class="post-note-icon">${icon}</span>
-        <p>${renderInline(item.note)}</p>
-      </div>`;
-    }
-    if (item.code) {
-      const lang = item.code_language || item.language || "plaintext";
-      const escaped = item.code
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-      const caption = item.caption
-        ? `<div class="post-code-caption">${esc(item.caption)}</div>`
-        : "";
-      const id = "code-" + Math.random().toString(36).slice(2, 7);
+  const out = html.replace(/<h([1-3])>([\s\S]*?)<\/h\1>/g, (m, level, inner) => {
+    const text = inner.replace(/<[^>]+>/g, "").trim();
+    const id = slugify(text);
+    headings.push({ id, text });
+    return `<h${level} id="${id}" class="post-section-heading">${inner}</h${level}>`;
+  });
+  return { html: out, headings };
+}
+
+function processCodeBlocks(html) {
+  let n = 0;
+  return html.replace(
+    /<pre><code(?: class="language-([\w-]*)")?>([\s\S]*?)<\/code><\/pre>(\s*<p><em>([\s\S]*?)<\/em><\/p>)?/g,
+    (m, lang, code, capBlock, capText) => {
+      n += 1;
+      const id = `code-${n}`;
+      const langLabel = lang || "plaintext";
+      const caption = capText ? `<div class="post-code-caption">${capText}</div>` : "";
       return `<div class="post-code-block">
         <div class="post-code-header">
-          <span class="post-code-lang">${lang}</span>
-          <button class="post-code-copy" onclick="copyCode('${id}', this)">Copy</button>
+          <span class="post-code-lang">${esc(langLabel)}</span>
+          <button class="post-code-copy" onclick="copyCode('${id}', this)">copy</button>
         </div>
-        <pre><code id="${id}" class="language-${lang}">${escaped}</code></pre>
+        <pre><code id="${id}" class="language-${langLabel}">${code}</code></pre>
         ${caption}
       </div>`;
-    }
-    return "";
-  }).join("\n");
-  return { html, headings };
+    },
+  );
+}
+
+function processImages(html) {
+  return html.replace(
+    /<p><img ([^>]+)><\/p>(\s*<p><em>([\s\S]*?)<\/em><\/p>)?/g,
+    (m, attrs, capBlock, capText) => {
+      const caption = capText ? `<figcaption class="post-image-caption">${capText}</figcaption>` : "";
+      return `<figure class="post-image"><img ${attrs} loading="lazy">${caption}</figure>`;
+    },
+  );
+}
+
+function processCallouts(html) {
+  const typeMap = {
+    note: "info", info: "info",
+    tip: "tip", success: "tip",
+    warning: "warning", caution: "warning", important: "warning", danger: "warning",
+  };
+  const iconMap = { info: "i", tip: "$", warning: "!" };
+  return html.replace(
+    /<blockquote>\s*<p>\[!(\w+)\]\s*([^<]*)<\/p>([\s\S]*?)<\/blockquote>/gi,
+    (m, rawType, title, rest) => {
+      const type = typeMap[rawType.toLowerCase()] || "info";
+      const titleHTML = title && title.trim() ? `<p>${title}</p>` : "";
+      return `<div class="post-note post-note--${type}"><span class="post-note-icon">${iconMap[type]}</span><div>${titleHTML}${rest}</div></div>`;
+    },
+  );
+}
+
+function renderBody(markdown) {
+  let html = renderMarkdown(markdown);
+  const withHeadings = processHeadings(html);
+  html = processCodeBlocks(withHeadings.html);
+  html = processImages(html);
+  html = processCallouts(html);
+  return { html, headings: withHeadings.headings };
 }
 
 // ── TOC sidebar ──────────────────────────────────────────────────────────────
 function buildTOC(headings) {
   if (headings.length < 2) {
     return `<aside class="toc" id="toc" aria-label="Table of contents">
-  <p class="toc-label">Contents</p>
+  <p class="toc-label">contents</p>
   <p class="toc-empty-msg">No sections in this post.</p>
 </aside>`;
   }
@@ -159,7 +190,7 @@ function buildTOC(headings) {
     `<li><a href="#${h.id}">${esc(h.text)}</a></li>`
   ).join("\n    ");
   return `<aside class="toc" id="toc" aria-label="Table of contents">
-  <p class="toc-label">Contents</p>
+  <p class="toc-label">contents</p>
   <ul class="toc-list" id="toc-list">
     ${items}
   </ul>
@@ -186,10 +217,10 @@ function buildSeriesBanner(series, seriesPosts, currentSlug) {
   return `<div class="series-banner fade-in d1">
   <div class="series-banner-top">
     <div class="series-banner-left">
-      <span class="series-chip">Series</span>
+      <span class="series-chip">series</span>
       <a href="../series/${esc(series.id)}.html" class="series-banner-name">${esc(series.title)}</a>
     </div>
-    <span class="series-banner-part">Part ${partNum} of ${totalDefined}</span>
+    <span class="series-banner-part">part ${partNum} of ${totalDefined}</span>
   </div>
   <div class="series-banner-parts">${partsHTML}</div>
 </div>`;
@@ -225,8 +256,7 @@ function buildSeriesNavStrip(series, seriesPosts, currentSlug) {
 }
 
 // ── Post page HTML ────────────────────────────────────────────────────────────
-function buildPostHTML(post, cv, seriesData) {
-  const slug = post.slug;
+function buildPostHTML(post, body, cv, seriesData, slug) {
   const tags = normaliseTags(post.tag);
   const parentSeries = seriesData.find(s => s.posts.includes(slug));
   const image = resolveImage(post["og-image"] ?? parentSeries?.["og-image"]);
@@ -234,14 +264,16 @@ function buildPostHTML(post, cv, seriesData) {
   const description = post.description ?? post.excerpt ?? "";
   const fullTitle = `${post.title} — ${SITE_NAME}`;
   const authorName = cv.name ?? SITE_NAME;
+  const navName = authorName.toLowerCase().replace(/\s+/g, "-");
 
-  // Load sibling posts if this post belongs to a series
   let seriesBannerHTML = "";
   let seriesNavHTML = "";
   if (parentSeries) {
     const seriesPosts = parentSeries.posts.map(s => {
-      try { return JSON.parse(fs.readFileSync(path.join(BLOGS_DIR, `${s}.json`), "utf8")); }
-      catch { return null; }
+      try {
+        const raw = fs.readFileSync(path.join(BLOGS_DIR, `${s}.md`), "utf8");
+        return parsePostFile(raw).meta;
+      } catch { return null; }
     });
     seriesBannerHTML = buildSeriesBanner(parentSeries, seriesPosts, slug);
     seriesNavHTML = buildSeriesNavStrip(parentSeries, seriesPosts, slug);
@@ -255,7 +287,7 @@ function buildPostHTML(post, cv, seriesData) {
     `  <meta property="article:tag" content="${esc(t)}" />`
   ).join("\n");
 
-  const { html: contentHTML, headings } = renderContent(post.content);
+  const { html: contentHTML, headings } = renderBody(body);
   const tocHTML = buildTOC(headings);
 
   return `<!doctype html>
@@ -296,312 +328,30 @@ ${articleTagMeta}
   <link rel="manifest" href="../images/favicon/site.webmanifest" />
   <link rel="icon" href="../images/favicon/favicon.ico" />
 
+  <!-- Theme flash prevention: dark is the default working theme -->
   <script>
     (function () {
-      const saved = localStorage.getItem("theme");
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      if (saved === "dark" || (!saved && prefersDark)) {
-        document.documentElement.setAttribute("data-theme", "dark");
-      }
+      var saved = localStorage.getItem("theme");
+      document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
     })();
   </script>
 
   <link rel="stylesheet" href="../style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <style>
-    /* ── Nav mobile ── */
-    .menu-toggle {
-      display: none; background: none; border: 1px solid var(--faint);
-      border-radius: 4px; color: var(--ink); font-size: 18px; line-height: 1;
-      width: 36px; height: 36px; cursor: pointer; align-items: center;
-      justify-content: center; flex-shrink: 0;
-      transition: border-color 0.2s, color 0.2s;
-    }
-    @media (max-width: 640px) {
-      .menu-toggle { display: flex; }
-      .nav-inner { padding: 0 20px; gap: 12px; }
-      .nav-links {
-        display: none; flex-direction: column; gap: 0; position: absolute;
-        top: 56px; left: 0; right: 0; background: var(--nav-bg);
-        backdrop-filter: blur(10px); border-bottom: 1px solid var(--faint);
-        padding: 8px 0 16px; list-style: none;
-      }
-      .nav-links.open { display: flex; }
-      .nav-links li a { display: block; padding: 12px 20px; font-size: 15px; border-bottom: 1px solid var(--faint); }
-      .nav-links li:last-child a { border-bottom: none; }
-    }
-
-    /* ── TOC ── */
-    .toc {
-      position: fixed; top: 50%; left: 0; transform: translateY(-50%);
-      width: 200px; padding: 0 24px 0 32px; opacity: 1; z-index: 10;
-    }
-    .toc-label {
-      font-size: 10px; font-weight: 500; letter-spacing: 0.14em;
-      text-transform: uppercase; color: var(--accent); margin-bottom: 16px;
-    }
-    .toc-list {
-      list-style: none; padding: 0; margin: 0; border-left: 1px solid var(--faint);
-    }
-    .toc-list a {
-      display: block; padding: 5px 0 5px 14px; margin-left: -1px;
-      color: var(--muted); text-decoration: none; font-size: 12px;
-      font-weight: 400; line-height: 1.45; border-left: 2px solid transparent;
-      transition: color 0.2s, border-color 0.15s;
-    }
-    .toc-list a:hover { color: var(--ink); }
-    .toc-list a.active { color: var(--ink); border-left-color: var(--accent); font-weight: 500; }
-    .toc-empty-msg {
-      font-size: 12px; color: var(--muted); font-style: italic;
-      line-height: 1.5; padding-left: 14px; border-left: 1px solid var(--faint);
-    }
-    @media (max-width: 1000px) { .toc { display: none; } }
-
-    /* ── Post page ── */
-    .post-page { max-width: 720px; margin: 0 auto; padding: 100px 32px 100px; }
-    .post-section-heading {
-      font-family: "Lora", serif; font-size: 16px; font-weight: 400;
-      letter-spacing: -0.01em; color: var(--ink); opacity: 0.8;
-      margin: 52px 0 20px; scroll-margin-top: 80px; line-height: 1.3;
-    }
-    .post-header-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
-    .post-header-tag-chip {
-      display: inline-flex; align-items: center; font-size: 11px; font-weight: 500;
-      letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 12px;
-      border-radius: 99px; border: 1px solid var(--faint); color: var(--muted);
-      background: transparent; line-height: 1;
-      transition: border-color 0.2s, color 0.2s; text-decoration: none;
-    }
-    .post-header-tag-chip:hover { border-color: var(--accent); color: var(--accent); }
-    .post-header-meta-row {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 12px; flex-wrap: wrap;
-    }
-    .post-header-meta { font-size: 13px; color: var(--muted); margin: 0; }
-
-    .post-body mark {
-        background: color-mix(in srgb, var(--accent) 22%, transparent);
-        color: inherit;
-        border-radius: 2px;
-        padding: 0 2px;
-    }
-    .post-body code {
-      font-family: "Fira Code", "Cascadia Code", monospace;
-      font-size: 0.85em;
-      background: color-mix(in srgb, var(--ink) 8%, transparent);
-      border-radius: 4px;
-      padding: 2px 6px;
-    }
-    .post-body u { text-decoration-color: var(--accent); }
-    .post-body a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
-    .post-list { padding-left: 1.4em; margin: 16px 0; display: flex; flex-direction: column; gap: 6px; }
-    .post-list li { font-size: 15px; line-height: 1.7; color: var(--ink); }
-    .post-note {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 14px 16px;
-      border-radius: 8px;
-      margin: 24px 0;
-      font-size: 14px;
-      line-height: 1.65;
-      border: 1px solid transparent;
-    }
-    .post-note p { margin: 0; }
-    .post-note-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
-    .post-note--info {
-      background: color-mix(in srgb, var(--accent) 8%, transparent);
-      border-color: color-mix(in srgb, var(--accent) 20%, transparent);
-      color: var(--ink);
-    }
-    .post-note--warning {
-      background: color-mix(in srgb, #f59e0b 10%, transparent);
-      border-color: color-mix(in srgb, #f59e0b 30%, transparent);
-      color: var(--ink);
-    }
-    .post-note--tip {
-      background: color-mix(in srgb, #10b981 8%, transparent);
-      border-color: color-mix(in srgb, #10b981 25%, transparent);
-      color: var(--ink);
-    }
-    .post-code-block {
-      margin: 28px 0;
-      border-radius: 10px;
-      overflow: hidden;
-      border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
-    }
-    .post-code-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 9px 14px;
-      background: #1a1a1a;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
-    }
-    .post-code-lang {
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.4);
-      font-family: monospace;
-    }
-    .post-code-copy {
-      font-size: 11px;
-      font-weight: 500;
-      color: rgba(255,255,255,0.35);
-      background: none;
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 4px;
-      padding: 3px 9px;
-      cursor: pointer;
-      transition: color 0.15s, border-color 0.15s;
-      letter-spacing: 0.04em;
-    }
-    .post-code-copy:hover {
-      color: rgba(255,255,255,0.75);
-      border-color: rgba(255,255,255,0.3);
-    }
-    .post-code-copy.copied {
-      color: #10b981;
-      border-color: #10b981;
-    }
-    .post-code-block pre {
-      margin: 0;
-      border-radius: 0;
-    }
-    .post-code-block pre code {
-      font-family: "Fira Code", "Cascadia Code", "JetBrains Mono", monospace;
-      font-size: 13.5px;
-      line-height: 1.65;
-      padding: 18px 20px !important;
-      background: #1e1e1e !important;
-      border-radius: 0;
-    }
-    .post-code-caption {
-      font-size: 12px;
-      color: var(--muted);
-      text-align: center;
-      padding: 8px 16px 10px;
-      background: color-mix(in srgb, var(--ink) 4%, transparent);
-      border-top: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
-      font-style: italic;
-    }
-
-    .post-meta-sep {
-      margin: 0 6px;
-      opacity: 0.4;
-    }
-    .post-read-time {
-      color: var(--muted);
-    }
-
-    /* ── Share button ── */
-    .share-btn {
-      display: inline-flex; align-items: center; gap: 6px; font-size: 12px;
-      font-weight: 500; letter-spacing: 0.04em; color: var(--muted);
-      background: transparent; border: 1px solid var(--faint);
-      border-radius: 99px; padding: 5px 13px; cursor: pointer; flex-shrink: 0;
-      transition: border-color 0.2s, color 0.2s, background 0.2s;
-    }
-    .share-btn:hover {
-      border-color: var(--accent); color: var(--accent);
-      background: color-mix(in srgb, var(--accent) 6%, transparent);
-    }
-    .share-btn svg { width: 13px; height: 13px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-
-    /* ── Share toast ── */
-    [data-theme="dark"] .share-toast { background: #ffffff; color: #000000; }
-    [data-theme="light"] .share-toast { background: #000000; color: #ffffff; }
-    .share-toast {
-      position: fixed; bottom: 28px; left: 50%;
-      transform: translateX(-50%) translateY(12px);
-      font-size: 13px; font-weight: 450; letter-spacing: 0.01em;
-      padding: 10px 18px; border-radius: 99px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.18); opacity: 0;
-      pointer-events: none; transition: opacity 0.22s ease, transform 0.22s ease;
-      white-space: nowrap; z-index: 9999; display: flex; align-items: center; gap: 7px;
-    }
-    .share-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
-    .share-toast svg { width: 14px; height: 14px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
-    /* ── Series banner ── */
-    .series-banner {
-      border: 1px solid var(--faint); border-radius: 10px;
-      padding: 16px 18px; margin-bottom: 16px;
-      background: color-mix(in srgb, var(--accent) 3%, transparent);
-    }
-    .series-banner-top {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
-    }
-    .series-banner-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .series-chip {
-      font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
-      text-transform: uppercase; color: var(--accent);
-      background: color-mix(in srgb, var(--accent) 10%, transparent);
-      padding: 3px 8px; border-radius: 99px;
-    }
-    .series-banner-name {
-      font-size: 13px; font-weight: 500; color: var(--ink);
-      text-decoration: none; transition: color 0.15s; letter-spacing: -0.01em;
-    }
-    .series-banner-name:hover { color: var(--accent); }
-    .series-banner-part { font-size: 11.5px; color: var(--muted); }
-    .series-banner-parts { display: flex; gap: 8px; flex-wrap: wrap; }
-    .series-banner-part-link {
-      display: inline-flex; align-items: center; gap: 4px; font-size: 12px;
-      color: var(--muted); text-decoration: none; padding: 4px 10px;
-      border: 1px solid var(--faint); border-radius: 6px;
-      transition: border-color 0.15s, color 0.15s; white-space: nowrap;
-    }
-    .series-banner-part-link:hover { border-color: var(--accent); color: var(--ink); }
-    .series-banner-part-link.current {
-      border-color: var(--accent); color: var(--ink);
-      background: color-mix(in srgb, var(--accent) 8%, transparent);
-      font-weight: 500; pointer-events: none;
-    }
-    .series-banner-part-link.unavailable { opacity: 0.35; pointer-events: none; font-style: italic; }
-    .part-num-label {
-      font-size: 10px; font-weight: 600; letter-spacing: 0.06em;
-      color: var(--muted); opacity: 0.6; margin-right: 1px;
-    }
-    .series-banner-part-link.current .part-num-label { opacity: 1; color: var(--accent); }
-
-    /* ── Series nav strip ── */
-    .series-nav-strip {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 8px; margin-bottom: 32px; padding: 8px 0;
-      border-bottom: 1px solid var(--faint);
-    }
-    .series-nav-link {
-      display: inline-flex; align-items: center; gap: 5px; font-size: 12px;
-      color: var(--muted); text-decoration: none; padding: 2px 0;
-      transition: color 0.15s; max-width: 42%;
-    }
-    .series-nav-link:hover { color: var(--ink); }
-    .series-nav-link.faded { opacity: 0.3; pointer-events: none; }
-    .series-nav-link svg { width: 12px; height: 12px; flex-shrink: 0; }
-    .series-nav-link-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
-    .series-nav-center { font-size: 11px; color: var(--muted); opacity: 0.45; white-space: nowrap; letter-spacing: 0.05em; flex-shrink: 0; }
-
-    @media (max-width: 540px) {
-      .post-page { padding: 84px 18px 64px; }
-      .series-nav-center { display: none; }
-      .series-nav-link { max-width: 48%; }
-    }
-  </style>
 </head>
 <body>
   <nav>
     <div class="nav-inner">
-      <a href="../index.html" class="nav-logo">${esc(authorName)}</a>
+      <div class="nav-left">
+        <span class="window-dots"><span></span><span></span><span></span></span>
+        <a href="../index.html" class="nav-logo">${esc(navName)}</a>
+      </div>
       <div class="nav-right">
         <ul class="nav-links" id="nav-links">
-          <li><a href="../writing.html">Blogs</a></li>
-          <li><a href="../projects.html">Projects</a></li>
-          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../writing.html">writing</a></li>
+          <li><a href="../projects.html">projects</a></li>
+          <li><a href="../contact.html">contact</a></li>
         </ul>
         <button class="menu-toggle" id="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
         <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
@@ -620,7 +370,8 @@ ${articleTagMeta}
 
   <main>
     <div class="post-page">
-      <a href="../writing.html" class="back-link">← All writing</a>
+      <div class="file-tab-bar"><span class="dot">●</span><span>posts/${esc(slug)}.md</span></div>
+      <a href="../writing.html" class="back-link">← all writing</a>
       <article itemscope itemtype="https://schema.org/BlogPosting">
         ${seriesBannerHTML}
         ${seriesNavHTML}
@@ -631,11 +382,11 @@ ${articleTagMeta}
             <p class="post-header-meta">
               <time itemprop="datePublished" datetime="${esc(post.date)}">${formatDate(post.date)}</time>
               <span class="post-meta-sep">·</span>
-              <span class="post-read-time">${readingTime(post.content)}</span>
+              <span class="post-read-time">${readingTime(body)}</span>
             </p>
             <button class="share-btn" id="share-btn" aria-label="Share this post">
               <svg viewBox="0 0 14 14"><circle cx="11" cy="2.5" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><line x1="4.4" y1="7.7" x2="9.7" y2="10.9"/><line x1="9.7" y1="3.1" x2="4.4" y2="6.3"/></svg>
-              Share
+              share
             </button>
           </div>
         </div>
@@ -648,7 +399,7 @@ ${articleTagMeta}
   </main>
 
   <footer>
-    <p>© ${new Date().getFullYear()} ${esc(authorName)} · Made with care</p>
+    <p>${new Date().getFullYear()} ${esc(authorName)} — thanks for visiting</p>
   </footer>
 
   <script>
@@ -657,7 +408,7 @@ ${articleTagMeta}
       const tocList = document.getElementById("toc-list");
       if (!tocList) return;
       const links    = tocList.querySelectorAll("a");
-      const headings = document.querySelectorAll("#post-content h2.post-section-heading, .post-body h2.post-section-heading");
+      const headings = document.querySelectorAll(".post-body .post-section-heading");
       if (!links.length || !headings.length) return;
       const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
@@ -701,9 +452,9 @@ ${articleTagMeta}
     function copyCode(id, btn) {
       const text = document.getElementById(id).innerText;
       navigator.clipboard.writeText(text).then(() => {
-        btn.textContent = "Copied!";
+        btn.textContent = "copied!";
         btn.classList.add("copied");
-        setTimeout(() => { btn.textContent = "Copy"; btn.classList.remove("copied"); }, 2000);
+        setTimeout(() => { btn.textContent = "copy"; btn.classList.remove("copied"); }, 2000);
       });
     }
     document.addEventListener("DOMContentLoaded", () => {
@@ -723,6 +474,7 @@ function buildSeriesHTML(series, posts, cv) {
   const canonUrl = `${BASE_URL}/series/${series.id}.html`;
   const fullTitle = `${series.title} — ${SITE_NAME}`;
   const authorName = cv.name ?? SITE_NAME;
+  const navName = authorName.toLowerCase().replace(/\s+/g, "-");
   const totalParts = series.posts.length;
   const loadedCount = posts.filter(Boolean).length;
 
@@ -730,23 +482,23 @@ function buildSeriesHTML(series, posts, cv) {
     const partNum = i + 1;
     if (!post) {
       return `<div style="display:flex;align-items:flex-start;gap:20px;padding:20px 0;opacity:0.4;pointer-events:none;">
-        <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1.5px solid var(--faint);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--muted);position:relative;z-index:1;">${partNum}</div>
+        <div style="flex-shrink:0;width:36px;height:36px;border-radius:var(--radius);border:1px solid var(--border);background:var(--panel);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;color:var(--text-dim);position:relative;z-index:1;">${partNum}</div>
         <div style="padding-top:5px;">
-          <p style="font-size:10.5px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Part ${partNum} of ${totalParts}</p>
-          <h2 style="font-size:16px;font-weight:500;color:var(--ink);margin:0;">Coming soon</h2>
+          <p style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-bottom:5px;">part ${partNum} of ${totalParts}</p>
+          <h2 style="font-size:16px;font-weight:600;color:var(--text);margin:0;">Coming soon</h2>
         </div>
       </div>`;
     }
-    return `<a href="../post/${esc(post.slug)}.html" style="display:flex;align-items:flex-start;gap:20px;padding:20px 0;text-decoration:none;color:inherit;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.78'" onmouseout="this.style.opacity='1'">
-      <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;border:1.5px solid var(--faint);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--muted);position:relative;z-index:1;">${partNum}</div>
+    return `<a href="../post/${esc(post.slug ?? series.posts[i])}.html" style="display:flex;align-items:flex-start;gap:20px;padding:20px 0;text-decoration:none;color:inherit;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.78'" onmouseout="this.style.opacity='1'">
+      <div style="flex-shrink:0;width:36px;height:36px;border-radius:var(--radius);border:1px solid var(--border);background:var(--panel);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;color:var(--text-dim);position:relative;z-index:1;">${partNum}</div>
       <div style="flex:1;padding-top:5px;">
-        <p style="font-size:10.5px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">Part ${partNum} of ${totalParts}</p>
-        <h2 style="font-size:16px;font-weight:500;color:var(--ink);line-height:1.35;margin:0 0 6px;letter-spacing:-0.01em;">${esc(post.title)}</h2>
-        <p style="font-size:13.5px;color:var(--muted);line-height:1.65;margin:0 0 8px;">${esc(post.excerpt)}</p>
-        <time style="font-size:12px;color:var(--muted);opacity:0.7;" datetime="${post.date}">${formatDate(post.date)}</time>
+        <p style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-bottom:5px;">part ${partNum} of ${totalParts}</p>
+        <h2 style="font-size:16px;font-weight:600;color:var(--text);line-height:1.35;margin:0 0 6px;letter-spacing:-0.01em;">${esc(post.title)}</h2>
+        <p style="font-size:13.5px;color:var(--text-dim);line-height:1.65;margin:0 0 8px;">${esc(post.excerpt)}</p>
+        <time style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);opacity:0.8;" datetime="${post.date}">${formatDate(post.date)}</time>
       </div>
     </a>`;
-  }).join('<div style="border-top:1px solid var(--faint);"></div>');
+  }).join('<div style="border-top:1px solid var(--border);"></div>');
 
   return `<!doctype html>
 <html lang="en">
@@ -758,7 +510,6 @@ function buildSeriesHTML(series, posts, cv) {
   <meta name="description" content="${esc(series.description ?? "")}" />
   <link rel="canonical" href="${esc(canonUrl)}" />
 
-  <!-- Open Graph — baked in at build time -->
   <meta property="og:site_name"    content="${esc(SITE_NAME)}" />
   <meta property="og:type"         content="website" />
   <meta property="og:title"        content="${esc(fullTitle)}" />
@@ -768,7 +519,6 @@ function buildSeriesHTML(series, posts, cv) {
   <meta property="og:image:width"  content="1200" />
   <meta property="og:image:height" content="630" />
 
-  <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="${esc(fullTitle)}" />
   <meta name="twitter:description" content="${esc(series.description ?? "")}" />
@@ -781,43 +531,28 @@ function buildSeriesHTML(series, posts, cv) {
 
   <script>
     (function () {
-      const saved = localStorage.getItem("theme");
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      if (saved === "dark" || (!saved && prefersDark)) {
-        document.documentElement.setAttribute("data-theme", "dark");
-      }
+      var saved = localStorage.getItem("theme");
+      document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
     })();
   </script>
   <link rel="stylesheet" href="../style.css" />
   <style>
-    .menu-toggle { display:none; background:none; border:1px solid var(--faint); border-radius:4px; color:var(--ink); font-size:18px; line-height:1; width:36px; height:36px; cursor:pointer; align-items:center; justify-content:center; flex-shrink:0; }
-    @media (max-width:640px) {
-      .menu-toggle { display:flex; }
-      .nav-inner { padding: 0 20px; gap: 12px; }
-      .nav-links { display:none; flex-direction:column; gap:0; position:absolute; top:56px; left:0; right:0; background:var(--nav-bg); backdrop-filter:blur(10px); border-bottom:1px solid var(--faint); padding:8px 0 16px; list-style:none; }
-      .nav-links.open { display:flex; }
-      .nav-links li a { display:block; padding:12px 20px; font-size:15px; border-bottom:1px solid var(--faint); }
-    }
-    .share-btn { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:500; color:var(--muted); background:transparent; border:1px solid var(--faint); border-radius:99px; padding:5px 13px; cursor:pointer; transition:border-color 0.2s, color 0.2s; }
-    .share-btn:hover { border-color:var(--accent); color:var(--accent); }
-    .share-btn svg { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
-    [data-theme="dark"] .share-toast { background:#ffffff; color:#000000; }
-    [data-theme="light"] .share-toast { background:#000000; color:#ffffff; }
-    .share-toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(12px); font-size:13px; padding:10px 18px; border-radius:99px; box-shadow:0 4px 20px rgba(0,0,0,0.18); opacity:0; pointer-events:none; transition:opacity 0.22s ease, transform 0.22s ease; white-space:nowrap; z-index:9999; display:flex; align-items:center; gap:7px; }
-    .share-toast.visible { opacity:1; transform:translateX(-50%) translateY(0); }
     .series-posts-wrap { display:flex; flex-direction:column; position:relative; }
-    .series-posts-wrap::before { content:""; position:absolute; left:18px; top:28px; bottom:28px; width:1px; background:var(--faint); }
+    .series-posts-wrap::before { content:""; position:absolute; left:18px; top:28px; bottom:28px; width:1px; background:var(--border); }
   </style>
 </head>
 <body>
   <nav>
     <div class="nav-inner">
-      <a href="../index.html" class="nav-logo">${esc(authorName)}</a>
+      <div class="nav-left">
+        <span class="window-dots"><span></span><span></span><span></span></span>
+        <a href="../index.html" class="nav-logo">${esc(navName)}</a>
+      </div>
       <div class="nav-right">
         <ul class="nav-links" id="nav-links">
-          <li><a href="../writing.html">Blogs</a></li>
-          <li><a href="../projects.html">Projects</a></li>
-          <li><a href="../contact.html">Contact</a></li>
+          <li><a href="../writing.html">writing</a></li>
+          <li><a href="../projects.html">projects</a></li>
+          <li><a href="../contact.html">contact</a></li>
         </ul>
         <button class="menu-toggle" id="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
         <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
@@ -833,28 +568,28 @@ function buildSeriesHTML(series, posts, cv) {
   </div>
 
   <main>
-    <div class="page">
-      <a href="../writing.html" class="back-link fade-in d1">← All writing</a>
+    <div class="page-wide">
+      <a href="../writing.html" class="back-link fade-in d1">← all writing</a>
       <div style="margin-bottom:48px;" class="fade-in d2" itemscope itemtype="https://schema.org/CreativeWorkSeries">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
-          <span style="font-size:10.5px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);">Series</span>
-          <span style="font-size:11px;font-weight:500;color:var(--muted);background:color-mix(in srgb,var(--ink) 6%,transparent);padding:3px 9px;border-radius:99px;border:1px solid var(--faint);">${loadedCount} of ${totalParts} published</span>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;font-family:var(--font-mono);">
+          <span class="series-label-chip">series</span>
+          <span style="font-size:11px;color:var(--text-dim);">${loadedCount} of ${totalParts} published</span>
         </div>
-        <h1 style="font-size:clamp(26px,5vw,36px);font-weight:600;letter-spacing:-0.02em;line-height:1.15;color:var(--ink);margin:0 0 14px;" itemprop="name">${esc(series.title)}</h1>
-        <p style="font-size:15px;color:var(--muted);line-height:1.75;max-width:580px;margin:0 0 18px;" itemprop="description">${esc(series.description ?? "")}</p>
+        <h1 style="font-family:var(--font-sans);font-size:clamp(26px,5vw,36px);font-weight:600;letter-spacing:-0.02em;line-height:1.15;color:var(--text);margin:0 0 14px;" itemprop="name">${esc(series.title)}</h1>
+        <p style="font-size:15px;color:var(--text-dim);line-height:1.75;max-width:580px;margin:0 0 18px;" itemprop="description">${esc(series.description ?? "")}</p>
         <button class="share-btn" id="share-btn">
           <svg viewBox="0 0 14 14"><circle cx="11" cy="2.5" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><line x1="4.4" y1="7.7" x2="9.7" y2="10.9"/><line x1="9.7" y1="3.1" x2="4.4" y2="6.3"/></svg>
-          Share series
+          share series
         </button>
       </div>
-      <hr style="border:none;border-top:1px solid var(--faint);margin:0 0 36px;" class="fade-in d3">
+      <hr style="border:none;border-top:1px solid var(--border);margin:0 0 36px;" class="fade-in d3">
       <div class="series-posts-wrap fade-in d3">${postsHTML}</div>
-      <a href="../writing.html" style="display:inline-block;margin-top:48px;font-size:13px;color:var(--muted);text-decoration:none;" class="fade-in d4">← Back to all writing</a>
+      <a href="../writing.html" style="display:inline-block;margin-top:48px;font-family:var(--font-mono);font-size:13px;color:var(--text-dim);" class="fade-in d4">← back to all writing</a>
     </div>
   </main>
 
   <footer>
-    <p>© ${new Date().getFullYear()} ${esc(authorName)} · Made with care</p>
+    <p>${new Date().getFullYear()} ${esc(authorName)} — thanks for visiting</p>
   </footer>
 
   <script>
@@ -901,7 +636,6 @@ function main() {
     catch (e) { console.warn("  ⚠  Could not parse cv.json:", e.message); }
   }
 
-  // Preload series.json once — used for og-image fallback + banner/nav in posts
   let seriesData = [];
   const seriesJsonPath = path.join(BLOGS_DIR, "series.json");
   if (fs.existsSync(seriesJsonPath)) {
@@ -913,19 +647,23 @@ function main() {
   const postOutDir = path.join(ROOT_DIR, "post");
   fs.mkdirSync(postOutDir, { recursive: true });
 
-  const files = fs.readdirSync(BLOGS_DIR)
-    .filter(f => f.endsWith(".json") && f !== "series.json");
+  const files = fs.readdirSync(BLOGS_DIR).filter(f => f.endsWith(".md"));
   let postCount = 0;
 
   for (const file of files) {
-    let post;
-    try { post = JSON.parse(fs.readFileSync(path.join(BLOGS_DIR, file), "utf8")); }
-    catch (e) { console.warn(`  ⚠  Skipping ${file}: ${e.message}`); continue; }
+    const slug = path.basename(file, ".md");
+    let meta, body;
+    try {
+      const raw = fs.readFileSync(path.join(BLOGS_DIR, file), "utf8");
+      ({ meta, body } = parsePostFile(raw));
+    } catch (e) {
+      console.warn(`  ⚠  Skipping ${file}: ${e.message}`);
+      continue;
+    }
 
-    const slug = post.slug ?? path.basename(file, ".json");
-    const image = resolveImage(post["og-image"] ?? seriesData.find(s => s.posts.includes(slug))?.["og-image"]);
+    const image = resolveImage(meta["og-image"] ?? seriesData.find(s => s.posts.includes(slug))?.["og-image"]);
     const outPath = path.join(postOutDir, `${slug}.html`);
-    fs.writeFileSync(outPath, buildPostHTML(post, cv, seriesData), "utf8");
+    fs.writeFileSync(outPath, buildPostHTML(meta, body, cv, seriesData, slug), "utf8");
     console.log(`  ✓  post/${slug}.html  [og:image → ${image}]`);
     postCount++;
   }
@@ -938,8 +676,10 @@ function main() {
 
     for (const series of seriesData) {
       const posts = series.posts.map(slug => {
-        try { return JSON.parse(fs.readFileSync(path.join(BLOGS_DIR, `${slug}.json`), "utf8")); }
-        catch { return null; }
+        try {
+          const raw = fs.readFileSync(path.join(BLOGS_DIR, `${slug}.md`), "utf8");
+          return { slug, ...parsePostFile(raw).meta };
+        } catch { return null; }
       });
       const image = resolveImage(series["og-image"]);
       const outPath = path.join(ROOT_DIR, "series", `${series.id}.html`);

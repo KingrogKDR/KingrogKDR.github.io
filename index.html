@@ -62,217 +62,35 @@
     <link rel="manifest" href="images/favicon/site.webmanifest" />
     <link rel="icon" href="images/favicon/favicon.ico" />
 
-    <!-- Theme flash prevention -->
+    <!-- Theme flash prevention: dark is the default working theme, light is opt-in and remembered -->
     <script>
       (function () {
-        const saved = localStorage.getItem("theme");
-        const prefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)",
-        ).matches;
-        if (saved === "dark" || (!saved && prefersDark)) {
-          document.documentElement.setAttribute("data-theme", "dark");
-        }
+        var saved = localStorage.getItem("theme");
+        document.documentElement.setAttribute(
+          "data-theme",
+          saved === "light" ? "light" : "dark",
+        );
       })();
     </script>
 
     <link rel="stylesheet" href="style.css" />
-    <style>
-      /* ── RESPONSIVE NAV ── */
-      .menu-toggle {
-        display: none;
-        background: none;
-        border: 1px solid var(--faint);
-        border-radius: 4px;
-        color: var(--ink);
-        font-size: 18px;
-        line-height: 1;
-        width: 36px;
-        height: 36px;
-        cursor: pointer;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        transition:
-          border-color 0.2s,
-          color 0.2s;
-      }
-      .menu-toggle:hover {
-        border-color: var(--muted);
-      }
-
-      @media (max-width: 640px) {
-        .menu-toggle {
-          display: flex;
-        }
-        .nav-inner {
-          padding: 0 20px;
-          gap: 12px;
-        }
-        .nav-links {
-          display: none;
-          flex-direction: column;
-          gap: 0;
-          position: absolute;
-          top: 56px;
-          left: 0;
-          right: 0;
-          background: var(--nav-bg);
-          backdrop-filter: blur(10px);
-          border-bottom: 1px solid var(--faint);
-          padding: 8px 0 16px;
-          list-style: none;
-        }
-        .nav-links.open {
-          display: flex;
-        }
-        .nav-links li a {
-          display: block;
-          padding: 12px 20px;
-          font-size: 15px;
-          border-bottom: 1px solid var(--faint);
-        }
-        .nav-links li:last-child a {
-          border-bottom: none;
-        }
-        .nav-right {
-          gap: 10px;
-        }
-        .page {
-          padding: 96px 16px 64px;
-        }
-      }
-
-      /* ── PAGE STYLES ── */
-      .hero {
-        padding: 140px 0 72px;
-      }
-      .hero-tag {
-        font-size: 12px;
-        font-weight: 500;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--accent);
-        margin-bottom: 20px;
-      }
-      .hero-name {
-        font-family: "Lora", serif;
-        font-size: clamp(40px, 7vw, 64px);
-        line-height: 1.1;
-        font-weight: 400;
-        letter-spacing: -0.02em;
-        margin-bottom: 24px;
-      }
-      .hero-name em {
-        font-style: italic;
-        color: var(--accent);
-      }
-      .hero-bio {
-        font-size: 18px;
-        line-height: 1.7;
-        color: var(--muted);
-        max-width: 520px;
-        margin-bottom: 36px;
-        font-weight: 300;
-      }
-      .hero-cta {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: var(--ink);
-        color: var(--white);
-        padding: 12px 24px;
-        border-radius: 4px;
-        text-decoration: none;
-        font-size: 14px;
-        font-weight: 500;
-        letter-spacing: 0.02em;
-        transition:
-          background 0.2s,
-          transform 0.15s;
-      }
-      .hero-cta:hover {
-        background: #2e2e2a;
-        transform: translateY(-1px);
-      }
-      .hero-divider {
-        margin-top: 72px;
-        border: none;
-        border-top: 1px solid var(--faint);
-      }
-      .home-section {
-        padding: 64px 0;
-      }
-      .home-section-header {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        margin-bottom: 32px;
-      }
-      .home-section-header h2 {
-        font-family: "Lora", serif;
-        font-size: 22px;
-        font-weight: 400;
-        letter-spacing: -0.01em;
-      }
-      .see-all {
-        font-size: 13px;
-        color: var(--muted);
-        text-decoration: none;
-        transition: color 0.2s;
-      }
-      .see-all:hover {
-        color: var(--ink);
-      }
-      .pinned-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 10px;
-        font-weight: 500;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--muted);
-        margin-left: 10px;
-        vertical-align: middle;
-        opacity: 0.6;
-      }
-      .pinned-badge svg {
-        width: 9px;
-        height: 9px;
-        flex-shrink: 0;
-      }
-      .post-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 5px;
-        margin-bottom: 4px;
-      }
-      .post-tag-chip {
-        font-size: 10.5px;
-        font-weight: 500;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--accent);
-        background: color-mix(in srgb, var(--accent) 10%, transparent);
-        padding: 2px 8px;
-        border-radius: 99px;
-      }
-      .no-pinned {
-        font-size: 14px;
-        color: var(--muted);
-        padding: 12px 0;
-      }
-    </style>
   </head>
   <body>
     <nav>
       <div class="nav-inner">
-        <a href="index.html" class="nav-logo" id="nav-name">Abhishek Saikia</a>
+        <div class="nav-left">
+          <span class="window-dots"
+            ><span></span><span></span><span></span
+          ></span>
+          <a href="index.html" class="nav-logo" id="nav-name"
+            >abhishek-saikia</a
+          >
+        </div>
         <div class="nav-right">
           <ul class="nav-links" id="nav-links">
-            <li><a href="writing.html">Blogs</a></li>
-            <li><a href="projects.html">Projects</a></li>
-            <li><a href="contact.html">Contact</a></li>
+            <li><a href="writing.html">writing</a></li>
+            <li><a href="projects.html">projects</a></li>
+            <li><a href="contact.html">contact</a></li>
           </ul>
           <button
             class="menu-toggle"
@@ -295,79 +113,68 @@
 
     <main>
       <div class="page">
-        <div class="hero">
-          <p class="hero-tag fade-in d1" id="hero-tag">
-            Writer · Programmer · Thinker
-          </p>
-          <h1 class="hero-name fade-in d2">
-            Words &amp; work<br />by <em id="hero-name">Abhishek Saikia</em>
-          </h1>
-          <p class="hero-bio fade-in d3" id="hero-bio">Loading…</p>
-          <a href="writing.html" class="hero-cta fade-in d4"
-            >Read the latest ↓</a
-          >
-          <hr class="hero-divider" />
-        </div>
-        <section id="about" class="home-section" aria-label="About">
-          <p class="section-label fade-in d1">Background</p>
-          <h2 class="section-title fade-in d2">About</h2>
+        <div class="gutter" id="gutter" aria-hidden="true"></div>
+        <div class="content-col">
+          <!-- HERO -->
+          <section class="pane hero-pane fade-in d1" aria-label="Intro">
+            <div class="pane-tab">home.tsx</div>
+            <div class="pane-body">
+              <p class="hero-tag" id="hero-tag">Loading…</p>
+              <h1 class="hero-name">
+                <span id="hero-name">Abhishek Saikia</span>
+              </h1>
+              <p class="hero-bio" id="hero-bio">Loading…</p>
+              <a href="writing.html" class="hero-cta">Read the latest →</a>
+            </div>
+          </section>
 
-          <div
-            class="about-layout fade-in d3"
+          <!-- ABOUT -->
+          <section
+            class="pane fade-in d2"
+            aria-label="About"
             itemscope
             itemtype="https://schema.org/Person"
           >
-            <div class="about-body" id="about-body" itemprop="description">
-              <p>Loading…</p>
+            <div class="pane-tab">about.md</div>
+            <div class="pane-body about-layout">
+              <div class="about-body" id="about-body" itemprop="description">
+                <p>Loading…</p>
+              </div>
+              <div class="about-photo" id="about-photo">
+                <div class="about-photo-placeholder">🧑</div>
+              </div>
             </div>
+          </section>
 
-            <div class="about-photo" id="about-photo">
-              <div class="about-photo-placeholder">🧑</div>
+          <!-- PINNED WRITING -->
+          <section class="fade-in d3" aria-label="Pinned writing">
+            <div class="section-header">
+              <p class="comment-label">pinned</p>
+              <a href="writing.html" class="see-all">all posts →</a>
             </div>
-          </div>
-        </section>
-
-        <section class="home-section" aria-label="Pinned writing">
-          <div class="home-section-header">
-            <h2>Pinned writing</h2>
-            <a href="writing.html" class="see-all">All posts/series →</a>
-          </div>
-          <div class="post-list" id="pinned-posts" role="list">
-            <p class="loading">Loading…</p>
-          </div>
-        </section>
+            <div class="post-list" id="pinned-posts" role="list">
+              <p class="loading">Loading…</p>
+            </div>
+          </section>
+        </div>
       </div>
     </main>
 
     <footer>
-      <p id="footer-name">© 2026 Abhishek Saikia · Made with care</p>
+      <p id="footer-name">2026 Abhishek Saikia — Thanks for visiting!</p>
     </footer>
 
     <script src="seo.js"></script>
+    <script src="common.js"></script>
     <script>
       const BLOGS = [
-        "on-slowness-as-a-creative-practice",
-        "attention-is-infrastructure",
         "designing-metrics-for-athens-go-module-proxy",
         // add more slugs here
       ];
 
-      function normaliseTags(raw) {
-        if (!raw) return [];
-        return Array.isArray(raw) ? raw : [raw];
-      }
-      function formatDate(iso) {
-        const d = new Date(iso);
-        return {
-          mon: d.toLocaleString("en", { month: "short" }),
-          year: d.getFullYear(),
-        };
-      }
-
       async function init() {
         const cv = await fetch("cv.json").then((r) => r.json());
 
-        // ── SEO ──
         window.SEO.setPage({
           title: cv.name + " — " + cv.tagline,
           description:
@@ -377,14 +184,15 @@
           breadcrumbs: [{ name: "Home", url: window.SEO.BASE_URL + "/" }],
         });
 
-        document.getElementById("nav-name").textContent = cv.name;
+        document.getElementById("nav-name").textContent = cv.name
+          .toLowerCase()
+          .replace(/\s+/g, "-");
         document.getElementById("hero-tag").textContent = cv.tagline;
         document.getElementById("hero-name").textContent = cv.name;
         document.getElementById("hero-bio").textContent = cv.bio_short;
         document.getElementById("footer-name").textContent =
-          `© ${new Date().getFullYear()} ${cv.name} · Made with care`;
+          `${new Date().getFullYear()} ${cv.name} — Thanks for visiting!`;
 
-        // About section
         document.getElementById("about-body").innerHTML = cv.bio_long
           .map((p) => `<p>${p}</p>`)
           .join("");
@@ -396,7 +204,9 @@
 
         const posts = await Promise.all(
           BLOGS.map((slug) =>
-            fetch(`blogs/${slug}.json`).then((r) => r.json()),
+            fetch(`blogs/${slug}.md`)
+              .then((r) => r.text())
+              .then((raw) => ({ ...parsePostFile(raw).meta, slug })),
           ),
         );
         const pinned = posts.filter((p) => p.pinned === true);
@@ -404,6 +214,7 @@
 
         if (pinned.length === 0) {
           list.innerHTML = `<p class="no-pinned">No pinned posts yet. Add <code>"pinned": true</code> to a blog's JSON to feature it here.</p>`;
+          paintGutter();
           return;
         }
 
@@ -416,29 +227,20 @@
               .join("");
             return `
             <a href="post.html?slug=${encodeURIComponent(p.slug)}" class="post-item" role="listitem">
-              <div class="post-date"><span>${mon}</span><span>${year}</span></div>
+              <div class="post-meta"><span class="post-diff-mark">+</span>${mon} ${year}</div>
               <div>
                 <div class="post-tags">${tagChips}</div>
                 <h3 class="post-title">
                   ${escHTML(p.title)}
-                  <span class="pinned-badge" aria-label="Pinned">
-                    <svg viewBox="0 0 10 10" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M6.5 1L9 3.5 6 6.5 5 9 4 6.5 1 3.5 3.5 1z"/></svg>
-                    pinned
-                  </span>
+                  <span class="pinned-badge">pinned</span>
                 </h3>
                 <p class="post-excerpt">${escHTML(p.excerpt)}</p>
               </div>
             </a>`;
           })
           .join("");
-      }
 
-      function escHTML(str) {
-        return str
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;");
+        paintGutter();
       }
 
       init();

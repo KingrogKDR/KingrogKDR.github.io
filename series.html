@@ -400,7 +400,7 @@
     </main>
 
     <footer>
-      <p id="footer-name">© 2026 Abhishek Saikia · Made with care</p>
+      <p id="footer-name">© 2026 Abhishek Saikia · Thanks for visiting!!</p>
     </footer>
 
     <script src="seo.js"></script>
@@ -459,7 +459,7 @@
         const cv = await fetch("cv.json").then((r) => r.json());
         document.getElementById("nav-name").textContent = cv.name;
         document.getElementById("footer-name").textContent =
-          `© ${new Date().getFullYear()} ${cv.name} · Made with care`;
+          `© ${new Date().getFullYear()} ${cv.name} · Thanks for visiting!!`;
 
         const id = new URLSearchParams(window.location.search).get("id");
         if (!id) {

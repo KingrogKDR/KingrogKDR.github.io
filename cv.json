@@ -1,12 +1,12 @@
 {
   "name": "Abhishek Saikia",
-  "tagline": "Writer · Programmer · Thinker",
-  "bio_short": "I write about technology, system internals and design, and the ideas shaping how we live. I also build tools, learn through experiments, and share my occasional thoughts.",
+  "tagline": "Programmer · Thinker · Sometimes writer",
+  "bio_short": "I write about technology, system internals and design, and some ideas I stumble upon. I also build tools, prefer containers and infrastructure, and contribute to open source.",
   "bio_long": [
-    "I'm <strong>Abhishek Saikia</strong>, a programmer and thinker based in <strong><u>India</u></strong>. I am currently in my final year of college.",
-    "I delve in <strong>backend and systems engineering</strong> - distributed systems, cloud, and computer internals. Comfortable in <strong>Go</strong>, <strong>TypeScript</strong>, <strong>Python</strong>, and a bit of <strong>Rust</strong> and <strong>C</strong>.",
+    "I'm <strong>Abhishek Saikia</strong>, a programmer based in <strong><u>India</u></strong>.",
+    "I delve in <strong>backend and infrastructure engineering</strong> - distributed systems, cloud, containers and computer internals. Comfortable in <strong>Go</strong>, <strong>TypeScript</strong>, <strong>Python</strong>, and a bit of <strong>Rust</strong> and <strong>C</strong>.",
     "I write here irregularly but with intention.",
-    "If something I've written resonated with you, I'd genuinely love to hear about it. <a href='contact.html' style='text-decoration: none; border-bottom: 1px solid var(--ink);'><span style='color: var(--ink)'>Connect with me!</span></a>."
+    "If something I've written resonated with you, I'd genuinely love to hear about it. <a href='contact.html'><span style='color: var(--signal)'>Connect with me!</span></a>."
   ],
   "photo": "images/dp.jpg",
   "contact": {
@@ -29,13 +29,6 @@
       "description": "A Scalable Video Transcoding Service",
       "url": "https://github.com/KingrogKDR/video-transcoding",
       "tags": ["Typescript", "PostgreSQL", "Minio (S3)", "BullMQ"]
-    },
-    {
-      "name": "StoreDoc",
-      "icon": "images/storeDoc.png",
-      "description": "A web application designed to facilitate the upload and storage of files on the web and local storage solutions.",
-      "url": "https://store-doc-one.vercel.app",
-      "tags": ["NextJs", "TailwindCSS", "Appwrite"]
     }
   ]
 }
