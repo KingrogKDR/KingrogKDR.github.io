@@ -1888,7 +1888,7 @@ nav {
 footer {
   max-width: calc(var(--content-w) + 100px);
   margin: 0 auto;
-  padding: 24px 28px 48px;
+  padding: 24px 28px 10em;
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text-dim);
@@ -1897,6 +1897,6 @@ footer {
 
 @media (max-width: 640px) {
   footer {
-    padding: 20px 18px 40px;
+    padding: 20px 18px 10em;
   }
 }
