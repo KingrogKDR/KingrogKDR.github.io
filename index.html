@@ -76,69 +76,41 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <nav>
-      <div class="nav-inner">
-        <div class="nav-left">
-          <span class="window-dots"
-            ><span></span><span></span><span></span
-          ></span>
-          <a href="index.html" class="nav-logo" id="nav-name"
-            >abhishek-saikia</a
-          >
-        </div>
-        <div class="nav-right">
-          <ul class="nav-links" id="nav-links">
-            <li><a href="writing.html">writing</a></li>
-            <li><a href="projects.html">projects</a></li>
-            <li><a href="contact.html">contact</a></li>
-          </ul>
-          <button
-            class="menu-toggle"
-            id="menu-toggle"
-            aria-label="Open menu"
-            aria-expanded="false"
-          >
-            ☰
-          </button>
-          <button
-            class="theme-toggle"
-            id="theme-toggle"
-            aria-label="Toggle theme"
-          >
-            <span class="theme-toggle-thumb"></span>
-          </button>
-        </div>
-      </div>
-    </nav>
+    <nav></nav>
 
     <main>
       <div class="page">
         <div class="gutter" id="gutter" aria-hidden="true"></div>
         <div class="content-col">
-          <!-- HERO -->
-          <section class="pane hero-pane fade-in d1" aria-label="Intro">
-            <div class="pane-tab">home.tsx</div>
-            <div class="pane-body">
-              <p class="hero-tag" id="hero-tag">Loading…</p>
-              <h1 class="hero-name">
-                <span id="hero-name">Abhishek Saikia</span>
-              </h1>
-              <p class="hero-bio" id="hero-bio">Loading…</p>
-              <a href="writing.html" class="hero-cta">Read the latest →</a>
-            </div>
-          </section>
+          <!-- QUOTE -->
+          <div class="quote-box fade-in d1">
+            <span class="quote-mark">“</span>
+            <p class="quote-text" id="quote-text">Loading…</p>
+          </div>
 
-          <!-- ABOUT -->
+          <!-- INTRO (merged hero + about) -->
           <section
-            class="pane fade-in d2"
-            aria-label="About"
+            class="pane intro-pane fade-in d1"
+            aria-label="Intro"
             itemscope
             itemtype="https://schema.org/Person"
           >
-            <div class="pane-tab">about.md</div>
-            <div class="pane-body about-layout">
-              <div class="about-body" id="about-body" itemprop="description">
-                <p>Loading…</p>
+            <div class="pane-tab">about-me.tsx</div>
+            <div class="pane-body intro-layout">
+              <div class="intro-text">
+                <p class="hero-tag" id="hero-tag">Loading…</p>
+                <h1 class="hero-name">
+                  <span id="hero-name">Abhishek Saikia</span>
+                </h1>
+                <p class="hero-bio" id="hero-bio">Loading…</p>
+                <div class="about-body" id="about-body" itemprop="description">
+                  <p>Loading…</p>
+                </div>
+                <a href="writing.html" class="hero-cta">Read the latest →</a>
+
+                <div class="intro-links" id="intro-links">
+                  <!-- populated from cv.json -->
+                </div>
               </div>
               <div class="about-photo" id="about-photo">
                 <div class="about-photo-placeholder">🧑</div>
@@ -184,9 +156,6 @@
           breadcrumbs: [{ name: "Home", url: window.SEO.BASE_URL + "/" }],
         });
 
-        document.getElementById("nav-name").textContent = cv.name
-          .toLowerCase()
-          .replace(/\s+/g, "-");
         document.getElementById("hero-tag").textContent = cv.tagline;
         document.getElementById("hero-name").textContent = cv.name;
         document.getElementById("hero-bio").textContent = cv.bio_short;
@@ -200,6 +169,50 @@
         if (cv.photo) {
           document.getElementById("about-photo").innerHTML =
             `<img src="${cv.photo}" alt="${cv.name}" itemprop="image">`;
+        }
+
+        // Quote box — add "quote" (and optional "quoteAuthor") to cv.json to customize.
+        const quoteText =
+          cv.quote || "Write the code you wish you'd inherited.";
+        const quoteAuthor = cv.quoteAuthor || cv.name;
+        document.getElementById("quote-text").innerHTML =
+          escHTML(quoteText) +
+          `<span class="quote-author">${escHTML(quoteAuthor)}</span>`;
+
+        // Contact icons merged in from the old contact page.
+        if (cv.contact) {
+          const { email, twitter, linkedin, github } = cv.contact;
+          const links = [
+            email && {
+              icon: "images/mail.svg",
+              label: "Email",
+              href: `mailto:${email}`,
+            },
+            twitter && {
+              icon: "images/x.svg",
+              label: "Twitter / X",
+              href: `https://twitter.com/${twitter.replace("@", "")}`,
+            },
+            linkedin && {
+              icon: "images/linkedin.svg",
+              label: "LinkedIn",
+              href: `https://linkedin.com/in/${linkedin}`,
+            },
+            github && {
+              icon: "images/github.svg",
+              label: "GitHub",
+              href: `https://github.com/${github}`,
+            },
+          ].filter(Boolean);
+
+          document.getElementById("intro-links").innerHTML = links
+            .map(
+              (l) => `
+  <a href="${l.href}" class="intro-link" ${l.href.startsWith("http") ? 'target="_blank" rel="noopener"' : ""} aria-label="${l.label}" title="${l.label}">
+    <span class="link-icon-img" style="-webkit-mask-image:url('${l.icon}');mask-image:url('${l.icon}');" aria-hidden="true"></span>
+  </a>`,
+            )
+            .join("");
         }
 
         const posts = await Promise.all(

@@ -58,40 +58,7 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <nav>
-      <div class="nav-inner">
-        <div class="nav-left">
-          <span class="window-dots"
-            ><span></span><span></span><span></span
-          ></span>
-          <a href="index.html" class="nav-logo" id="nav-name"
-            >abhishek-saikia</a
-          >
-        </div>
-        <div class="nav-right">
-          <ul class="nav-links" id="nav-links">
-            <li><a href="writing.html">writing</a></li>
-            <li><a href="projects.html">projects</a></li>
-            <li><a href="contact.html">contact</a></li>
-          </ul>
-          <button
-            class="menu-toggle"
-            id="menu-toggle"
-            aria-label="Open menu"
-            aria-expanded="false"
-          >
-            ☰
-          </button>
-          <button
-            class="theme-toggle"
-            id="theme-toggle"
-            aria-label="Toggle theme"
-          >
-            <span class="theme-toggle-thumb"></span>
-          </button>
-        </div>
-      </div>
-    </nav>
+    <nav></nav>
 
     <main>
       <div class="page">
@@ -435,9 +402,6 @@
             { name: "Blogs", url: window.SEO.BASE_URL + "/writing.html" },
           ],
         });
-        document.getElementById("nav-name").textContent = cv.name
-          .toLowerCase()
-          .replace(/\s+/g, "-");
         document.getElementById("footer-name").textContent =
           `${new Date().getFullYear()} ${cv.name} — Thanks for visiting!`;
 

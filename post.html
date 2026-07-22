@@ -49,40 +49,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   </head>
   <body>
-    <nav>
-      <div class="nav-inner">
-        <div class="nav-left">
-          <span class="window-dots"
-            ><span></span><span></span><span></span
-          ></span>
-          <a href="index.html" class="nav-logo" id="nav-name"
-            >abhishek-saikia</a
-          >
-        </div>
-        <div class="nav-right">
-          <ul class="nav-links" id="nav-links">
-            <li><a href="writing.html">writing</a></li>
-            <li><a href="projects.html">projects</a></li>
-            <li><a href="contact.html">contact</a></li>
-          </ul>
-          <button
-            class="menu-toggle"
-            id="menu-toggle"
-            aria-label="Open menu"
-            aria-expanded="false"
-          >
-            ☰
-          </button>
-          <button
-            class="theme-toggle"
-            id="theme-toggle"
-            aria-label="Toggle theme"
-          >
-            <span class="theme-toggle-thumb"></span>
-          </button>
-        </div>
-      </div>
-    </nav>
+    <nav></nav>
 
     <aside class="toc" id="toc" aria-label="Table of contents">
       <p class="toc-label">contents</p>
@@ -408,9 +375,6 @@
 
       async function init() {
         const cv = await fetch("cv.json").then((r) => r.json());
-        document.getElementById("nav-name").textContent = cv.name
-          .toLowerCase()
-          .replace(/\s+/g, "-");
         document.getElementById("footer-name").textContent =
           `${new Date().getFullYear()} ${cv.name} — Thanks for visiting!`;
 

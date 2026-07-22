@@ -1,13 +1,12 @@
 {
   "name": "Abhishek Saikia",
   "tagline": "Programmer · Thinker · Sometimes writer",
-  "bio_short": "I write about technology, system internals and design, and some ideas I stumble upon. I also build tools, prefer containers and infrastructure, and contribute to open source.",
+  "bio_short": "Containers, databases, infrastructure and open-source.",
   "bio_long": [
-    "I'm <strong>Abhishek Saikia</strong>, a programmer based in <strong><u>India</u></strong>.",
-    "I delve in <strong>backend and infrastructure engineering</strong> - distributed systems, cloud, containers and computer internals. Comfortable in <strong>Go</strong>, <strong>TypeScript</strong>, <strong>Python</strong>, and a bit of <strong>Rust</strong> and <strong>C</strong>.",
-    "I write here irregularly but with intention.",
-    "If something I've written resonated with you, I'd genuinely love to hear about it. <a href='contact.html'><span style='color: var(--signal)'>Connect with me!</span></a>."
+    "A programmer based in <strong><u>India</u></strong>. I write here irregularly but with intention."
   ],
+  "quote": "An idiot admires complexity, a genius admires simplicity",
+  "quoteAuthor": "Terry Davis, creator of Temple OS",
   "photo": "images/dp.jpg",
   "contact": {
     "email": "abhisheksaikia766@gmail.com",

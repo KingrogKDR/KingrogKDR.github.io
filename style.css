@@ -5,7 +5,7 @@
    printed alternate. See DESIGN_PLAN.md for the full rationale.
    ========================================================================== */
 
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
 /* ---------- tokens ---------- */
 :root {
@@ -19,11 +19,12 @@
   --diff: #e3b341;
   --grid-dot: rgba(255, 255, 255, 0.07);
 
+  --font-sans: "Hanken Grotesk", -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
-  --font-sans: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
 
   --gutter-w: 44px;
-  --content-w: 700px;
+  --content-w: 640px;
+  --nav-offset: 22px;
   --radius: 3px;
 }
 
@@ -125,25 +126,34 @@ button {
   }
 }
 
-/* ---------- nav: window titlebar ---------- */
+/* ---------- nav: floating dock, bottom-center, matched to box width ---------- */
 nav {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  left: calc(50% + var(--nav-offset));
+  bottom: 20px;
+  top: auto;
   z-index: 100;
-  background: color-mix(in srgb, var(--panel) 88%, transparent);
+  /* matches .page's inner math exactly: page padding (28px * 2) + gutter (44px) = 100px */
+  width: calc(100% - 100px);
+  max-width: var(--content-w);
+  transform: translateX(-50%);
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.35);
+}
+[data-theme="light"] nav {
+  box-shadow: 0 12px 34px rgba(60, 45, 25, 0.14);
 }
 .nav-inner {
-  max-width: 920px;
-  margin: 0 auto;
+  width: 100%;
+  margin: 0;
   height: 52px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 28px;
+  padding: 0 20px;
 }
 .window-dots {
   display: flex;
@@ -189,8 +199,7 @@ nav {
   color: var(--text-dim);
   padding: 8px 14px 7px;
   border: 1px solid transparent;
-  border-bottom: none;
-  border-radius: var(--radius) var(--radius) 0 0;
+  border-radius: var(--radius);
   transition:
     color 0.15s,
     border-color 0.15s,
@@ -246,23 +255,30 @@ nav {
 }
 
 @media (max-width: 640px) {
+  nav {
+    width: calc(100% - 36px);
+    left: 50%;
+    bottom: 14px;
+  }
   .menu-toggle {
     display: flex;
   }
   .nav-inner {
-    padding: 0 18px;
+    padding: 0 14px;
   }
   .nav-links {
     display: none;
     flex-direction: column;
     gap: 0;
     position: absolute;
-    top: 52px;
+    bottom: 52px;
     left: 0;
     right: 0;
     background: var(--panel);
-    border-bottom: 1px solid var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
     padding: 6px 0;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.3);
   }
   .nav-links.open {
     display: flex;
@@ -280,9 +296,10 @@ nav {
 
 /* ---------- page shell / gutter ---------- */
 .page {
-  max-width: 920px;
+  /* content-col ends up exactly --content-w wide: page padding (28px * 2) + gutter (44px) = 100px */
+  max-width: calc(var(--content-w) + 100px);
   margin: 0 auto;
-  padding: 96px 28px 72px;
+  padding: 48px 28px 132px;
   display: flex;
   gap: 0;
 }
@@ -302,23 +319,22 @@ nav {
   height: var(--ln-h, 28px);
   line-height: var(--ln-h, 28px);
 }
+
+.gutter {
+  visibility: hidden;
+}
+
 .content-col {
   flex: 1;
   min-width: 0;
-  border-left: 1px solid var(--border);
-  padding-left: 24px;
 }
 
 @media (max-width: 640px) {
   .page {
-    padding: 84px 18px 56px;
+    padding: 40px 18px 112px;
   }
   .gutter {
     display: none;
-  }
-  .content-col {
-    border-left: none;
-    padding-left: 0;
   }
 }
 
@@ -350,14 +366,24 @@ nav {
   color: var(--text-dim);
   margin-bottom: 8px;
 }
-.comment-label::before {
-  content: "// ";
-  color: var(--signal);
-}
 
-/* ---------- hero ---------- */
-.hero-pane .pane-body {
-  padding: 36px 32px 40px;
+/* ---------- intro (merged hero + about) ---------- */
+.intro-pane {
+  margin-left: auto;
+  margin-right: auto;
+}
+.intro-pane .pane-body {
+  padding: 30px 28px 34px;
+}
+.intro-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+.intro-text {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
 }
 .hero-tag {
   font-family: var(--font-mono);
@@ -367,8 +393,8 @@ nav {
 }
 .hero-name {
   font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: clamp(30px, 5vw, 44px);
+  font-weight: 600;
+  font-size: clamp(20px, 4vw, 30px);
   letter-spacing: -0.01em;
   line-height: 1.15;
   margin-bottom: 20px;
@@ -377,13 +403,19 @@ nav {
   color: var(--signal);
 }
 .hero-bio {
-  font-family: var(--font-sans);
-  font-size: 17px;
+  font-family: var(--font-mono);
+  font-size: 12px;
   font-weight: 300;
   line-height: 1.75;
   color: var(--text-dim);
-  max-width: 540px;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
+}
+.intro-text .about-body p {
+  margin-bottom: 16px;
+  color: var(--text);
+}
+.intro-text .about-body p:last-child {
+  margin-bottom: 0;
 }
 .hero-cta {
   display: inline-flex;
@@ -396,6 +428,7 @@ nav {
   border: 1px solid var(--signal);
   padding: 10px 18px;
   border-radius: var(--radius);
+  margin-top: 24px;
   transition:
     background 0.15s,
     color 0.15s;
@@ -405,19 +438,6 @@ nav {
   color: var(--bg);
 }
 
-/* ---------- about ---------- */
-.about-layout {
-  display: flex;
-  gap: 36px;
-  align-items: flex-start;
-}
-.about-body p {
-  margin-bottom: 16px;
-  color: var(--text);
-}
-.about-body p:last-child {
-  margin-bottom: 0;
-}
 .about-photo {
   flex-shrink: 0;
   width: 128px;
@@ -463,15 +483,94 @@ nav {
 }
 
 @media (max-width: 560px) {
-  .about-layout {
-    flex-direction: column-reverse;
-  }
   .about-photo {
     width: 88px;
     height: 88px;
   }
 }
 
+/* ---------- quote box ---------- */
+.quote-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--signal);
+  border-radius: var(--radius);
+  background: var(--panel);
+  padding: 16px 20px;
+  margin-bottom: 28px;
+}
+.quote-mark {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--signal);
+  opacity: 0.85;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.quote-text {
+  font-family: var(--font-mono);
+  font-style: italic;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+.quote-author {
+  display: block;
+  margin-top: 8px;
+  font-style: normal;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  opacity: 0.75;
+}
+.quote-author::before {
+  content: "— ";
+}
+
+/* ---------- intro links (contact icons merged into about-me.tsx) ---------- */
+.intro-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 22px;
+}
+.intro-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.intro-link:hover {
+  border-color: var(--signal);
+  color: var(--signal);
+  background: color-mix(in srgb, var(--signal) 8%, transparent);
+}
+.link-icon-img {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  background-color: var(--text);
+  transition: background-color 0.15s;
+}
+[data-theme="dark"] .link-icon-img {
+  background-color: var(--signal);
+}
 /* ---------- pinned / post list ---------- */
 .section-header {
   display: flex;
@@ -771,11 +870,6 @@ nav {
   opacity: 0.7;
   margin: 28px 0 2px;
 }
-.posts-section-label::before {
-  content: "// ";
-  color: var(--signal);
-  opacity: 0.7;
-}
 
 /* ---------- series module cards ---------- */
 .series-section-label {
@@ -783,10 +877,6 @@ nav {
   font-size: 12px;
   color: var(--text-dim);
   margin: 8px 0 12px;
-}
-.series-section-label::before {
-  content: "// ";
-  color: var(--signal);
 }
 
 .series-card {
@@ -939,7 +1029,7 @@ nav {
 .post-page {
   max-width: 720px;
   margin: 0 auto;
-  padding: 100px 32px 100px;
+  padding: 56px 32px 132px;
 }
 
 .toc {
@@ -962,10 +1052,7 @@ nav {
   color: var(--text-dim);
   margin-bottom: 16px;
 }
-.toc-label::before {
-  content: "// ";
-  color: var(--signal);
-}
+
 .toc-list {
   list-style: none;
   padding: 0;
@@ -1329,7 +1416,7 @@ nav {
 }
 .share-toast {
   position: fixed;
-  bottom: 28px;
+  bottom: 92px;
   left: 50%;
   transform: translateX(-50%) translateY(12px);
   font-family: var(--font-mono);
@@ -1503,7 +1590,7 @@ nav {
 
 @media (max-width: 540px) {
   .post-page {
-    padding: 84px 18px 64px;
+    padding: 48px 18px 112px;
   }
   .series-nav-center {
     display: none;
@@ -1595,11 +1682,11 @@ nav {
 .page-wide {
   max-width: 1040px;
   margin: 0 auto;
-  padding: 96px 28px 72px;
+  padding: 48px 28px 132px;
 }
 @media (max-width: 640px) {
   .page-wide {
-    padding: 84px 18px 56px;
+    padding: 40px 18px 112px;
   }
 }
 
@@ -1799,18 +1886,13 @@ nav {
 
 /* ---------- footer ---------- */
 footer {
-  max-width: 920px;
+  max-width: calc(var(--content-w) + 100px);
   margin: 0 auto;
   padding: 24px 28px 48px;
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text-dim);
   border-top: 1px solid var(--border);
-}
-footer p::before {
-  content: "// ";
-  color: var(--signal);
-  opacity: 0.7;
 }
 
 @media (max-width: 640px) {
