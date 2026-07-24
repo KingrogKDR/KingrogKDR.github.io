@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Work Experience — Abhishek Saikia</title>
+    <meta
+      name="description"
+      content="My work experiences across different companies and roles."
+    />
+    <link rel="canonical" href="https://kingrogkdr.github.io/work.html" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Work Experience — Abhishek Saikia" />
+    <meta
+      property="og:description"
+      content="My work experiences across different companies and roles."
+    />
+    <meta property="og:url" content="https://kingrogkdr.github.io/work.html" />
+    <meta
+      property="og:image"
+      content="https://kingrogkdr.github.io/images/og-default.png"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="images/favicon/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="images/favicon/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="images/favicon/favicon-16x16.png"
+    />
+    <link rel="manifest" href="images/favicon/site.webmanifest" />
+    <link rel="icon" href="images/favicon/favicon.ico" />
+
+    <!-- Theme flash prevention: dark is the default working theme, light is opt-in and remembered -->
+    <script>
+      (function () {
+        var saved = localStorage.getItem("theme");
+        document.documentElement.setAttribute(
+          "data-theme",
+          saved === "light" ? "light" : "dark",
+        );
+      })();
+    </script>
+
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <nav></nav>
+
+    <main>
+      <div class="work-page">
+        <p class="comment-label fade-in d1">career</p>
+        <h1
+          class="hero-name fade-in d2"
+          style="font-size: clamp(20px, 4vw, 20px); margin-bottom: 20px"
+        >
+          Work Experience
+        </h1>
+        <p class="page-intro fade-in d2">
+          My work experiences across different companies and roles.
+        </p>
+
+        <div id="work-list" class="work-list">
+          <p class="loading">Loading…</p>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <p id="footer-name">2026 Abhishek Saikia — Thanks for visiting!</p>
+    </footer>
+
+    <script src="seo.js"></script>
+    <script src="common.js"></script>
+    <script>
+      // "YYYY-MM" -> "Month YYYY" (e.g. "2026-01" -> "January 2026")
+      function formatMonthYear(iso) {
+        const [y, m] = iso.split("-").map(Number);
+        return new Date(y, m - 1, 1).toLocaleDateString("en", {
+          year: "numeric",
+          month: "long",
+        });
+      }
+
+      function renderTechIcon(t) {
+        const icon = t.icon;
+        // Plain string: one universal icon, same on both themes.
+        if (typeof icon === "string") {
+          return `<img src="${icon}" alt="${escHTML(t.name)}" loading="lazy" />`;
+        }
+        // { dark, light } object: theme-specific variants, toggled via CSS.
+        return `<img class="tech-icon-dark" src="${icon.dark}" alt="${escHTML(t.name)}" loading="lazy" /><img class="tech-icon-light" src="${icon.light}" alt="${escHTML(t.name)}" loading="lazy" />`;
+      }
+
+      function renderEntry(e) {
+        const badge = e.status
+          ? `<span class="exp-status-badge"><span class="exp-status-dot"></span>${escHTML(e.status)}</span>`
+          : "";
+        const dates = `${formatMonthYear(e.start)} – ${e.end ? formatMonthYear(e.end) : "Present"}`;
+
+        const techHTML =
+          Array.isArray(e.tech) && e.tech.length
+            ? `
+            <div class="work-entry-section">
+                <p class="work-entry-label">Technologies &amp; Tools</p>
+                <div class="work-tech-row">
+                ${e.tech
+                  .map(
+                    (t) => `
+                    <span class="work-tech-chip">
+                    ${renderTechIcon(t)}
+                    <span class="work-tech-chip-name">${escHTML(t.name)}</span>
+                    </span>`,
+                  )
+                  .join("")}
+                </div>
+            </div>`
+            : "";
+
+        const highlightsHTML =
+          Array.isArray(e.highlights) && e.highlights.length
+            ? `
+          <div class="work-entry-section">
+            <p class="work-entry-label">What I've done</p>
+            <ul class="work-entry-list">
+              ${e.highlights.map((h) => `<li>${escHTML(h)}</li>`).join("")}
+            </ul>
+          </div>`
+            : "";
+
+        return `
+        <article class="work-entry fade-in d2">
+          <div class="work-entry-header">
+            <div class="work-entry-left">
+              <div class="work-entry-title-row">
+                <h2 class="work-entry-company">${escHTML(e.company)}</h2>
+                ${badge}
+              </div>
+              <p class="work-entry-role">${escHTML(e.role)}</p>
+            </div>
+            <div class="work-entry-right">
+              <p class="work-entry-dates">${dates}</p>
+              <p class="work-entry-location">${escHTML(e.location)} (${escHTML(e.mode)})</p>
+            </div>
+          </div>
+          <hr class="work-entry-divider" />
+          ${techHTML}
+          ${highlightsHTML}
+        </article>`;
+      }
+
+      async function init() {
+        const cv = await fetch("cv.json").then((r) => r.json());
+
+        window.SEO.setPage({
+          title: "Work Experience",
+          description: `My work experiences across different companies and roles.`,
+          url: window.SEO.BASE_URL + "/work.html",
+          type: "website",
+          breadcrumbs: [
+            { name: "Home", url: window.SEO.BASE_URL + "/" },
+            { name: "Work", url: window.SEO.BASE_URL + "/work.html" },
+          ],
+        });
+
+        document.getElementById("footer-name").textContent =
+          `${new Date().getFullYear()} ${cv.name} — Thanks for visiting!`;
+
+        const list = document.getElementById("work-list");
+
+        // Reads cv.experience — see index.html for the expected entry shape.
+        if (Array.isArray(cv.experience) && cv.experience.length) {
+          const experience = [...cv.experience].sort((a, b) =>
+            b.start.localeCompare(a.start),
+          );
+          list.innerHTML = experience.map(renderEntry).join("");
+        } else {
+          list.innerHTML = `<p class="no-pinned">No experience entries yet. Add an <code>"experience"</code> array to cv.json to populate this page.</p>`;
+        }
+      }
+
+      init();
+    </script>
+    <script src="nav.js"></script>
+  </body>
+</html>

@@ -123,6 +123,17 @@
             </div>
           </section>
 
+          <!-- WORK EXPERIENCE -->
+          <section class="fade-in d2 exp-section" aria-label="Work experience">
+            <div class="section-header">
+              <p class="comment-label">experience</p>
+              <a href="work.html" class="see-all">full history →</a>
+            </div>
+            <div class="exp-list" id="exp-list">
+              <p class="loading">Loading…</p>
+            </div>
+          </section>
+
           <!-- PINNED WRITING -->
           <section class="fade-in d3" aria-label="Pinned writing">
             <div class="section-header">
@@ -148,6 +159,15 @@
         "designing-metrics-for-athens-go-module-proxy",
         // add more slugs here
       ];
+
+      // "YYYY-MM" -> "Month YYYY" (e.g. "2026-01" -> "January 2026")
+      function formatMonthYear(iso) {
+        const [y, m] = iso.split("-").map(Number);
+        return new Date(y, m - 1, 1).toLocaleDateString("en", {
+          year: "numeric",
+          month: "long",
+        });
+      }
 
       async function init() {
         const cv = await fetch("cv.json").then((r) => r.json());
@@ -218,6 +238,50 @@
   </a>`,
             )
             .join("");
+        }
+
+        // Work experience (compact) — reads cv.experience.
+        // Expected shape per entry:
+        //   {
+        //     "company": "ASBL",
+        //     "role": "SDE-L1 (Full Stack)",
+        //     "status": "Working",              // optional — omit for past roles
+        //     "location": "Hyderabad, India",
+        //     "mode": "On-Site",                // "On-Site" | "Remote" | "Hybrid"
+        //     "start": "2026-01",               // "YYYY-MM"
+        //     "end": null,                      // "YYYY-MM" or null for present
+        //     "tech": [{ "name": "Next.js", "icon": "images/tech/nextjs.svg" }],
+        //     "highlights": ["Did the thing.", "Did another thing."]
+        //   }
+        const expList = document.getElementById("exp-list");
+        if (Array.isArray(cv.experience) && cv.experience.length) {
+          const experience = [...cv.experience].sort((a, b) =>
+            b.start.localeCompare(a.start),
+          );
+          expList.innerHTML = experience
+            .map((e) => {
+              const badge = e.status
+                ? `<span class="exp-status-badge"><span class="exp-status-dot"></span>${escHTML(e.status)}</span>`
+                : "";
+              const dates = `${formatMonthYear(e.start)} – ${e.end ? formatMonthYear(e.end) : "Present"}`;
+              return `
+              <div class="exp-item">
+                <div class="exp-item-left">
+                  <div class="exp-item-title-row">
+                    <span class="exp-company">${escHTML(e.company)}</span>
+                    ${badge}
+                  </div>
+                  <p class="exp-role">${escHTML(e.role)}</p>
+                </div>
+                <div class="exp-item-right">
+                  <p class="exp-dates">${dates}</p>
+                  <p class="exp-location">${escHTML(e.location)} (${escHTML(e.mode)})</p>
+                </div>
+              </div>`;
+            })
+            .join("");
+        } else {
+          expList.innerHTML = `<p class="no-pinned">No experience entries yet. Add an <code>"experience"</code> array to cv.json to populate this section.</p>`;
         }
 
         const posts = await Promise.all(

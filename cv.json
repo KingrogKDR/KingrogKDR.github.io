@@ -14,6 +14,52 @@
     "linkedin": "abhishek-saikia-268832279",
     "github": "KingrogKDR"
   },
+  "experience": [
+    {
+      "company": "Atomity",
+      "role": "Backend and Infrastructure Engineer",
+      "status": "Working",
+      "location": "Bensheim, Germany",
+      "mode": "Remote",
+      "start": "2026-05",
+      "end": null,
+      "tech": [
+        {
+          "name": "Go/Golang",
+          "icon": "images/tech/go.svg"
+        },
+        {
+          "name": "AWS",
+          "icon": {
+            "dark": "images/tech/aws-dark.svg",
+            "light": "images/tech/aws-light.svg"
+          }
+        },
+        {
+          "name": "Git",
+          "icon": "images/tech/git.svg"
+        },
+        {
+          "name": "Argocd",
+          "icon": "images/tech/argocd.svg"
+        },
+        {
+          "name": "Grafana",
+          "icon": "images/tech/grafana.svg"
+        },
+        {
+          "name": "Kubernetes",
+          "icon": "images/tech/kubernetes.svg"
+        }
+      ],
+      "highlights": [
+        "Developed a backend polling service in Go to monitor Hetzner Cloud infrastructure and detect server lifecycle events through REST API polling and state reconciliation workflows.",
+        "Implemented transactional audit logging and an Outbox-based webhook delivery system with retries, ensuring idempotent event processing and reliable, duplicate-free alerts.",
+        "Deployed a centralized Kubernetes observability stack using Grafana Alloy, Loki, Grafana, and ArgoCD, enabling cluster-wide log aggregation across services.",
+        "Implemented Vertical Pod Autoscaler (VPA) for Kubernetes workloads to improve capacity planning through automated resource recommendations."
+      ]
+    }
+  ],
   "projects": [
     {
       "name": "Craw",

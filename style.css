@@ -487,11 +487,8 @@ nav {
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  border: 1px solid var(--border);
   border-left: 3px solid var(--signal);
-  border-radius: var(--radius);
-  background: var(--panel);
-  padding: 16px 20px;
+  padding: 4px 0 4px 18px;
   margin-bottom: 28px;
 }
 .quote-mark {
@@ -995,6 +992,320 @@ nav {
   font-size: 13px;
   color: var(--text-dim);
   padding: 12px 4px;
+}
+
+/* ==========================================================================
+   index.html / work.html — work experience
+   ========================================================================== */
+
+.exp-section {
+  margin-bottom: 56px;
+}
+.exp-list {
+  border-top: 1px solid var(--border);
+}
+.exp-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 4px;
+  margin: 0;
+  border-bottom: 1px solid var(--border);
+}
+.exp-item-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.exp-company {
+  font-family: var(--font-sans);
+  font-size: 16.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.exp-role {
+  font-size: 13.5px;
+  color: var(--text-dim);
+}
+.exp-item-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+.exp-dates {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+.exp-location {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  opacity: 0.75;
+  margin-top: 3px;
+}
+
+.exp-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: #34d399;
+  background: color-mix(in srgb, #34d399 12%, transparent);
+  border: 1px solid color-mix(in srgb, #34d399 35%, transparent);
+  padding: 3px 9px 3px 7px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.exp-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #34d399;
+  flex-shrink: 0;
+}
+
+@media (max-width: 560px) {
+  .exp-item {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .exp-item-right {
+    text-align: left;
+  }
+}
+
+/* ---------- work.html — detailed experience entries ---------- */
+.work-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 56px 32px 132px;
+}
+.work-list {
+  border-top: 1px solid var(--border);
+  margin-top: 24px;
+}
+.work-entry {
+  padding: 22px 0;
+  border-bottom: 1px solid var(--border);
+}
+.work-entry-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.work-entry-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 3px;
+}
+.work-entry-company {
+  font-family: var(--font-sans);
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.work-entry-role {
+  font-size: 14px;
+  color: var(--text-dim);
+}
+.work-entry-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+.work-entry-dates {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.work-entry-location {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  opacity: 0.75;
+  margin-top: 2px;
+}
+.work-entry-divider {
+  border: none;
+  border-top: 1px dashed var(--border);
+  margin: 14px 0;
+}
+.work-entry-section {
+  margin-bottom: 14px;
+}
+.work-entry-section:last-child {
+  margin-bottom: 0;
+}
+.work-entry-label {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.work-tech-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.work-tech-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  min-width: 32px;
+  max-width: 32px;
+  padding: 0 7px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  overflow: hidden;
+  flex-shrink: 0;
+  cursor: default;
+  transition:
+    max-width 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.4s ease,
+    background 0.4s ease;
+  will-change: max-width;
+}
+.work-tech-chip img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.work-tech-chip-name {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.25s,
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.25s,
+    color 0.3s ease;
+}
+.work-tech-chip:hover {
+  max-width: 220px;
+  border-color: var(--signal);
+  background: var(--panel);
+}
+.work-tech-chip:hover .work-tech-chip-name {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--text);
+}
+
+.work-tech-chip:not(:hover) .work-tech-chip-name {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+.work-tech-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  min-width: 32px;
+  max-width: 32px;
+  padding: 0 7px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  overflow: hidden;
+  flex-shrink: 0;
+  cursor: default;
+  transition:
+    max-width 1s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.4s ease,
+    background 0.4s ease;
+  will-change: max-width;
+}
+.work-tech-chip img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.work-tech-chip-name {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.25s,
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.25s;
+}
+.work-tech-chip:hover {
+  max-width: 220px;
+  border-color: var(--signal);
+  background: var(--panel);
+}
+.work-tech-chip:hover .work-tech-chip-name {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.work-tech-chip:not(:hover) .work-tech-chip-name {
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
+}
+
+/* default (dark) theme shows the dark-variant icon */
+.work-tech-chip .tech-icon-light {
+  display: none;
+}
+[data-theme="light"] .work-tech-chip .tech-icon-dark {
+  display: none;
+}
+[data-theme="light"] .work-tech-chip .tech-icon-light {
+  display: block;
+}
+
+.work-entry-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.work-entry-list li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+.work-entry-list li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--signal);
+}
+
+@media (max-width: 560px) {
+  .work-page {
+    padding: 48px 18px 112px;
+  }
+  .work-entry {
+    padding: 18px 0;
+  }
+  .work-entry-header {
+    flex-direction: column;
+  }
+  .work-entry-right {
+    text-align: left;
+  }
 }
 
 /* ==========================================================================
