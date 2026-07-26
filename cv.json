@@ -25,7 +25,7 @@
       "end": null,
       "tech": [
         {
-          "name": "Go/Golang",
+          "name": "Go",
           "icon": "images/tech/go.svg"
         },
         {
@@ -40,23 +40,24 @@
           "icon": "images/tech/git.svg"
         },
         {
+          "name": "Kubernetes",
+          "icon": "images/tech/kubernetes.svg"
+        },
+        {
           "name": "Argocd",
           "icon": "images/tech/argocd.svg"
         },
         {
           "name": "Grafana",
           "icon": "images/tech/grafana.svg"
-        },
-        {
-          "name": "Kubernetes",
-          "icon": "images/tech/kubernetes.svg"
         }
       ],
       "highlights": [
-        "Developed a backend polling service in Go to monitor Hetzner Cloud infrastructure and detect server lifecycle events through REST API polling and state reconciliation workflows.",
-        "Implemented transactional audit logging and an Outbox-based webhook delivery system with retries, ensuring idempotent event processing and reliable, duplicate-free alerts.",
-        "Deployed a centralized Kubernetes observability stack using Grafana Alloy, Loki, Grafana, and ArgoCD, enabling cluster-wide log aggregation across services.",
-        "Implemented Vertical Pod Autoscaler (VPA) for Kubernetes workloads to improve capacity planning through automated resource recommendations."
+        "Developed a backend polling service in Go to monitor Hetzner Cloud infrastructure and detect server lifecycle events via REST API polling and state reconciliation, giving the infra team real-time visibility into server failures before they caused customer-facing downtime.",
+        "Built the ingestion layer feeding AWS cost/billing data into ClickHouse with tenant isolation and validation, supporting fast aggregation queries over large-scale multi-tenant billing dataset.",
+        "Proposed and built a direct-ingestion API so customers could send billing data without granting an IAM role into their AWS S3 bucket — removing a security/access barrier that the standard AWS Data Exports path required for onboarding",
+        "Implemented transactional audit logging and an Outbox-based webhook delivery system with retries, ensuring idempotent event processing so downstream teams could trust alerts without duplicate or lost events",
+        "Deployed a centralized Kubernetes observability stack (Grafana Alloy, Loki, Grafana, ArgoCD) for cluster-wide log aggregation, cutting the time engineers spent tracing issues across services during incidents"
       ]
     }
   ],
