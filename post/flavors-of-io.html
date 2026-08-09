@@ -144,19 +144,19 @@
 <p>Sectors are the smallest unit of data transfer for block devices, e.g hard disks, pen drives, sd cards, etc. In most block devices, sectors are of size 512 bytes.</p>
 <p>A block, a foundational unit of the filesystem, consists of multiple adjacent sectors and therefore its size is a multiple of 512 bytes.</p>
 <p>IO is done through virtual memory, which caches requested filesystem blocks in memory and serves as a buffer for intermediate operations. Virtual memory works with pages, which map to filesystem blocks. So, a page is a physical unit of memory/RAM, size of which is a multiple of filesystem blocks.</p>
-<figure class="post-image"><img src="images/flavors-of-io/sector_block_page.png" alt="An example of sectors, blocks and pages" loading="lazy"></figure>
+<figure class="post-image"><img src="images/flavors-of-io/sector_block_page.png" alt="An example of sectors, blocks and pages" loading="lazy"><figcaption class="post-image-caption">An example of sectors, blocks and pages</figcaption></figure>
 <h1 id="different-types-of-io-based-on-two-independent-questions" class="post-section-heading">Different types of IO based on two independent questions:</h1>
 <ol>
 <li>Does my data use page cache? (Buffered vs Direct I/O)</li>
 <li>Does the thread wait? (Synchronous vs Asynchronous I/O)</li>
 </ol>
 <p><code>Buffered IO</code>: involves the use of a page cache for faster read/writes from memory.</p>
-<figure class="post-image"><img src="images/flavors-of-io/buffered_io.png" alt="The flow of buffered IO" loading="lazy"></figure>
+<figure class="post-image"><img src="images/flavors-of-io/buffered_io.png" alt="The flow of buffered IO" loading="lazy"><figcaption class="post-image-caption">The flow of buffered IO</figcaption></figure>
 <p>Only, exception is in the case of memory mapped IO: where a pointer to the memory pages required by the process is returned instead of a copy of the pages.</p>
 <p><code>Direct I/O</code>: doesn&#39;t involve a page cache. Instead here, the read/write operations happen between the application and the disk. Uses the O_DIRECT flag when opening a file.</p>
-<figure class="post-image"><img src="images/flavors-of-io/direct_io.png" alt="The flow of direct IO" loading="lazy"></figure>
+<figure class="post-image"><img src="images/flavors-of-io/direct_io.png" alt="The flow of direct IO" loading="lazy"><figcaption class="post-image-caption">The flow of direct IO</figcaption></figure>
 <p>Because Direct IO involves direct access to disk, bypassing intermediate kernel buffers, it is important that all operations are aligned to sector boundary, i.e. a data written onto the disk/the buffer size has to be a multiple of 512 and every operation has to have a starting offset of 512 as well (implying sector size = 512 bytes).</p>
-<figure class="post-image"><img src="images/flavors-of-io/sector_boundary.png" alt="How sector boundary should be maintained" loading="lazy"></figure>
+<figure class="post-image"><img src="images/flavors-of-io/sector_boundary.png" alt="How sector boundary should be maintained" loading="lazy"><figcaption class="post-image-caption">How sector boundary should be maintained</figcaption></figure>
 <p><code>Synchronous IO</code>: It makes the process/thread blocking, i.e it waits for the entire read/write operation to complete. There exists a special flag called O_NONBLOCK, but it is effectively ignored for regular files because the kernel waits for storage operation to complete, instead of treating it as a readiness event.</p>
 <p><code>Asynchronous IO</code> : Although, in modern Unix systems, we can make IO async using interfaces like io_uring. This way the thread doesn&#39;t wait for the storage operation to complete and is notified upon completion.</p>
 <blockquote>

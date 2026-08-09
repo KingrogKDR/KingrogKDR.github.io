@@ -32,6 +32,8 @@ When you run a command `go get` or `go mod download` , the Go toolchain typicall
 
 ![go-module-proxy](images/athens/go-module-proxy.excalidraw.png)
 
+_The GO Module Proxy_
+
 Unlike the public Go module proxy operated by Google (proxy.golang.org), Athens is designed to be self-hosted and fully under the operator’s control. Organizations can deploy it within their own infrastructure, back it with storage systems such as a local filesystem or object stores like S3 and MinIO, and use it to cache both public and private modules. This makes Athens particularly attractive for individuals and orgs that require reduced dependency on external services, or stricter control over their software supply chain. Because it is open source and extensible, it also provides contributors with an opportunity to improve production features.
 
 # How it started?
@@ -70,6 +72,8 @@ This exploration revealed two natural instrumentation points:
 - The upstream fetch path, where Athens retrieves a missing module from its source and persists it for future requests.
 
 ![metrics-location](images/athens/metrics-location.excalidraw.png)
+
+_Metrics location pathwise_
 
 For the cache lookups, I chose a counter with a low-cardinality label indicating whether the lookup resulted in a **hit** or a **miss**. This allows operators to calculate cache hit ratios over time without creating a separate time series for every module or request. It was also independent of the upstream path.
 

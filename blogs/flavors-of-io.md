@@ -38,6 +38,8 @@ IO is done through virtual memory, which caches requested filesystem blocks in m
 
 ![An example of sectors, blocks and pages](images/flavors-of-io/sector_block_page.png)
 
+_An example of sectors, blocks and pages_
+
 # Different types of IO based on two independent questions:
 
 1. Does my data use page cache? (Buffered vs Direct I/O)
@@ -47,15 +49,21 @@ IO is done through virtual memory, which caches requested filesystem blocks in m
 
 ![The flow of buffered IO](images/flavors-of-io/buffered_io.png)
 
+_The flow of buffered IO_
+
 Only, exception is in the case of memory mapped IO: where a pointer to the memory pages required by the process is returned instead of a copy of the pages.
 
 `Direct I/O`: doesn't involve a page cache. Instead here, the read/write operations happen between the application and the disk. Uses the O_DIRECT flag when opening a file.
 
 ![The flow of direct IO](images/flavors-of-io/direct_io.png)
 
+_The flow of direct IO_
+
 Because Direct IO involves direct access to disk, bypassing intermediate kernel buffers, it is important that all operations are aligned to sector boundary, i.e. a data written onto the disk/the buffer size has to be a multiple of 512 and every operation has to have a starting offset of 512 as well (implying sector size = 512 bytes).
 
 ![How sector boundary should be maintained](images/flavors-of-io/sector_boundary.png)
+
+_How sector boundary should be maintained_
 
 `Synchronous IO`: It makes the process/thread blocking, i.e it waits for the entire read/write operation to complete. There exists a special flag called O_NONBLOCK, but it is effectively ignored for regular files because the kernel waits for storage operation to complete, instead of treating it as a readiness event.
 
