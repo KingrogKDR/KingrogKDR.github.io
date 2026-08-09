@@ -469,6 +469,10 @@ ${articleTagMeta}
 }
 
 // ── Series page HTML ──────────────────────────────────────────────────────────
+// Mirrors series.html's rendering exactly: same .series-page-* /
+// .series-timeline-* classes from style.css, no inline styles. If you
+// change series.html's markup, mirror the change here too so the live
+// page and this static export stay pixel-identical.
 function buildSeriesHTML(series, posts, cv) {
   const image = resolveImage(series["og-image"]);
   const canonUrl = `${BASE_URL}/series/${series.id}.html`;
@@ -478,27 +482,27 @@ function buildSeriesHTML(series, posts, cv) {
   const totalParts = series.posts.length;
   const loadedCount = posts.filter(Boolean).length;
 
-  const postsHTML = posts.map((post, i) => {
+  const timelineHTML = posts.map((post, i) => {
     const partNum = i + 1;
     if (!post) {
-      return `<div style="display:flex;align-items:flex-start;gap:20px;padding:20px 0;opacity:0.4;pointer-events:none;">
-        <div style="flex-shrink:0;width:36px;height:36px;border-radius:var(--radius);border:1px solid var(--border);background:var(--panel);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;color:var(--text-dim);position:relative;z-index:1;">${partNum}</div>
-        <div style="padding-top:5px;">
-          <p style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-bottom:5px;">part ${partNum} of ${totalParts}</p>
-          <h2 style="font-size:16px;font-weight:600;color:var(--text);margin:0;">Coming soon</h2>
+      return `<div class="series-timeline-item unavailable">
+        <div class="series-timeline-badge">${partNum}</div>
+        <div>
+          <p class="series-timeline-part-label">Part ${partNum} of ${totalParts}</p>
+          <h2 class="series-timeline-title">Coming soon</h2>
         </div>
       </div>`;
     }
-    return `<a href="../post/${esc(post.slug ?? series.posts[i])}.html" style="display:flex;align-items:flex-start;gap:20px;padding:20px 0;text-decoration:none;color:inherit;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.78'" onmouseout="this.style.opacity='1'">
-      <div style="flex-shrink:0;width:36px;height:36px;border-radius:var(--radius);border:1px solid var(--border);background:var(--panel);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:11px;color:var(--text-dim);position:relative;z-index:1;">${partNum}</div>
-      <div style="flex:1;padding-top:5px;">
-        <p style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-bottom:5px;">part ${partNum} of ${totalParts}</p>
-        <h2 style="font-size:16px;font-weight:600;color:var(--text);line-height:1.35;margin:0 0 6px;letter-spacing:-0.01em;">${esc(post.title)}</h2>
-        <p style="font-size:13.5px;color:var(--text-dim);line-height:1.65;margin:0 0 8px;">${esc(post.excerpt)}</p>
-        <time style="font-family:var(--font-mono);font-size:12px;color:var(--text-dim);opacity:0.8;" datetime="${post.date}">${formatDate(post.date)}</time>
+    return `<a href="../post/${esc(post.slug ?? series.posts[i])}.html" class="series-timeline-item">
+      <div class="series-timeline-badge">${partNum}</div>
+      <div>
+        <p class="series-timeline-part-label">Part ${partNum} of ${totalParts}</p>
+        <h2 class="series-timeline-title">${esc(post.title)}</h2>
+        <p class="series-timeline-excerpt">${esc(post.excerpt)}</p>
+        <time class="series-timeline-date" datetime="${post.date}">${formatDate(post.date)}</time>
       </div>
     </a>`;
-  }).join('<div style="border-top:1px solid var(--border);"></div>');
+  }).join("");
 
   return `<!doctype html>
 <html lang="en">
@@ -536,10 +540,6 @@ function buildSeriesHTML(series, posts, cv) {
     })();
   </script>
   <link rel="stylesheet" href="../style.css" />
-  <style>
-    .series-posts-wrap { display:flex; flex-direction:column; position:relative; }
-    .series-posts-wrap::before { content:""; position:absolute; left:18px; top:28px; bottom:28px; width:1px; background:var(--border); }
-  </style>
 </head>
 <body>
   <nav>
@@ -570,21 +570,20 @@ function buildSeriesHTML(series, posts, cv) {
   <main>
     <div class="page-wide">
       <a href="../writing.html" class="back-link fade-in d1">← all writing</a>
-      <div style="margin-bottom:48px;" class="fade-in d2" itemscope itemtype="https://schema.org/CreativeWorkSeries">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;font-family:var(--font-mono);">
+      <div class="fade-in d2" itemscope itemtype="https://schema.org/CreativeWorkSeries">
+        <div class="series-page-eyebrow">
           <span class="series-label-chip">series</span>
-          <span style="font-size:11px;color:var(--text-dim);">${loadedCount} of ${totalParts} published</span>
+          <span class="series-page-count">${loadedCount} of ${totalParts} published</span>
         </div>
-        <h1 style="font-family:var(--font-sans);font-size:clamp(26px,5vw,36px);font-weight:600;letter-spacing:-0.02em;line-height:1.15;color:var(--text);margin:0 0 14px;" itemprop="name">${esc(series.title)}</h1>
-        <p style="font-size:15px;color:var(--text-dim);line-height:1.75;max-width:580px;margin:0 0 18px;" itemprop="description">${esc(series.description ?? "")}</p>
+        <h1 class="series-page-title" itemprop="name">${esc(series.title)}</h1>
+        <p class="series-page-desc" itemprop="description">${esc(series.description ?? "")}</p>
         <button class="share-btn" id="share-btn">
           <svg viewBox="0 0 14 14"><circle cx="11" cy="2.5" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><line x1="4.4" y1="7.7" x2="9.7" y2="10.9"/><line x1="9.7" y1="3.1" x2="4.4" y2="6.3"/></svg>
           share series
         </button>
       </div>
-      <hr style="border:none;border-top:1px solid var(--border);margin:0 0 36px;" class="fade-in d3">
-      <div class="series-posts-wrap fade-in d3">${postsHTML}</div>
-      <a href="../writing.html" style="display:inline-block;margin-top:48px;font-family:var(--font-mono);font-size:13px;color:var(--text-dim);" class="fade-in d4">← back to all writing</a>
+      <div class="series-timeline fade-in d3" role="list">${timelineHTML}</div>
+      <a href="../writing.html" class="back-link fade-in d4">← back to all writing</a>
     </div>
   </main>
 

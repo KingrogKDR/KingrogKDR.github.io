@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Series — Abhishek Saikia</title>
     <meta name="description" content="" />
+    <!-- canonical and OG tags filled by seo.js at runtime -->
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <link
@@ -26,363 +27,22 @@
     />
     <link rel="manifest" href="images/favicon/site.webmanifest" />
     <link rel="icon" href="images/favicon/favicon.ico" />
+
+    <!-- Theme flash prevention: dark is the default working theme, light is opt-in and remembered -->
     <script>
       (function () {
-        const saved = localStorage.getItem("theme");
-        const prefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)",
-        ).matches;
-        if (saved === "dark" || (!saved && prefersDark)) {
-          document.documentElement.setAttribute("data-theme", "dark");
-        }
+        var saved = localStorage.getItem("theme");
+        document.documentElement.setAttribute(
+          "data-theme",
+          saved === "light" ? "light" : "dark",
+        );
       })();
     </script>
+
     <link rel="stylesheet" href="style.css" />
-    <style>
-      /* ── Nav mobile ── */
-      .menu-toggle {
-        display: none;
-        background: none;
-        border: 1px solid var(--faint);
-        border-radius: 4px;
-        color: var(--ink);
-        font-size: 18px;
-        line-height: 1;
-        width: 36px;
-        height: 36px;
-        cursor: pointer;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        transition:
-          border-color 0.2s,
-          color 0.2s;
-      }
-      .menu-toggle:hover {
-        border-color: var(--muted);
-      }
-      @media (max-width: 640px) {
-        .menu-toggle {
-          display: flex;
-        }
-        .nav-inner {
-          padding: 0 20px;
-          gap: 12px;
-        }
-        .nav-links {
-          display: none;
-          flex-direction: column;
-          gap: 0;
-          position: absolute;
-          top: 56px;
-          left: 0;
-          right: 0;
-          background: var(--nav-bg);
-          backdrop-filter: blur(10px);
-          border-bottom: 1px solid var(--faint);
-          padding: 8px 0 16px;
-          list-style: none;
-        }
-        .nav-links.open {
-          display: flex;
-        }
-        .nav-links li a {
-          display: block;
-          padding: 12px 20px;
-          font-size: 15px;
-          border-bottom: 1px solid var(--faint);
-        }
-        .nav-links li:last-child a {
-          border-bottom: none;
-        }
-        .nav-right {
-          gap: 10px;
-        }
-        .page {
-          padding: 96px 16px 64px;
-        }
-      }
-
-      /* ── Series header ── */
-      .series-header {
-        margin-bottom: 48px;
-      }
-      .series-meta-row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 14px;
-        flex-wrap: wrap;
-      }
-      .series-eyebrow {
-        font-size: 10.5px;
-        font-weight: 600;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: var(--accent);
-      }
-      .series-count-badge {
-        font-size: 11px;
-        font-weight: 500;
-        letter-spacing: 0.06em;
-        color: var(--muted);
-        background: color-mix(in srgb, var(--ink) 6%, transparent);
-        padding: 3px 9px;
-        border-radius: 99px;
-        border: 1px solid var(--faint);
-      }
-      .series-title-h1 {
-        font-size: clamp(26px, 5vw, 36px);
-        font-weight: 600;
-        letter-spacing: -0.02em;
-        line-height: 1.15;
-        color: var(--ink);
-        margin: 0 0 14px;
-      }
-      .series-description {
-        font-size: 15px;
-        color: var(--muted);
-        line-height: 1.75;
-        max-width: 580px;
-        margin: 0 0 18px;
-      }
-
-      /* ── Share button (series page) ── */
-      .share-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 12px;
-        font-weight: 500;
-        letter-spacing: 0.04em;
-        color: var(--muted);
-        background: transparent;
-        border: 1px solid var(--faint);
-        border-radius: 99px;
-        padding: 5px 13px;
-        cursor: pointer;
-        transition:
-          border-color 0.2s,
-          color 0.2s,
-          background 0.2s;
-      }
-      .share-btn:hover {
-        border-color: var(--accent);
-        color: var(--accent);
-        background: color-mix(in srgb, var(--accent) 6%, transparent);
-      }
-      .share-btn svg {
-        width: 13px;
-        height: 13px;
-        flex-shrink: 0;
-        stroke: currentColor;
-        fill: none;
-        stroke-width: 1.6;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-
-      /* ── Share toast ── */
-      [data-theme="dark"] .share-toast {
-        background: #ffffff;
-        color: #000000;
-      }
-
-      [data-theme="light"] .share-toast {
-        background: #000000;
-        color: #ffffff;
-      }
-      .share-toast {
-        position: fixed;
-        bottom: 28px;
-        left: 50%;
-        transform: translateX(-50%) translateY(12px);
-        background: var(--ink);
-        color: var(--bg);
-        font-size: 13px;
-        font-weight: 450;
-        letter-spacing: 0.01em;
-        padding: 10px 18px;
-        border-radius: 99px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
-        opacity: 0;
-        pointer-events: none;
-        transition:
-          opacity 0.22s ease,
-          transform 0.22s ease;
-        white-space: nowrap;
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        gap: 7px;
-      }
-      .share-toast.visible {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-      }
-      .share-toast svg {
-        width: 14px;
-        height: 14px;
-        flex-shrink: 0;
-        stroke: currentColor;
-        fill: none;
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-
-      /* ── Series post list ── */
-      .series-divider {
-        border: none;
-        border-top: 1px solid var(--faint);
-        margin: 0 0 36px;
-      }
-      .series-posts {
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-        position: relative;
-      }
-      .series-posts::before {
-        content: "";
-        position: absolute;
-        left: 18px;
-        top: 28px;
-        bottom: 28px;
-        width: 1px;
-        background: var(--faint);
-      }
-      .series-post-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 20px;
-        padding: 20px 0;
-        text-decoration: none;
-        color: inherit;
-        transition: opacity 0.15s;
-        position: relative;
-      }
-      .series-post-item:hover {
-        opacity: 0.78;
-      }
-      .series-post-item + .series-post-item {
-        border-top: 1px solid var(--faint);
-      }
-      .series-part-marker {
-        flex-shrink: 0;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        border: 1.5px solid var(--faint);
-        background: var(--bg);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        font-weight: 600;
-        color: var(--muted);
-        letter-spacing: 0.02em;
-        position: relative;
-        z-index: 1;
-        transition:
-          border-color 0.2s,
-          color 0.2s,
-          background 0.2s;
-      }
-      .series-post-item:hover .series-part-marker {
-        border-color: var(--accent);
-        color: var(--accent);
-        background: color-mix(in srgb, var(--accent) 8%, var(--bg));
-      }
-      .series-post-body {
-        flex: 1;
-        padding-top: 5px;
-      }
-      .series-post-part-label {
-        font-size: 10.5px;
-        font-weight: 500;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--muted);
-        margin-bottom: 5px;
-      }
-      .series-post-title {
-        font-size: 16px;
-        font-weight: 500;
-        color: var(--ink);
-        line-height: 1.35;
-        margin: 0 0 6px;
-        letter-spacing: -0.01em;
-      }
-      .series-post-excerpt {
-        font-size: 13.5px;
-        color: var(--muted);
-        line-height: 1.65;
-        margin: 0 0 8px;
-      }
-      .series-post-date {
-        font-size: 12px;
-        color: var(--muted);
-        opacity: 0.7;
-      }
-      .series-post-item.coming-soon {
-        pointer-events: none;
-        opacity: 0.4;
-      }
-      .coming-soon-chip {
-        display: inline-block;
-        font-size: 10px;
-        font-weight: 500;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--muted);
-        border: 1px dashed var(--faint);
-        padding: 2px 8px;
-        border-radius: 99px;
-        margin-left: 8px;
-        vertical-align: middle;
-      }
-      .series-back {
-        display: inline-block;
-        margin-top: 48px;
-        font-size: 13px;
-        color: var(--muted);
-        text-decoration: none;
-        transition: color 0.15s;
-      }
-      .series-back:hover {
-        color: var(--ink);
-      }
-    </style>
   </head>
   <body>
-    <nav>
-      <div class="nav-inner">
-        <a href="index.html" class="nav-logo" id="nav-name">Abhishek Saikia</a>
-        <div class="nav-right">
-          <ul class="nav-links" id="nav-links">
-            <li><a href="writing.html">Blogs</a></li>
-            <li><a href="projects.html">Projects</a></li>
-            <li><a href="contact.html">Contact</a></li>
-          </ul>
-          <button
-            class="menu-toggle"
-            id="menu-toggle"
-            aria-label="Open menu"
-            aria-expanded="false"
-          >
-            ☰
-          </button>
-          <button
-            class="theme-toggle"
-            id="theme-toggle"
-            aria-label="Toggle theme"
-          >
-            <span class="theme-toggle-thumb"></span>
-          </button>
-        </div>
-      </div>
-    </nav>
+    <nav></nav>
 
     <!-- Share toast notification -->
     <div class="share-toast" id="share-toast" role="status" aria-live="polite">
@@ -391,8 +51,8 @@
     </div>
 
     <main>
-      <div class="page">
-        <a href="writing.html" class="back-link fade-in d1">← All writing</a>
+      <div class="page-wide">
+        <a href="writing.html" class="back-link fade-in d1">← all writing</a>
         <div id="series-container">
           <p class="loading">Loading…</p>
         </div>
@@ -400,21 +60,18 @@
     </main>
 
     <footer>
-      <p id="footer-name">© 2026 Abhishek Saikia · Thanks for visiting!!</p>
+      <p id="footer-name">2026 Abhishek Saikia — Thanks for visiting!</p>
     </footer>
 
     <script src="seo.js"></script>
+    <script src="common.js"></script>
     <script>
       const SHARE_ICON = `<svg viewBox="0 0 14 14"><circle cx="11" cy="2.5" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><line x1="4.4" y1="7.7" x2="9.7" y2="10.9"/><line x1="9.7" y1="3.1" x2="4.4" y2="6.3"/></svg>`;
 
-      function escHTML(str) {
-        return String(str)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;");
-      }
-      function formatDate(iso) {
+      // escHTML comes from common.js. formatDateLong here is intentionally
+      // a full written-out date (common.js's formatDate() returns a short
+      // {mon, year} pair meant for list views) — same pattern post.html uses.
+      function formatDateLong(iso) {
         return new Date(iso).toLocaleDateString("en", {
           year: "numeric",
           month: "long",
@@ -455,11 +112,35 @@
         }
       }
 
+      // Renders one timeline entry — a link for a published post, a
+      // non-interactive "Coming soon" div for a slug with no post yet.
+      // Styling comes entirely from .series-timeline-item(.unavailable)
+      // etc. in style.css.
+      function buildTimelineItem(post, slug, partNum, totalParts) {
+        if (!post) {
+          return `<div class="series-timeline-item unavailable">
+            <div class="series-timeline-badge">${partNum}</div>
+            <div>
+              <p class="series-timeline-part-label">Part ${partNum} of ${totalParts}</p>
+              <h2 class="series-timeline-title">Coming soon</h2>
+            </div>
+          </div>`;
+        }
+        return `<a href="post.html?slug=${encodeURIComponent(slug)}" class="series-timeline-item">
+          <div class="series-timeline-badge">${partNum}</div>
+          <div>
+            <p class="series-timeline-part-label">Part ${partNum} of ${totalParts}</p>
+            <h2 class="series-timeline-title">${escHTML(post.title)}</h2>
+            <p class="series-timeline-excerpt">${escHTML(post.excerpt)}</p>
+            <time class="series-timeline-date" datetime="${post.date}">${formatDateLong(post.date)}</time>
+          </div>
+        </a>`;
+      }
+
       async function init() {
         const cv = await fetch("cv.json").then((r) => r.json());
-        document.getElementById("nav-name").textContent = cv.name;
         document.getElementById("footer-name").textContent =
-          `© ${new Date().getFullYear()} ${cv.name} · Thanks for visiting!!`;
+          `${new Date().getFullYear()} ${cv.name} — Thanks for visiting!`;
 
         const id = new URLSearchParams(window.location.search).get("id");
         if (!id) {
@@ -492,7 +173,7 @@
           description: series.description,
           url: canonicalUrl,
           type: "website",
-          image: ogImage, // ← OG share-card image for the series
+          image: ogImage,
           breadcrumbs: [
             { name: "Home", url: window.SEO.BASE_URL + "/" },
             { name: "Blogs", url: window.SEO.BASE_URL + "/writing.html" },
@@ -500,64 +181,42 @@
           ],
         });
 
+        // Posts are plain Markdown files (frontmatter + body), same as
+        // post.html and writing.html. Missing/unparseable posts resolve
+        // to null and render as "Coming soon" via buildTimelineItem().
         const posts = await Promise.all(
           series.posts.map((slug) =>
-            fetch(`blogs/${encodeURIComponent(slug)}.json`)
-              .then((r) => (r.ok ? r.json() : null))
+            fetch(`blogs/${encodeURIComponent(slug)}.md`)
+              .then((r) => (r.ok ? r.text() : null))
+              .then((raw) => (raw ? parsePostFile(raw).meta : null))
               .catch(() => null),
           ),
         );
         const totalParts = series.posts.length;
         const loadedCount = posts.filter(Boolean).length;
 
-        const postsHTML = posts
-          .map((post, i) => {
-            const partNum = i + 1;
-            if (!post) {
-              return `<div class="series-post-item coming-soon">
-              <div class="series-part-marker">${partNum}</div>
-              <div class="series-post-body">
-                <p class="series-post-part-label">Part ${partNum} of ${totalParts}</p>
-                <h2 class="series-post-title">Coming soon <span class="coming-soon-chip">Soon</span></h2>
-              </div>
-            </div>`;
-            }
-            return `<a href="post.html?slug=${encodeURIComponent(post.slug)}" class="series-post-item">
-            <div class="series-part-marker">${partNum}</div>
-            <div class="series-post-body">
-              <p class="series-post-part-label">Part ${partNum} of ${totalParts}</p>
-              <h2 class="series-post-title">${escHTML(post.title)}</h2>
-              <p class="series-post-excerpt">${escHTML(post.excerpt)}</p>
-              <time class="series-post-date" datetime="${post.date}">${formatDate(post.date)}</time>
-            </div>
-          </a>`;
-          })
+        const timelineHTML = posts
+          .map((post, i) =>
+            buildTimelineItem(post, series.posts[i], i + 1, totalParts),
+          )
           .join("");
 
         document.getElementById("series-container").innerHTML = `
-          <div class="series-header fade-in d2" itemscope itemtype="https://schema.org/CreativeWorkSeries">
-            <div class="series-meta-row">
-              <span class="series-eyebrow">Series</span>
-              <span class="series-count-badge">${loadedCount} of ${totalParts} published</span>
+          <div class="fade-in d2" itemscope itemtype="https://schema.org/CreativeWorkSeries">
+            <div class="series-page-eyebrow">
+              <span class="series-label-chip">series</span>
+              <span class="series-page-count">${loadedCount} of ${totalParts} published</span>
             </div>
-            <h1 class="series-title-h1" itemprop="name">${escHTML(series.title)}</h1>
-            <p class="series-description" itemprop="description">${escHTML(series.description)}</p>
-            <button
-              class="share-btn"
-              aria-label="Share this series"
-            >${SHARE_ICON} Share series</button>
+            <h1 class="series-page-title" itemprop="name">${escHTML(series.title)}</h1>
+            <p class="series-page-desc" itemprop="description">${escHTML(series.description)}</p>
+            <button class="share-btn" id="share-btn" aria-label="Share this series">${SHARE_ICON} share series</button>
           </div>
-          <hr class="series-divider fade-in d3">
-          <div class="series-posts fade-in d3" role="list">${postsHTML}</div>
-          <a href="writing.html" class="series-back fade-in d4">← Back to all writing</a>`;
+          <div class="series-timeline fade-in d3" role="list">${timelineHTML}</div>
+          <a href="writing.html" class="back-link fade-in d4">← back to all writing</a>`;
 
-        const shareBtn = document.querySelector(".share-btn");
-
-        if (shareBtn) {
-          shareBtn.addEventListener("click", () => {
-            shareItem(canonicalUrl, series.title, series.description || "");
-          });
-        }
+        document.getElementById("share-btn").addEventListener("click", () => {
+          shareItem(canonicalUrl, series.title, series.description || "");
+        });
       }
 
       init();

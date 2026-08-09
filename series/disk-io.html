@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Disk IO — Abhishek Saikia</title>
+  <meta name="description" content="A series on how data actually moves and gets stored on disk and the deeper storage internals underneath it all." />
+  <link rel="canonical" href="https://kingrogkdr.github.io/series/disk-io.html" />
+
+  <meta property="og:site_name"    content="Abhishek Saikia" />
+  <meta property="og:type"         content="website" />
+  <meta property="og:title"        content="Disk IO — Abhishek Saikia" />
+  <meta property="og:description"  content="A series on how data actually moves and gets stored on disk and the deeper storage internals underneath it all." />
+  <meta property="og:url"          content="https://kingrogkdr.github.io/series/disk-io.html" />
+  <meta property="og:image"        content="https://kingrogkdr.github.io/images/og-default.png" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Disk IO — Abhishek Saikia" />
+  <meta name="twitter:description" content="A series on how data actually moves and gets stored on disk and the deeper storage internals underneath it all." />
+  <meta name="twitter:image"       content="https://kingrogkdr.github.io/images/og-default.png" />
+  <meta name="twitter:site"        content="@king_rog234" />
+
+  <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png" />
+  <link rel="icon" href="../images/favicon/favicon.ico" />
+
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
+    })();
+  </script>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-left">
+        <span class="window-dots"><span></span><span></span><span></span></span>
+        <a href="../index.html" class="nav-logo">abhishek-saikia</a>
+      </div>
+      <div class="nav-right">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="../writing.html">writing</a></li>
+          <li><a href="../projects.html">projects</a></li>
+          <li><a href="../contact.html">contact</a></li>
+        </ul>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+          <span class="theme-toggle-thumb"></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="share-toast" id="share-toast" role="status" aria-live="polite">
+    <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4" /></svg>
+    Link copied
+  </div>
+
+  <main>
+    <div class="page-wide">
+      <a href="../writing.html" class="back-link fade-in d1">← all writing</a>
+      <div class="fade-in d2" itemscope itemtype="https://schema.org/CreativeWorkSeries">
+        <div class="series-page-eyebrow">
+          <span class="series-label-chip">series</span>
+          <span class="series-page-count">1 of 1 published</span>
+        </div>
+        <h1 class="series-page-title" itemprop="name">Disk IO</h1>
+        <p class="series-page-desc" itemprop="description">A series on how data actually moves and gets stored on disk and the deeper storage internals underneath it all.</p>
+        <button class="share-btn" id="share-btn">
+          <svg viewBox="0 0 14 14"><circle cx="11" cy="2.5" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><line x1="4.4" y1="7.7" x2="9.7" y2="10.9"/><line x1="9.7" y1="3.1" x2="4.4" y2="6.3"/></svg>
+          share series
+        </button>
+      </div>
+      <div class="series-timeline fade-in d3" role="list"><a href="../post/flavors-of-io.html" class="series-timeline-item">
+      <div class="series-timeline-badge">1</div>
+      <div>
+        <p class="series-timeline-part-label">Part 1 of 1</p>
+        <h2 class="series-timeline-title">Flavors of IO</h2>
+        <p class="series-timeline-excerpt">A deep dive into different flavors of IO and how each data is actually read/written to disk.</p>
+        <time class="series-timeline-date" datetime="2026-08-09">August 9, 2026</time>
+      </div>
+    </a></div>
+      <a href="../writing.html" class="back-link fade-in d4">← back to all writing</a>
+    </div>
+  </main>
+
+  <footer>
+    <p>2026 Abhishek Saikia — thanks for visiting</p>
+  </footer>
+
+  <script>
+    const CANON_URL    = "https://kingrogkdr.github.io/series/disk-io.html";
+    const SERIES_TITLE = "Disk IO";
+    const SERIES_DESC  = "A series on how data actually moves and gets stored on disk and the deeper storage internals underneath it all.";
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById("share-toast");
+      toast.childNodes[2].textContent = " " + msg;
+      toast.classList.add("visible");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("visible"), 2400);
+    }
+    document.getElementById("share-btn").addEventListener("click", async () => {
+      if (navigator.share) {
+        try { await navigator.share({ title: SERIES_TITLE, text: SERIES_DESC, url: CANON_URL }); return; }
+        catch (e) { if (e.name === "AbortError") return; }
+      }
+      try {
+        await navigator.clipboard.writeText(CANON_URL);
+        showToast("Link copied");
+      } catch {
+        const inp = document.createElement("input");
+        inp.value = CANON_URL; document.body.appendChild(inp);
+        inp.select(); document.execCommand("copy");
+        document.body.removeChild(inp); showToast("Link copied");
+      }
+    });
+  </script>
+  <script src="../nav.js"></script>
+</body>
+</html>

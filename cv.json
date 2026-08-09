@@ -64,14 +64,14 @@
   "projects": [
     {
       "name": "Craw",
-      "icon": "/images/craw.png",
+      "icon": "/images/projects/craw.png",
       "description": "A Developer-focused Web Crawler from Scratch",
       "url": "https://github.com/KingrogKDR/Craw",
       "tags": ["Go", "Redis", "Minio (S3)"]
     },
     {
       "name": "Video Transcoding Pipeline",
-      "icon": "/images/vts.png",
+      "icon": "/images/projects/vts.png",
       "description": "A Scalable Video Transcoding Service",
       "url": "https://github.com/KingrogKDR/video-transcoding",
       "tags": ["Typescript", "PostgreSQL", "Minio (S3)", "BullMQ"]
