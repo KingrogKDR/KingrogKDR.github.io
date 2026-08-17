@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>JSON vs Protobuf: choosing a wire format — Abhishek Saikia</title>
+  <meta name="description" content="Why JSON's type ambiguity made me nervous about building a database on top of it, what Protobuf fixes, and the pitfalls it introduces in exchange." />
+  <link rel="canonical" href="https://kingrogkdr.github.io/post/omni-post-1.html" />
+
+  <!-- Open Graph — baked in at build time so crawlers read them without JS -->
+  <meta property="og:site_name"    content="Abhishek Saikia" />
+  <meta property="og:type"         content="article" />
+  <meta property="og:title"        content="JSON vs Protobuf: choosing a wire format — Abhishek Saikia" />
+  <meta property="og:description"  content="Why JSON's type ambiguity made me nervous about building a database on top of it, what Protobuf fixes, and the pitfalls it introduces in exchange." />
+  <meta property="og:url"          content="https://kingrogkdr.github.io/post/omni-post-1.html" />
+  <meta property="og:image"        content="https://kingrogkdr.github.io/images/og-default.png" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="article:published_time" content="2026-08-16" />
+  <meta property="article:modified_time"  content="2026-08-16" />
+  <meta property="article:author"         content="Abhishek Saikia" />
+  <meta property="article:tag" content="Design Decisions" />
+  <meta property="article:tag" content="Protobuf" />
+  <meta property="article:tag" content="JSON" />
+  <meta property="article:tag" content="Omni" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="JSON vs Protobuf: choosing a wire format — Abhishek Saikia" />
+  <meta name="twitter:description" content="Why JSON's type ambiguity made me nervous about building a database on top of it, what Protobuf fixes, and the pitfalls it introduces in exchange." />
+  <meta name="twitter:image"       content="https://kingrogkdr.github.io/images/og-default.png" />
+  <meta name="twitter:site"        content="@king_rog234" />
+
+  <!-- Favicons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="../images/favicon/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon/favicon-16x16.png" />
+  <link rel="manifest" href="../images/favicon/site.webmanifest" />
+  <link rel="icon" href="../images/favicon/favicon.ico" />
+
+  <!-- Theme flash prevention: dark is the default working theme -->
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
+    })();
+  </script>
+
+  <link rel="stylesheet" href="../style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/dockerfile.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/toml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/graphql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/hcl.min.js"></script>
+</head>
+<body>
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-left">
+        <span class="window-dots"><span></span><span></span><span></span></span>
+        <a href="../index.html" class="nav-logo">abhishek-saikia</a>
+      </div>
+      <div class="nav-right">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="../writing.html">writing</a></li>
+          <li><a href="../projects.html">projects</a></li>
+          <li><a href="../contact.html">contact</a></li>
+        </ul>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+          <span class="theme-toggle-thumb"></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <aside class="toc" id="toc" aria-label="Table of contents">
+  <p class="toc-label">contents</p>
+  <ul class="toc-list" id="toc-list">
+    <li><a href="#why-does-a-database-need-a-network-at-all">Why does a database need a network at all?</a></li>
+    <li><a href="#json-vs-protobuf-why-does-the-wire-format-matters">JSON vs Protobuf: why does the wire format matters?</a></li>
+  </ul>
+</aside>
+
+  <div class="share-toast" id="share-toast" role="status" aria-live="polite">
+    <svg viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 4" /></svg>
+    Link copied
+  </div>
+
+  <main>
+    <div class="post-page">
+      <div class="file-tab-bar"><span class="dot">●</span><span>posts/omni-post-1.md</span></div>
+      <a href="../writing.html" class="back-link">← all writing</a>
+      <article itemscope itemtype="https://schema.org/BlogPosting">
+        <div class="series-banner fade-in d1">
+  <div class="series-banner-top">
+    <div class="series-banner-left">
+      <span class="series-chip">series</span>
+      <a href="../series/omni-build-log.html" class="series-banner-name">Omni - A distributed key-value database Build Log</a>
+    </div>
+    <span class="series-banner-part">part 1 of 1</span>
+  </div>
+  <div class="series-banner-parts"><span class="series-banner-part-link current"><span class="part-num-label">1.</span> JSON vs Protobuf: choosing a wire format</span></div>
+</div>
+        <div class="series-nav-strip">
+  <span class="series-nav-link faded"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6H4M6 4L4 6l2 2"/></svg><span class="series-nav-link-label">First part</span></span>
+  <span class="series-nav-center">1 / 1</span>
+  <a href="../series/omni-build-log.html" class="series-nav-link" style="justify-content:flex-end;text-align:right"><span class="series-nav-link-label">View series</span><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h4M6 4l2 2-2 2"/></svg></a>
+</div>
+        <div class="post-header fade-in d2">
+          <div class="post-header-tags"><a href="../writing.html?tag=design%20decisions" class="post-header-tag-chip" rel="tag">Design Decisions</a><a href="../writing.html?tag=protobuf" class="post-header-tag-chip" rel="tag">Protobuf</a><a href="../writing.html?tag=json" class="post-header-tag-chip" rel="tag">JSON</a><a href="../writing.html?tag=omni" class="post-header-tag-chip" rel="tag">Omni</a></div>
+          <h1 class="post-header-title" itemprop="headline">JSON vs Protobuf: choosing a wire format</h1>
+          <div class="post-header-meta-row">
+            <p class="post-header-meta">
+              <time itemprop="datePublished" datetime="2026-08-16">August 16, 2026</time>
+              <span class="post-meta-sep">·</span>
+              <span class="post-read-time">5 min read</span>
+            </p>
+            <button class="share-btn" id="share-btn" aria-label="Share this post">
+              <svg viewBox="0 0 14 14"><circle cx="11" cy="2.5" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><line x1="4.4" y1="7.7" x2="9.7" y2="10.9"/><line x1="9.7" y1="3.1" x2="4.4" y2="6.3"/></svg>
+              share
+            </button>
+          </div>
+        </div>
+        <hr class="post-header-divider">
+        <div class="post-body fade-in d3" itemprop="articleBody">
+          <blockquote>
+<p>This is the first post in a series building Omni, a distributed key-value database, from scratch</p>
+</blockquote>
+<p>A database at its core is just a place to store data and get it back later when we need it. That much doesn&#39;t need a network. You can write bytes to a file on disk and call it done.</p>
+<p>Which raised a question in my mind: Why does almost every <em>&quot;real&quot;</em> database out there listens on a socket, forcing every read and write through a network boundary even if the network is localhost, where one process talks to another on the same machine? So, I had to find it out.</p>
+<h1 id="why-does-a-database-need-a-network-at-all" class="post-section-heading">Why does a database need a network at all?</h1>
+<p>The answer starts with something obvious. Data gets stored in databases and then this data is retrieved. But who retrieves this data? Yes, they can be multiple callers, for e.g, multiple users, multiple applications, multiple services, etc. Also, data doesn&#39;t get written or read once and left alone. It gets read and written by all these different callers, often at nearly the same time.</p>
+<p>If they all reached directly into the same file on disk, nothing stops two writes from colliding mid-write, or a read from catching data in a half-written state. A file on disk has no such concept of &quot;wait, it&#39;s not your turn yet&quot;. It just holds bytes. Someone has to sit in front of the file and arbitrate: decide the order that should be followed. This should solve two major problems: one is the corruption from concurrent writes and the other is a caller reading inconsistent data.</p>
+<p>That&#39;s the actual job of the network boundary. It&#39;s there because the database needs a gatekeeper.</p>
+<p>This gatekeeper is the first real design decision in building any database. And it turns out to be a harder question than it looks.</p>
+<p>So far, none of this required more than a single machine. Now, when you go distributed, i.e add more machines. These machines, a.k.a nodes, holding the data have to talk to each other. They have to agree on what the current global state actually is, to not lose or corrupt data on a single machine, to figure out which node is responsible for what piece of data. Yes, this became far more complex, too quickly. Let&#39;s start simpler, shall we? First, we have to determine a format that the network layer will talk in.</p>
+<h1 id="json-vs-protobuf-why-does-the-wire-format-matters" class="post-section-heading">JSON vs Protobuf: why does the wire format matters?</h1>
+<p>Okay, one thing I want to put out there. I have used JSON here and there, but not exhaustingly enough or haven&#39;t pushed its boundaries much. So, I don&#39;t seem to hate it or even like it. Yes, it has its flaws as plenty of people would agree.</p>
+<p>Not having comments is one of them, but it is rather an inconvenience and not a flaw in my opinion. But the major flaw I find is that JSON&#39;s grammar looks simple but has real corner cases which can have serious (sometimes legal and ethical) implications if not handled well. This is because JSON just defines the syntax or textual representation of the data. It doesn&#39;t define what type that data expects. It is entirely implementation-defined.</p>
+<p>For e.g,</p>
+<div class="post-code-block">
+        <div class="post-code-header">
+          <span class="post-code-lang">json</span>
+          <button class="post-code-copy" onclick="copyCode('code-1', this)">copy</button>
+        </div>
+        <pre><code id="code-1" class="language-json">{
+  &quot;age&quot;: 22,
+  &quot;price&quot;: 1.1
+}
+</code></pre>
+        
+      </div>
+<p>Different implementations can represent this data differently.</p>
+<div class="post-code-block">
+        <div class="post-code-header">
+          <span class="post-code-lang">plaintext</span>
+          <button class="post-code-copy" onclick="copyCode('code-2', this)">copy</button>
+        </div>
+        <pre><code id="code-2" class="language-plaintext">JSON                 Possible representation
+
+22          →        int
+22          →        int64
+22          →        float64
+1.1         →        float64
+1.1         →        decimal
+
+// yeah, someone can do this too!
+1.1         →        string // and parse it later maybe?
+</code></pre>
+        
+      </div>
+<p>JSON doesn&#39;t force specific type on the data. For small numbers, it doesn&#39;t matter much. But the same ambiguity that lets <code>22</code> or <code>1.1</code> become an <code>int</code> or a <code>float64</code> interchangeably is where real damage can occur. But, this is not the point of this blog. If you are interested in a detailed explanation for this, you can refer <a href="https://mcyoung.xyz/2024/12/10/json-sucks/">to this article</a>.</p>
+<p>Ambiguity like that didn&#39;t feel like something I wanted to build a database around, that too a distributed one. So the obvious choice turns out to be Protobuf and it solves the aforementioned problems of JSON. The same example above can be represented in protobuf as follows:</p>
+<div class="post-code-block">
+        <div class="post-code-header">
+          <span class="post-code-lang">protobuf</span>
+          <button class="post-code-copy" onclick="copyCode('code-3', this)">copy</button>
+        </div>
+        <pre><code id="code-3" class="language-protobuf">message Foo{
+  optional int32 age = 1;
+  optional int64 price = 2;
+  // where 1 and 2 are field numbers and not their values
+}
+</code></pre>
+        
+      </div>
+<p>In Protobuf, types are enforced by schema and therefore a field declared <code>int32</code> is an <code>int32</code> everywhere. Also, here uniqueness is guaranteed by the field numbers and not the field names like <code>age</code> and <code>price</code> , unlike JSON.</p>
+<p>However, Protobuf does have its own pitfalls to look out for.</p>
+<p>The most relevant one for this blog is: in proto3, basic fields like string, numeric, bytes, enum, etc. don&#39;t track presence by default, as <a href="https://protobuf.dev/programming-guides/field_presence/">Protobuf&#39;s own documentation explains it</a>. The default value and an unused field become the same thing in the wire. Take the <code>age</code> field for e.g., if a <code>Foo</code> message arrives with <code>age</code> unset, decoding it gives <code>age = 0</code>. But if a message arrives where <code>age</code> is explicitly set to <code>0</code>, decoding it gives the same result. There&#39;s no way to tell if this field is unused or explicitly set to <code>0</code>. This can cause weird hiccups later on and should be avoided, especially if MVCC becomes a thing in my database. The <code>optional</code> keyword solves this by telling the generated code to track the presence separately from the value, and the official documentation also recommends this approach.</p>
+<p>There are many other such pitfalls, and if you would love a read on it: <a href="https://earthly.dev/blog/buf-protobuf/">Avoiding Common Protobuf&#39;s Pitfalls with Buf</a> and <a href="https://yokota.blog/2021/08/26/understanding-protobuf-compatibility/">Understanding Protobuf Compatibility</a> are both worth reading.</p>
+<p>Thus, the wire format answers what the data looks like. It doesn&#39;t answer how it actually travels between processes and that is a different decision for the next post.</p>
+
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <footer>
+    <p>2026 Abhishek Saikia — thanks for visiting</p>
+  </footer>
+
+  <script>
+    // ── TOC active link tracking ──
+    (function () {
+      const tocList = document.getElementById("toc-list");
+      if (!tocList) return;
+      const links    = tocList.querySelectorAll("a");
+      const headings = document.querySelectorAll(".post-body .post-section-heading");
+      if (!links.length || !headings.length) return;
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            links.forEach(l => l.classList.remove("active"));
+            const match = tocList.querySelector('a[href="#' + entry.target.id + '"]');
+            if (match) match.classList.add("active");
+          }
+        });
+      }, { rootMargin: "-15% 0px -75% 0px", threshold: 0 });
+      headings.forEach(h => observer.observe(h));
+    })();
+
+    // ── Share button ──
+    const CANON_URL    = "https://kingrogkdr.github.io/post/omni-post-1.html";
+    const POST_TITLE   = "JSON vs Protobuf: choosing a wire format";
+    const POST_EXCERPT = "Why JSON's type ambiguity made me nervous about building a database on top of it, what Protobuf fixes, and the pitfalls it introduces in exchange.";
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById("share-toast");
+      toast.childNodes[2].textContent = " " + msg;
+      toast.classList.add("visible");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("visible"), 2400);
+    }
+    document.getElementById("share-btn").addEventListener("click", async () => {
+      if (navigator.share) {
+        try { await navigator.share({ title: POST_TITLE, text: POST_EXCERPT, url: CANON_URL }); return; }
+        catch (e) { if (e.name === "AbortError") return; }
+      }
+      try {
+        await navigator.clipboard.writeText(CANON_URL);
+        showToast("Link copied");
+      } catch {
+        const inp = document.createElement("input");
+        inp.value = CANON_URL; document.body.appendChild(inp);
+        inp.select(); document.execCommand("copy");
+        document.body.removeChild(inp); showToast("Link copied");
+      }
+    });
+    function copyCode(id, btn) {
+      const text = document.getElementById(id).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = "copied!";
+        btn.classList.add("copied");
+        setTimeout(() => { btn.textContent = "copy"; btn.classList.remove("copied"); }, 2000);
+      });
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".post-code-block code").forEach(el => {
+        try {
+          hljs.highlightElement(el);
+        } catch (err) {
+          console.warn("hljs failed to highlight block:", err);
+        }
+      });
+    });
+  </script>
+  <script src="../nav.js"></script>
+</body>
+</html>

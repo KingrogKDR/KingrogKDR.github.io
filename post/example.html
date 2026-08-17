@@ -48,6 +48,11 @@
   <link rel="stylesheet" href="../style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/protobuf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/dockerfile.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/toml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/graphql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/hcl.min.js"></script>
 </head>
 <body>
   <nav>
@@ -207,7 +212,11 @@ Just paste a <code>&gt; [!note]</code>, <code>&gt; [!tip]</code>, or <code>&gt; 
     }
     document.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll(".post-code-block code").forEach(el => {
-        hljs.highlightElement(el);
+        try {
+          hljs.highlightElement(el);
+        } catch (err) {
+          console.warn("hljs failed to highlight block:", err);
+        }
       });
     });
   </script>

@@ -40,19 +40,6 @@
   --grid-dot: rgba(60, 45, 25, 0.12);
 }
 
-[data-theme="light"] body {
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.09' numOctaves='5' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.24 0 0 0 0 0.18 0 0 0 0 0.10 0 0 0 0.1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
-    radial-gradient(var(--grid-dot) 1px, transparent 1px);
-  background-size:
-    320px 320px,
-    28px 28px;
-  background-position:
-    0 0,
-    -14px -14px;
-  background-blend-mode: multiply, normal;
-}
-
 /* ---------- reset ---------- */
 * {
   box-sizing: border-box;
@@ -94,6 +81,10 @@ button {
 ::selection {
   background: var(--signal);
   color: #06110f;
+}
+
+[data-theme="light"] ::selection {
+  color: #e7e2e2;
 }
 
 :focus-visible {
@@ -1155,60 +1146,7 @@ nav {
   flex-wrap: wrap;
   gap: 8px;
 }
-.work-tech-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 32px;
-  min-width: 32px;
-  max-width: 32px;
-  padding: 0 7px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--panel-2);
-  overflow: hidden;
-  flex-shrink: 0;
-  cursor: default;
-  transition:
-    max-width 0.8s cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 0.4s ease,
-    background 0.4s ease;
-  will-change: max-width;
-}
-.work-tech-chip img {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-.work-tech-chip-name {
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-  color: var(--text-dim);
-  white-space: nowrap;
-  opacity: 0;
-  transform: translateX(-6px);
-  transition:
-    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.25s,
-    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.25s,
-    color 0.3s ease;
-}
-.work-tech-chip:hover {
-  max-width: 220px;
-  border-color: var(--signal);
-  background: var(--panel);
-}
-.work-tech-chip:hover .work-tech-chip-name {
-  opacity: 1;
-  transform: translateX(0);
-  color: var(--text);
-}
 
-.work-tech-chip:not(:hover) .work-tech-chip-name {
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
 .work-tech-chip {
   display: inline-flex;
   align-items: center;
@@ -1243,8 +1181,9 @@ nav {
   opacity: 0;
   transform: translateX(-6px);
   transition:
-    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.25s,
-    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.25s;
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s,
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s,
+    color 0.4s ease;
 }
 .work-tech-chip:hover {
   max-width: 220px;
@@ -1254,12 +1193,12 @@ nav {
 .work-tech-chip:hover .work-tech-chip-name {
   opacity: 1;
   transform: translateX(0);
+  color: var(--text);
 }
-
 .work-tech-chip:not(:hover) .work-tech-chip-name {
   transition:
-    opacity 0.4s ease,
-    transform 0.4s ease;
+    opacity 1s ease,
+    transform 1s ease;
 }
 
 /* default (dark) theme shows the dark-variant icon */
