@@ -181,7 +181,7 @@ function renderBody(markdown) {
 // ── TOC sidebar ──────────────────────────────────────────────────────────────
 function buildTOC(headings) {
   if (headings.length < 2) {
-    return `<aside class="toc" id="toc" aria-label="Table of contents">
+    return `<aside class="toc visible" id="toc" aria-label="Table of contents">
   <p class="toc-label">contents</p>
   <p class="toc-empty-msg">No sections in this post.</p>
 </aside>`;
@@ -189,7 +189,7 @@ function buildTOC(headings) {
   const items = headings.map(h =>
     `<li><a href="#${h.id}">${esc(h.text)}</a></li>`
   ).join("\n    ");
-  return `<aside class="toc" id="toc" aria-label="Table of contents">
+  return `<aside class="toc visible" id="toc" aria-label="Table of contents">
   <p class="toc-label">contents</p>
   <ul class="toc-list" id="toc-list">
     ${items}
