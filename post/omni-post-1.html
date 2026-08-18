@@ -99,7 +99,7 @@
   <div class="series-banner-top">
     <div class="series-banner-left">
       <span class="series-chip">series</span>
-      <a href="../series/omni-build-log.html" class="series-banner-name">Omni - A distributed key-value database Build Log</a>
+      <a href="../series/omni-build-log.html" class="series-banner-name">Omni - A distributed database Build Log</a>
     </div>
     <span class="series-banner-part">part 1 of 1</span>
   </div>
@@ -128,7 +128,7 @@
         <hr class="post-header-divider">
         <div class="post-body fade-in d3" itemprop="articleBody">
           <blockquote>
-<p>This is the first post in a series building Omni, a distributed key-value database, from scratch</p>
+<p>This is the first post in a series building Omni, a distributed database, from scratch</p>
 </blockquote>
 <p>A database at its core is just a place to store data and get it back later when we need it. That much doesn&#39;t need a network. You can write bytes to a file on disk and call it done.</p>
 <p>Which raised a question in my mind: Why does almost every <em>&quot;real&quot;</em> database out there listens on a socket, forcing every read and write through a network boundary even if the network is localhost, where one process talks to another on the same machine? So, I had to find it out.</p>
