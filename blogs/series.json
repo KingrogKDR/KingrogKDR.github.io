@@ -1,8 +1,8 @@
 [
   {
     "id": "omni-build-log",
-    "title": "Omni - A distributed key-value database Build Log",
-    "description": "Building Omni, a distributed key-value database, from scratch. Each post is a real decision made (or mistake hit) along the way.",
+    "title": "Omni - A distributed database Build Log",
+    "description": "Building Omni, a distributed database, from scratch. Each post is a real decision made (or mistake hit) along the way.",
     "posts": ["omni-post-1"]
   }
 ]

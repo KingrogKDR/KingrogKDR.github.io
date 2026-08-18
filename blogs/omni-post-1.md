@@ -10,7 +10,7 @@
 
 ---
 
-> This is the first post in a series building Omni, a distributed key-value database, from scratch
+> This is the first post in a series building Omni, a distributed database, from scratch
 
 A database at its core is just a place to store data and get it back later when we need it. That much doesn't need a network. You can write bytes to a file on disk and call it done.
 
