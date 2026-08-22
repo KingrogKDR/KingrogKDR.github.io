@@ -83,6 +83,7 @@ There are many other such pitfalls, and if you would love a read on it: [Avoidin
 Although, one thing worth checking before committing to this: does the safety cost anything in performance? I benchmarked marshal/unmarshal on a representative message (Go's testing.B, -benchmem) — protobuf came out ~2.3× faster to marshal, ~10.4× faster to unmarshal, and produced a wire payload ~2.13× smaller than the JSON equivalent. So this isn't safety-vs-speed; on this axis protobuf wins both.
 
 ![compare wireformat results](images/blogs/omni/compare_wireformat.png)
+
 _Comparison Result_
 
 > [!note] These are benchmarks on a single machine with a single message shape and shouldn't be treated as a substiture for measuring real concurrent load.
