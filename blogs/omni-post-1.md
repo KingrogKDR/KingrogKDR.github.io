@@ -60,12 +60,14 @@ JSON                 Possible representation
 
 JSON doesn't force specific type on the data. For small numbers, it doesn't matter much. But the same ambiguity that lets `22` or `1.1` become an `int` or a `float64` interchangeably is where real damage can occur. But, this is not the point of this blog. If you are interested in a detailed explanation for this, you can refer [to this article](https://mcyoung.xyz/2024/12/10/json-sucks/).
 
-Ambiguity like that didn't feel like something I wanted to build a database around, that too a distributed one. So the obvious choice turns out to be Protobuf and it solves the aforementioned problems of JSON. The same example above can be represented in protobuf as follows:
+Ambiguity like that didn't feel like something I wanted to build a database around, that too a distributed one. A reasonable objection here would be: doesn't typed JSON (JSON Schema, TypeScript interfaces, a validation library) solve this? Sort of, but the typing lives outside the format, not inside it. A schema file is a promise this type of tooling makes about the bytes; it isn't enforced by the bytes themselves. Every service that receives a message has to independently choose to validate against it and that leads to the same problem again: "implementation-defined" and an extra "dependency" the code has to rely on. There's also no structural versioning contract: two independently-valid schemas can disagree field by field, and the mismatch shows up as a bug deep inside application code and not as a decode failure at the network boundary itself.
+
+So the obvious choice turns out to be Protobuf and it solves the aforementioned problems. The same example above can be represented in protobuf as follows:
 
 ```protobuf
 message Foo{
   optional int32 age = 1;
-  optional int64 price = 2;
+  optional double price = 2;
   // where 1 and 2 are field numbers and not their values
 }
 ```
@@ -77,5 +79,12 @@ However, Protobuf does have its own pitfalls to look out for.
 The most relevant one for this blog is: in proto3, basic fields like string, numeric, bytes, enum, etc. don't track presence by default, as [Protobuf's own documentation explains it](https://protobuf.dev/programming-guides/field_presence/). The default value and an unused field become the same thing in the wire. Take the `age` field for e.g., if a `Foo` message arrives with `age` unset, decoding it gives `age = 0`. But if a message arrives where `age` is explicitly set to `0`, decoding it gives the same result. There's no way to tell if this field is unused or explicitly set to `0`. This can cause weird hiccups later on and should be avoided, especially if MVCC becomes a thing in my database. The `optional` keyword solves this by telling the generated code to track the presence separately from the value, and the official documentation also recommends this approach.
 
 There are many other such pitfalls, and if you would love a read on it: [Avoiding Common Protobuf's Pitfalls with Buf](https://earthly.dev/blog/buf-protobuf/) and [Understanding Protobuf Compatibility](https://yokota.blog/2021/08/26/understanding-protobuf-compatibility/) are both worth reading.
+
+Although, one thing worth checking before committing to this: does the safety cost anything in performance? I benchmarked marshal/unmarshal on a representative message (Go's testing.B, -benchmem) — protobuf came out ~2.3× faster to marshal, ~10.4× faster to unmarshal, and produced a wire payload ~2.13× smaller than the JSON equivalent. So this isn't safety-vs-speed; on this axis protobuf wins both.
+
+![compare wireformat results](images/blogs/omni/compare_wireformat.png)
+_Comparison Result_
+
+> [!note] These are benchmarks on a single machine with a single message shape and shouldn't be treated as a substiture for measuring real concurrent load.
 
 Thus, the wire format answers what the data looks like. It doesn't answer how it actually travels between processes and that is a different decision for the next post.
