@@ -5,22 +5,22 @@
    printed alternate. See DESIGN_PLAN.md for the full rationale.
    ========================================================================== */
 
-@import url("https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap");
 
 /* ---------- tokens ---------- */
 :root {
-  --bg: #0d0f13;
-  --panel: #12151b;
-  --panel-2: #171b22;
-  --border: #232833;
-  --text: #e6e8ee;
-  --text-dim: #7c8496;
-  --signal: #5eead4;
+  --bg: #14100d;
+  --panel: #1c1712;
+  --panel-2: #241d16;
+  --border: #3a2f24;
+  --text: #e6e0d6;
+  --text-dim: #a08d78;
+  --signal: #cda67e;
   --diff: #e3b341;
-  --grid-dot: rgba(255, 255, 255, 0.07);
+  --grid-dot: rgba(205, 166, 126, 0.06);
 
-  --font-sans: "Hanken Grotesk", -apple-system, "Segoe UI", sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
+  --font-sans: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Consolas, monospace;
 
   --gutter-w: 44px;
   --content-w: 640px;
@@ -80,7 +80,7 @@ button {
 
 ::selection {
   background: var(--signal);
-  color: #06110f;
+  color: #1c1712;
 }
 
 [data-theme="light"] ::selection {
@@ -134,10 +134,9 @@ button {
 nav {
   position: fixed;
   left: calc(50% + var(--nav-offset));
-  bottom: 20px;
-  top: auto;
+  top: 20px;
+  bottom: auto;
   z-index: 100;
-  /* matches .page's inner math exactly: page padding (28px * 2) + gutter (44px) = 100px */
   width: calc(100% - 100px);
   max-width: var(--content-w);
   transform: translateX(-50%);
@@ -262,7 +261,8 @@ nav {
   nav {
     width: calc(100% - 36px);
     left: 50%;
-    bottom: 14px;
+    top: 14px;
+    bottom: auto;
   }
   .menu-toggle {
     display: flex;
@@ -275,14 +275,14 @@ nav {
     flex-direction: column;
     gap: 0;
     position: absolute;
-    bottom: 52px;
+    top: 52px;
     left: 0;
     right: 0;
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 6px 0;
-    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   }
   .nav-links.open {
     display: flex;
@@ -300,10 +300,9 @@ nav {
 
 /* ---------- page shell / gutter ---------- */
 .page {
-  /* content-col ends up exactly --content-w wide: page padding (28px * 2) + gutter (44px) = 100px */
   max-width: calc(var(--content-w) + 100px);
   margin: 0 auto;
-  padding: 48px 28px 132px;
+  padding: 96px 28px 56px;
   display: flex;
   gap: 0;
 }
@@ -335,7 +334,7 @@ nav {
 
 @media (max-width: 640px) {
   .page {
-    padding: 40px 18px 112px;
+    padding: 84px 18px 40px;
   }
   .gutter {
     display: none;
@@ -1073,7 +1072,8 @@ nav {
 .work-page {
   max-width: 760px;
   margin: 0 auto;
-  padding: 56px 32px 132px;
+  padding: 96px 32px 56px;
+  transform: translateX(var(--nav-offset));
 }
 .work-list {
   border-top: 1px solid var(--border);
@@ -1234,7 +1234,8 @@ nav {
 
 @media (max-width: 560px) {
   .work-page {
-    padding: 48px 18px 112px;
+    padding: 84px 18px 40px;
+    transform: none;
   }
   .work-entry {
     padding: 18px 0;
@@ -1265,27 +1266,11 @@ nav {
   color: var(--signal);
 }
 
-.file-tab-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--text-dim);
-  border: 1px solid var(--border);
-  margin-bottom: 10px;
-  border-radius: var(--radius) var(--radius) 0 0;
-  padding: 8px 14px;
-  background: var(--panel);
-}
-.file-tab-bar .dot {
-  color: var(--diff);
-}
-
 .post-page {
   max-width: 720px;
   margin: 0 auto;
-  padding: 56px 32px 132px;
+  padding: 96px 32px 56px;
+  transform: translateX(var(--nav-offset));
 }
 
 .toc {
@@ -1713,7 +1698,6 @@ nav {
   padding: 16px 18px;
   margin-bottom: 16px;
   background: var(--panel);
-  border-left: 3px solid var(--signal);
 }
 .series-banner-top {
   display: flex;
@@ -1722,6 +1706,7 @@ nav {
   gap: 10px;
   margin-bottom: 12px;
   flex-wrap: wrap;
+  min-width: 0;
   font-family: var(--font-mono);
 }
 .series-banner-left {
@@ -1729,6 +1714,8 @@ nav {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  min-width: 0;
+  font-family: var(--font-mono);
 }
 .series-chip {
   font-size: 10px;
@@ -1743,6 +1730,7 @@ nav {
   font-weight: 600;
   color: var(--text);
   transition: color 0.15s;
+  overflow-wrap: anywhere;
 }
 .series-banner-name:hover {
   color: var(--signal);
@@ -1756,7 +1744,9 @@ nav {
   gap: 8px;
   flex-wrap: wrap;
   font-family: var(--font-mono);
+  min-width: 0;
 }
+
 .series-banner-part-link {
   display: inline-flex;
   align-items: center;
@@ -1770,6 +1760,9 @@ nav {
     border-color 0.15s,
     color 0.15s;
   white-space: nowrap;
+  max-width: 100%; /* never wider than its row */
+  min-width: 0; /* allow the pill itself to shrink */
+  box-sizing: border-box;
 }
 .series-banner-part-link:hover {
   border-color: var(--signal);
@@ -1792,6 +1785,13 @@ nav {
   color: var(--text-dim);
   opacity: 0.7;
   margin-right: 1px;
+  flex-shrink: 0; /* number stays fixed width, never gets squeezed */
+}
+.series-banner-part-title {
+  overflow: hidden;
+  text-overflow: ellipsis; /* the truncation now lives on a plain inline-block-ish span, so it actually renders */
+  white-space: nowrap;
+  min-width: 0; /* the piece that's actually allowed to shrink */
 }
 .series-banner-part-link.current .part-num-label {
   opacity: 1;
@@ -1846,7 +1846,8 @@ nav {
 
 @media (max-width: 540px) {
   .post-page {
-    padding: 48px 18px 112px;
+    padding: 84px 18px 40px;
+    transform: none;
   }
   .series-nav-center {
     display: none;
@@ -1938,11 +1939,11 @@ nav {
 .page-wide {
   max-width: 1040px;
   margin: 0 auto;
-  padding: 48px 28px 132px;
+  padding: 96px 28px 56px;
 }
 @media (max-width: 640px) {
   .page-wide {
-    padding: 40px 18px 112px;
+    padding: 84px 18px 40px;
   }
 }
 
@@ -2144,7 +2145,7 @@ nav {
 footer {
   max-width: calc(var(--content-w) + 100px);
   margin: 0 auto;
-  padding: 24px 28px 10em;
+  padding: 24px 28px 40px;
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--text-dim);
@@ -2153,6 +2154,6 @@ footer {
 
 @media (max-width: 640px) {
   footer {
-    padding: 20px 18px 10em;
+    padding: 20px 18px 32px;
   }
 }

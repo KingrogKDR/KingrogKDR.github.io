@@ -69,10 +69,6 @@
 
     <main>
       <div class="post-page">
-        <div class="file-tab-bar" id="file-tab-bar">
-          <span class="dot">●</span
-          ><span id="file-tab-name">posts/loading.md</span>
-        </div>
         <a href="writing.html" class="back-link">← all writing</a>
         <article
           id="post-content"
@@ -329,7 +325,7 @@
           .map((slug, i) => {
             const post = seriesPosts[i];
             const isCurrent = slug === currentSlug;
-            const partLabel = `<span class="part-num-label">${i + 1}.</span> ${post ? escHTML(post.title) : "Coming soon"}`;
+            const partLabel = `<span class="part-num-label">${i + 1}.</span><span class="series-banner-part-title">${post ? escHTML(post.title) : "Coming soon"}</span>`;
             if (isCurrent)
               return `<span class="series-banner-part-link current">${partLabel}</span>`;
             if (!post)
@@ -389,9 +385,6 @@
             "<p>Post not found.</p>";
           return;
         }
-
-        document.getElementById("file-tab-name").textContent =
-          `posts/${slug}.md`;
 
         const raw = await fetch(`blogs/${encodeURIComponent(slug)}.md`)
           .then((r) => {
