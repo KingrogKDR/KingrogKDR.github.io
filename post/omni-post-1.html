@@ -117,7 +117,7 @@
             <p class="post-header-meta">
               <time itemprop="datePublished" datetime="2026-08-16">August 16, 2026</time>
               <span class="post-meta-sep">·</span>
-              <span class="post-read-time">5 min read</span>
+              <span class="post-read-time">6 min read</span>
             </p>
             <button class="share-btn" id="share-btn" aria-label="Share this post">
               <svg viewBox="0 0 14 14"><circle cx="11" cy="2.5" r="1.5"/><circle cx="11" cy="11.5" r="1.5"/><circle cx="3" cy="7" r="1.5"/><line x1="4.4" y1="7.7" x2="9.7" y2="10.9"/><line x1="9.7" y1="3.1" x2="4.4" y2="6.3"/></svg>
@@ -139,7 +139,7 @@
 <p>This gatekeeper is the first real design decision in building any database. And it turns out to be a harder question than it looks.</p>
 <p>So far, none of this required more than a single machine. Now, when you go distributed, i.e add more machines. These machines, a.k.a nodes, holding the data have to talk to each other. They have to agree on what the current global state actually is, to not lose or corrupt data on a single machine, to figure out which node is responsible for what piece of data. Yes, this became far more complex, too quickly. Let&#39;s start simpler, shall we? First, we have to determine a format that the network layer will talk in.</p>
 <h1 id="json-vs-protobuf-why-does-the-wire-format-matters" class="post-section-heading">JSON vs Protobuf: why does the wire format matters?</h1>
-<p>Okay, one thing I want to put out there. I have used JSON here and there, but not exhaustingly enough or haven&#39;t pushed its boundaries much. So, I don&#39;t seem to hate it or even like it. Yes, it has its flaws as plenty of people would agree.</p>
+<p>Okay, one thing I want to put out there. I have used JSON at times, but not exhaustingly enough or haven&#39;t pushed its boundaries much so I don&#39;t have an expert opinion on it. But it does have some flaws that make it not suitable for what I am building.</p>
 <p>Not having comments is one of them, but it is rather an inconvenience and not a flaw in my opinion. But the major flaw I find is that JSON&#39;s grammar looks simple but has real corner cases which can have serious (sometimes legal and ethical) implications if not handled well. This is because JSON just defines the syntax or textual representation of the data. It doesn&#39;t define what type that data expects. It is entirely implementation-defined.</p>
 <p>For e.g,</p>
 <div class="post-code-block">
@@ -173,8 +173,9 @@
 </code></pre>
         
       </div>
-<p>JSON doesn&#39;t force specific type on the data. For small numbers, it doesn&#39;t matter much. But the same ambiguity that lets <code>22</code> or <code>1.1</code> become an <code>int</code> or a <code>float64</code> interchangeably is where real damage can occur. But, this is not the point of this blog. If you are interested in a detailed explanation for this, you can refer <a href="https://mcyoung.xyz/2024/12/10/json-sucks/">to this article</a>.</p>
-<p>Ambiguity like that didn&#39;t feel like something I wanted to build a database around, that too a distributed one. So the obvious choice turns out to be Protobuf and it solves the aforementioned problems of JSON. The same example above can be represented in protobuf as follows:</p>
+<p>JSON doesn&#39;t force specific types on the data. For small numbers, it doesn&#39;t matter much. But the same ambiguity that lets <code>22</code> or <code>1.1</code> become an <code>int</code> or a <code>float64</code> interchangeably is where real damage can occur. And <code>float64</code> itself can&#39;t represent every value accurately, since it is equal to n/2^m. So, numbers that aren&#39;t cleanly divisible by 2 end up rounded to the closest representable value instead of their exact one. That alone could be its own blog post, but, I digress. If you are interested in a detailed explanation for this and the many flaws of json, you can check out <a href="https://mcyoung.xyz/2024/12/10/json-sucks/">this article</a>.</p>
+<p>Ambiguity like this doesn&#39;t feel like something I want to build a database around, especially a distributed one. A reasonable objection here would be: doesn&#39;t typed JSON (JSON Schema, TypeScript interfaces, a validation library) solve this? Sort of, but the typing lives outside the format, not inside it. A schema file is a promise this type of tooling makes about the bytes; it isn&#39;t enforced by the bytes themselves. Every service that receives a message has to independently choose to validate against it which brings back the same problem: validation becomes &quot;implementation-defined,&quot; and an extra &quot;dependency&quot; the code has to rely on. There&#39;s also no structural versioning contract: two independently-valid schemas can disagree field by field, and the mismatch shows up as a bug deep inside application code instead of as a decode failure at the network boundary, which is where it should surface.</p>
+<p>So the obvious choice turns out to be Protobuf, which solves the problems above. The same example above can be represented in protobuf as follows:</p>
 <div class="post-code-block">
         <div class="post-code-header">
           <span class="post-code-lang">protobuf</span>
@@ -182,16 +183,21 @@
         </div>
         <pre><code id="code-3" class="language-protobuf">message Foo{
   optional int32 age = 1;
-  optional int64 price = 2;
+  optional double price = 2;
   // where 1 and 2 are field numbers and not their values
 }
 </code></pre>
         
       </div>
-<p>In Protobuf, types are enforced by schema and therefore a field declared <code>int32</code> is an <code>int32</code> everywhere. Also, here uniqueness is guaranteed by the field numbers and not the field names like <code>age</code> and <code>price</code> , unlike JSON.</p>
+<p>In Protobuf, types are enforced by the schema and therefore a field declared <code>int32</code> is an <code>int32</code> everywhere. Uniqueness is also guaranteed by the field numbers and not the field names like <code>age</code> and <code>price</code>, unlike JSON.</p>
 <p>However, Protobuf does have its own pitfalls to look out for.</p>
-<p>The most relevant one for this blog is: in proto3, basic fields like string, numeric, bytes, enum, etc. don&#39;t track presence by default, as <a href="https://protobuf.dev/programming-guides/field_presence/">Protobuf&#39;s own documentation explains it</a>. The default value and an unused field become the same thing in the wire. Take the <code>age</code> field for e.g., if a <code>Foo</code> message arrives with <code>age</code> unset, decoding it gives <code>age = 0</code>. But if a message arrives where <code>age</code> is explicitly set to <code>0</code>, decoding it gives the same result. There&#39;s no way to tell if this field is unused or explicitly set to <code>0</code>. This can cause weird hiccups later on and should be avoided, especially if MVCC becomes a thing in my database. The <code>optional</code> keyword solves this by telling the generated code to track the presence separately from the value, and the official documentation also recommends this approach.</p>
-<p>There are many other such pitfalls, and if you would love a read on it: <a href="https://earthly.dev/blog/buf-protobuf/">Avoiding Common Protobuf&#39;s Pitfalls with Buf</a> and <a href="https://yokota.blog/2021/08/26/understanding-protobuf-compatibility/">Understanding Protobuf Compatibility</a> are both worth reading.</p>
+<p>The most relevant one for this blog is: in proto3, basic fields like string, numeric, bytes, enum, etc. don&#39;t track presence by default, as <a href="https://protobuf.dev/programming-guides/field_presence/">Protobuf&#39;s own documentation explains</a>. The default value and an unused field become indistinguishable on the wire. Take the <code>age</code> field, for example, if a <code>Foo</code> message arrives with <code>age</code> unset, decoding it gives <code>age = 0</code>. But if a message arrives where <code>age</code> is explicitly set to <code>0</code>, decoding it gives the same result. There&#39;s no way to tell whether the field was left unset or deliberately set to <code>0</code>. This can cause subtle bugs later on and should be avoided, especially if MVCC becomes a thing in my database. The <code>optional</code> keyword solves this by telling the generated code to track the presence separately from the value, and the official documentation also recommends this approach.</p>
+<p>There are many other such pitfalls, and if you&#39;d like to read more: <a href="https://earthly.dev/blog/buf-protobuf/">Avoiding Common Protobuf Pitfalls with Buf</a> and <a href="https://yokota.blog/2021/08/26/understanding-protobuf-compatibility/">Understanding Protobuf Compatibility</a> are both worth reading.</p>
+<p>So, even if Protobuf isn&#39;t perfect, its pitfalls can be contained and resolved using mechanisms it provides itself.</p>
+<p>That said, one thing worth checking before committing to this: does the safety cost anything in performance? I benchmarked marshal/unmarshal on a representative message — protobuf came out ~2.3x faster to marshal, ~10.4x faster to unmarshal, and produced a wire payload ~2.13x smaller than the JSON equivalent. So this isn&#39;t safety-vs-speed; on this axis protobuf wins both.</p>
+<figure class="post-image"><img src="images/blogs/omni/compare_wireformat.png" alt="compare wireformat results" loading="lazy"><figcaption class="post-image-caption">Comparison Result</figcaption></figure>
+<div class="post-note post-note--info"><span class="post-note-icon">i</span><div><p>These are benchmarks on a single machine with a single message shape and shouldn&#39;t be treated as a substiture for measuring real concurrent load.</p>
+</div></div>
 <p>Thus, the wire format answers what the data looks like. It doesn&#39;t answer how it actually travels between processes and that is a different decision for the next post.</p>
 
         </div>
