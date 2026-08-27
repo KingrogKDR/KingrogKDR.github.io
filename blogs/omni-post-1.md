@@ -30,7 +30,7 @@ So far, none of this required more than a single machine. Now, when you go distr
 
 # JSON vs Protobuf: why does the wire format matters?
 
-Okay, one thing I want to put out there. I have used JSON here and there, but not exhaustingly enough or haven't pushed its boundaries much. So, I don't seem to hate it or even like it. Yes, it has its flaws as plenty of people would agree.
+Okay, one thing I want to put out there. I have used JSON at times, but not exhaustingly enough or haven't pushed its boundaries much so I don't have an expert opinion on it. But it does have some flaws that make it not suitable for what I am building.
 
 Not having comments is one of them, but it is rather an inconvenience and not a flaw in my opinion. But the major flaw I find is that JSON's grammar looks simple but has real corner cases which can have serious (sometimes legal and ethical) implications if not handled well. This is because JSON just defines the syntax or textual representation of the data. It doesn't define what type that data expects. It is entirely implementation-defined.
 
@@ -58,11 +58,11 @@ JSON                 Possible representation
 1.1         →        string // and parse it later maybe?
 ```
 
-JSON doesn't force specific type on the data. For small numbers, it doesn't matter much. But the same ambiguity that lets `22` or `1.1` become an `int` or a `float64` interchangeably is where real damage can occur. But, this is not the point of this blog. If you are interested in a detailed explanation for this, you can refer [to this article](https://mcyoung.xyz/2024/12/10/json-sucks/).
+JSON doesn't force specific types on the data. For small numbers, it doesn't matter much. But the same ambiguity that lets `22` or `1.1` become an `int` or a `float64` interchangeably is where real damage can occur. And `float64` itself can't represent every value accurately, since it is equal to n/2^m. So, numbers that aren't cleanly divisible by 2 end up rounded to the closest representable value instead of their exact one. That alone could be its own blog post, but, I digress. If you are interested in a detailed explanation for this and the many flaws of json, you can check out [this article](https://mcyoung.xyz/2024/12/10/json-sucks/).
 
-Ambiguity like that didn't feel like something I wanted to build a database around, that too a distributed one. A reasonable objection here would be: doesn't typed JSON (JSON Schema, TypeScript interfaces, a validation library) solve this? Sort of, but the typing lives outside the format, not inside it. A schema file is a promise this type of tooling makes about the bytes; it isn't enforced by the bytes themselves. Every service that receives a message has to independently choose to validate against it and that leads to the same problem again: "implementation-defined" and an extra "dependency" the code has to rely on. There's also no structural versioning contract: two independently-valid schemas can disagree field by field, and the mismatch shows up as a bug deep inside application code and not as a decode failure at the network boundary itself.
+Ambiguity like this doesn't feel like something I want to build a database around, especially a distributed one. A reasonable objection here would be: doesn't typed JSON (JSON Schema, TypeScript interfaces, a validation library) solve this? Sort of, but the typing lives outside the format, not inside it. A schema file is a promise this type of tooling makes about the bytes; it isn't enforced by the bytes themselves. Every service that receives a message has to independently choose to validate against it which brings back the same problem: validation becomes "implementation-defined," and an extra "dependency" the code has to rely on. There's also no structural versioning contract: two independently-valid schemas can disagree field by field, and the mismatch shows up as a bug deep inside application code instead of as a decode failure at the network boundary, which is where it should surface.
 
-So the obvious choice turns out to be Protobuf and it solves the aforementioned problems. The same example above can be represented in protobuf as follows:
+So the obvious choice turns out to be Protobuf, which solves the problems above. The same example above can be represented in protobuf as follows:
 
 ```protobuf
 message Foo{
@@ -72,15 +72,17 @@ message Foo{
 }
 ```
 
-In Protobuf, types are enforced by schema and therefore a field declared `int32` is an `int32` everywhere. Also, here uniqueness is guaranteed by the field numbers and not the field names like `age` and `price` , unlike JSON.
+In Protobuf, types are enforced by the schema and therefore a field declared `int32` is an `int32` everywhere. Uniqueness is also guaranteed by the field numbers and not the field names like `age` and `price`, unlike JSON.
 
 However, Protobuf does have its own pitfalls to look out for.
 
-The most relevant one for this blog is: in proto3, basic fields like string, numeric, bytes, enum, etc. don't track presence by default, as [Protobuf's own documentation explains it](https://protobuf.dev/programming-guides/field_presence/). The default value and an unused field become the same thing in the wire. Take the `age` field for e.g., if a `Foo` message arrives with `age` unset, decoding it gives `age = 0`. But if a message arrives where `age` is explicitly set to `0`, decoding it gives the same result. There's no way to tell if this field is unused or explicitly set to `0`. This can cause weird hiccups later on and should be avoided, especially if MVCC becomes a thing in my database. The `optional` keyword solves this by telling the generated code to track the presence separately from the value, and the official documentation also recommends this approach.
+The most relevant one for this blog is: in proto3, basic fields like string, numeric, bytes, enum, etc. don't track presence by default, as [Protobuf's own documentation explains](https://protobuf.dev/programming-guides/field_presence/). The default value and an unused field become indistinguishable on the wire. Take the `age` field, for example, if a `Foo` message arrives with `age` unset, decoding it gives `age = 0`. But if a message arrives where `age` is explicitly set to `0`, decoding it gives the same result. There's no way to tell whether the field was left unset or deliberately set to `0`. This can cause subtle bugs later on and should be avoided, especially if MVCC becomes a thing in my database. The `optional` keyword solves this by telling the generated code to track the presence separately from the value, and the official documentation also recommends this approach.
 
-There are many other such pitfalls, and if you would love a read on it: [Avoiding Common Protobuf's Pitfalls with Buf](https://earthly.dev/blog/buf-protobuf/) and [Understanding Protobuf Compatibility](https://yokota.blog/2021/08/26/understanding-protobuf-compatibility/) are both worth reading.
+There are many other such pitfalls, and if you'd like to read more: [Avoiding Common Protobuf Pitfalls with Buf](https://earthly.dev/blog/buf-protobuf/) and [Understanding Protobuf Compatibility](https://yokota.blog/2021/08/26/understanding-protobuf-compatibility/) are both worth reading.
 
-Although, one thing worth checking before committing to this: does the safety cost anything in performance? I benchmarked marshal/unmarshal on a representative message (Go's testing.B, -benchmem) — protobuf came out ~2.3× faster to marshal, ~10.4× faster to unmarshal, and produced a wire payload ~2.13× smaller than the JSON equivalent. So this isn't safety-vs-speed; on this axis protobuf wins both.
+So, even if Protobuf isn't perfect, its pitfalls can be contained and resolved using mechanisms it provides itself.
+
+That said, one thing worth checking before committing to this: does the safety cost anything in performance? I benchmarked marshal/unmarshal on a representative message — protobuf came out ~2.3x faster to marshal, ~10.4x faster to unmarshal, and produced a wire payload ~2.13x smaller than the JSON equivalent. So this isn't safety-vs-speed; on this axis protobuf wins both.
 
 ![compare wireformat results](images/blogs/omni/compare_wireformat.png)
 
